@@ -36,7 +36,7 @@ export default function Footer() {
                 alt="AI Foresights"
                 width={1321}
                 height={200}
-                className="h-10 w-auto object-contain brightness-0 invert"
+                className="h-10 w-auto object-contain"
               />
             </Link>
             <p className="text-xs text-brand-slate leading-relaxed">
