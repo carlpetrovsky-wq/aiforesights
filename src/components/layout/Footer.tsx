@@ -10,15 +10,15 @@ const FOOTER_LINKS = {
     { href: '/learn-ai',      label: 'Learn AI' },
   ],
   Company: [
-    { href: '/about',     label: 'About us' },
-    { href: '/newsletter',label: 'Newsletter' },
-    { href: '/advertise', label: 'Advertise' },
-    { href: '/contact',   label: 'Contact' },
+    { href: '/about',      label: 'About us' },
+    { href: '/newsletter', label: 'Newsletter' },
+    { href: '/advertise',  label: 'Advertise' },
+    { href: '/contact',    label: 'Contact' },
   ],
   Legal: [
-    { href: '/privacy',  label: 'Privacy policy' },
-    { href: '/terms',    label: 'Terms of use' },
-    { href: '/cookies',  label: 'Cookie settings' },
+    { href: '/privacy', label: 'Privacy policy' },
+    { href: '/terms',   label: 'Terms of use' },
+    { href: '/cookies', label: 'Cookie settings' },
   ],
 }
 
@@ -27,23 +27,20 @@ export default function Footer() {
     <footer className="bg-brand-navy mt-8">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-6 h-6 bg-brand-sky rounded-md flex items-center justify-center">
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path d="M6 1l1.2 3.6H11L8.1 6.4l1.1 3.6L6 8 2.9 10l1.1-3.6L1 4.6h3.8z" fill="white"/>
-                </svg>
-              </div>
-              <span className="font-semibold text-sm text-white">
-                AI <span className="text-brand-skyLight">Foresights</span>
-              </span>
-            </div>
-            <p className="text-xs text-brand-slate leading-relaxed mb-3">
+            <Link href="/" className="inline-block mb-3">
+              <Image
+                src="/logo-full.png"
+                alt="AI Foresights"
+                width={160}
+                height={128}
+                className="h-12 w-auto object-contain brightness-0 invert"
+              />
+            </Link>
+            <p className="text-xs text-brand-slate leading-relaxed">
               The world of AI, explained for everyday professionals. Daily news, tool reviews, and plain-English guides. No jargon required.
-            </p>
-            <p className="text-xs text-brand-navyLight italic">
-              &ldquo;A New Dawn Is Here&rdquo;
             </p>
           </div>
 

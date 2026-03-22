@@ -22,21 +22,18 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-brand-border">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-14">
+        <div className="flex items-center justify-between h-16">
 
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 shrink-0">
+          {/* Logo — full image with built-in text */}
+          <Link href="/" className="flex items-center shrink-0">
             <Image
-              src="/logo-icon-64.png"
-              alt="AI Foresights"
-              width={32}
-              height={32}
-              className="w-8 h-8 object-contain"
+              src="/logo-full.png"
+              alt="AI Foresights — A New Dawn Is Here"
+              width={180}
+              height={144}
+              className="h-10 w-auto object-contain"
               priority
             />
-            <span className="font-semibold text-[15px] text-brand-navy tracking-tight">
-              AI <span className="text-brand-sky">Foresights</span>
-            </span>
           </Link>
 
           {/* Desktop nav */}
