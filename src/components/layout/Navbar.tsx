@@ -27,11 +27,11 @@ export default function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center shrink-0">
             <Image
-              src="/logo-navbar.png"
+              src="/logo-horizontal.png"
               alt="AI Foresights — A New Dawn Is Here"
-              width={1280}
-              height={1036}
-              className="h-14 w-auto object-contain"
+              width={1321}
+              height={200}
+              className="h-10 w-auto object-contain sm:h-12"
               priority
             />
           </Link>
