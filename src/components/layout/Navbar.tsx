@@ -22,16 +22,16 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-brand-border">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-20">
 
           {/* Logo — full image with built-in text */}
           <Link href="/" className="flex items-center shrink-0 py-1">
             <Image
               src="/logo-cropped.svg"
               alt="AI Foresights — A New Dawn Is Here"
-              width={180}
+              width={120}
               height={156}
-              className="h-12 w-auto object-contain"
+              className="h-16 w-auto object-contain"
               priority
             />
           </Link>
