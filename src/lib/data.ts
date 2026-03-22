@@ -1,0 +1,126 @@
+import { Article, Tool, LearningResource, Category } from './types'
+
+export const CATEGORIES: Category[] = [
+  { slug: 'latest-news',  label: 'Latest news',       description: 'Breaking AI developments', color: 'bg-blue-50 text-blue-700',   dotColor: '#0EA5E9' },
+  { slug: 'future-of-ai', label: 'Future of AI',       description: 'Trends & predictions',     color: 'bg-purple-50 text-purple-700', dotColor: '#8B5CF6' },
+  { slug: 'best-ai-tools',label: 'Best AI tools',      description: 'Free & paid, ranked',      color: 'bg-emerald-50 text-emerald-700', dotColor: '#10B981' },
+  { slug: 'make-money',   label: 'Make money with AI', description: 'Side hustles & guides',    color: 'bg-amber-50 text-amber-700',  dotColor: '#F59E0B' },
+  { slug: 'learn-ai',     label: 'Learn AI',           description: 'Courses, videos & books',  color: 'bg-red-50 text-red-700',     dotColor: '#EF4444' },
+]
+
+export const MOCK_ARTICLES: Article[] = [
+  {
+    id: '1', title: 'OpenAI launches GPT-5 with built-in reasoning — here\'s what it means for you',
+    slug: 'openai-gpt5-reasoning', isFeatured: true,
+    excerpt: 'The new model remembers your past conversations and can think through complex problems step-by-step. Here\'s what that means for everyday professionals.',
+    summary: 'GPT-5 combines reasoning and long-term memory, making it dramatically more useful for real work tasks — even if you\'re not technical.',
+    sourceUrl: 'https://techcrunch.com', sourceName: 'TechCrunch', sourceColor: '#0EA5E9',
+    author: 'Sarah Perez', publishedAt: new Date(Date.now() - 2*3600000).toISOString(),
+    category: 'latest-news', tags: ['OpenAI', 'GPT-5', 'Reasoning'], voteCount: 142,
+    thumbnailUrl: undefined,
+  },
+  {
+    id: '2', title: 'Google Gemini now watches live video on your phone and responds in real time',
+    slug: 'google-gemini-live-video', isFeatured: true,
+    excerpt: 'Google\'s latest Gemini update lets it watch and respond to live video on your phone. Here\'s how everyday people are already using it.',
+    summary: 'Point your phone camera at anything and Gemini answers questions about what it sees — live. Think of it as having an expert always available.',
+    sourceUrl: 'https://wired.com', sourceName: 'Wired', sourceColor: '#8B5CF6',
+    author: 'Tom Simonite', publishedAt: new Date(Date.now() - 4*3600000).toISOString(),
+    category: 'latest-news', tags: ['Google', 'Gemini', 'Video AI'], voteCount: 89,
+    thumbnailUrl: undefined,
+  },
+  {
+    id: '3', title: '5 free AI tools replacing expensive software — we tested each one so you don\'t have to',
+    slug: 'free-ai-tools-replace-software', isFeatured: true,
+    excerpt: 'From design to spreadsheets to writing, these five AI tools do everything your paid apps do — for free.',
+    summary: 'Real professionals switched from expensive software to these free AI alternatives — and most haven\'t looked back.',
+    sourceUrl: 'https://technologyreview.com', sourceName: 'MIT Tech Review', sourceColor: '#10B981',
+    author: 'Will Douglas Heaven', publishedAt: new Date(Date.now() - 6*3600000).toISOString(),
+    category: 'best-ai-tools', tags: ['Free Tools', 'Productivity', 'Cost Savings'], voteCount: 67,
+    thumbnailUrl: undefined,
+  },
+  {
+    id: '4', title: 'Small businesses are cutting 20 hours a week using AI — no coding required',
+    slug: 'small-business-ai-20-hours', isFeatured: false,
+    excerpt: 'Real examples from shop owners, freelancers, and small teams who automated their most tedious tasks.',
+    summary: 'A florist, a consultant, and a restaurant owner all found ways to save half their week using AI tools. None of them can write code.',
+    sourceUrl: 'https://venturebeat.com', sourceName: 'VentureBeat', sourceColor: '#F59E0B',
+    author: 'Michael Nuñez', publishedAt: new Date(Date.now() - 24*3600000).toISOString(),
+    category: 'make-money', tags: ['Small Business', 'Automation', 'Productivity'], voteCount: 54,
+    thumbnailUrl: undefined,
+  },
+  {
+    id: '5', title: 'Anthropic\'s Claude can now read 500-page documents in seconds — what that actually means',
+    slug: 'anthropic-claude-500-page-docs', isFeatured: false,
+    excerpt: 'The updated Claude model can process an entire book\'s worth of text in one go.',
+    summary: 'Lawyers, researchers, and business analysts are using this to review contracts and reports in minutes instead of days.',
+    sourceUrl: 'https://theverge.com', sourceName: 'The Verge', sourceColor: '#EF4444',
+    author: 'James Vincent', publishedAt: new Date(Date.now() - 24*3600000).toISOString(),
+    category: 'latest-news', tags: ['Anthropic', 'Claude', 'Document AI'], voteCount: 41,
+    thumbnailUrl: undefined,
+  },
+  {
+    id: '6', title: 'Meta\'s AI glasses explained for normal people — what they actually do',
+    slug: 'meta-ai-glasses-explained', isFeatured: false,
+    excerpt: 'You\'ve seen the ads. But what do Meta\'s Ray-Ban AI glasses actually do in real life?',
+    summary: 'A week of wearing Meta\'s AI glasses revealed surprising practical uses — and some clear limitations — for everyday professionals.',
+    sourceUrl: 'https://arstechnica.com', sourceName: 'Ars Technica', sourceColor: '#0EA5E9',
+    author: 'Ron Amadeo', publishedAt: new Date(Date.now() - 48*3600000).toISOString(),
+    category: 'latest-news', tags: ['Meta', 'Wearable AI', 'Smart Glasses'], voteCount: 38,
+    thumbnailUrl: undefined,
+  },
+  {
+    id: '7', title: 'How to make money with AI tools in 2026 — a beginner\'s complete guide',
+    slug: 'make-money-ai-2026-guide', isFeatured: false,
+    excerpt: 'Ten real ways professionals are earning extra income using AI tools, from content creation to consulting.',
+    summary: 'Freelancers and side-hustlers share exactly which AI tools they use and how much they\'re earning.',
+    sourceUrl: 'https://techcrunch.com', sourceName: 'TechCrunch', sourceColor: '#10B981',
+    author: 'Megan Rose Dickey', publishedAt: new Date(Date.now() - 48*3600000).toISOString(),
+    category: 'make-money', tags: ['Make Money', 'Freelancing', 'AI Income'], voteCount: 96,
+    thumbnailUrl: undefined,
+  },
+  {
+    id: '8', title: 'AI in 2026: what\'s actually changed for regular professionals (not just developers)',
+    slug: 'ai-2026-regular-professionals', isFeatured: false,
+    excerpt: 'A clear-eyed look at what AI can and can\'t do for the average professional right now.',
+    summary: 'Cutting through the hype: here\'s the honest picture of where AI is genuinely useful in everyday work.',
+    sourceUrl: 'https://technologyreview.com', sourceName: 'MIT Tech Review', sourceColor: '#F97316',
+    author: 'Charlotte Jee', publishedAt: new Date(Date.now() - 72*3600000).toISOString(),
+    category: 'future-of-ai', tags: ['Future of AI', 'Professionals', 'Workplace'], voteCount: 73,
+    thumbnailUrl: undefined,
+  },
+  {
+    id: '9', title: 'The best AI tools for freelancers in 2026 — ranked by real users',
+    slug: 'best-ai-tools-freelancers-2026', isFeatured: false,
+    excerpt: 'We surveyed 500 freelancers about which AI tools actually saved them time and money.',
+    summary: 'Real data from real freelancers on which tools are worth paying for and which free alternatives hold up.',
+    sourceUrl: 'https://venturebeat.com', sourceName: 'VentureBeat', sourceColor: '#8B5CF6',
+    author: 'Kyle Wiggers', publishedAt: new Date(Date.now() - 72*3600000).toISOString(),
+    category: 'best-ai-tools', tags: ['Freelancing', 'AI Tools', 'Rankings'], voteCount: 61,
+    thumbnailUrl: undefined,
+  },
+]
+
+export const MOCK_TOOLS: Tool[] = [
+  { id: '1', name: 'ChatGPT',      slug: 'chatgpt',     pricing: 'freemium', isFeatured: true,  saveCount: 1240, category: 'Chatbot',    tags: ['Writing', 'Coding', 'Research'],      experienceLevel: 'beginner',     description: 'The original AI assistant. Great for writing, brainstorming, and answering questions in plain English.', websiteUrl: 'https://chat.openai.com' },
+  { id: '2', name: 'Claude',       slug: 'claude',      pricing: 'freemium', isFeatured: true,  saveCount: 986,  category: 'Chatbot',    tags: ['Writing', 'Analysis', 'Documents'],   experienceLevel: 'beginner',     description: 'Exceptional for reading long documents, writing, and nuanced analysis. Very easy to use.', websiteUrl: 'https://claude.ai' },
+  { id: '3', name: 'Perplexity',   slug: 'perplexity',  pricing: 'freemium', isFeatured: true,  saveCount: 743,  category: 'Search',     tags: ['Research', 'Search', 'Citations'],    experienceLevel: 'beginner',     description: 'AI search that gives you direct answers with cited sources. Replaces Googling for most research.', websiteUrl: 'https://perplexity.ai' },
+  { id: '4', name: 'Midjourney',   slug: 'midjourney',  pricing: 'paid',     isFeatured: false, saveCount: 621,  category: 'Images',     tags: ['Image Generation', 'Art', 'Design'],  experienceLevel: 'beginner',     description: 'Create stunning AI artwork and images from text descriptions. No design skills needed.', websiteUrl: 'https://midjourney.com' },
+  { id: '5', name: 'Cursor',       slug: 'cursor',      pricing: 'freemium', isFeatured: true,  saveCount: 445,  category: 'Coding',     tags: ['Coding', 'Developer', 'Productivity'], experienceLevel: 'intermediate', description: 'AI code editor that writes and explains code. Great for non-developers who want to build things.', websiteUrl: 'https://cursor.sh' },
+  { id: '6', name: 'Jasper AI',    slug: 'jasper',      pricing: 'paid',     isFeatured: false, saveCount: 389,  category: 'Writing',    tags: ['Marketing', 'Copywriting', 'Content'], experienceLevel: 'intermediate', description: 'AI writing platform for marketers and business owners. Creates content that sounds like your brand.', websiteUrl: 'https://jasper.ai' },
+  { id: '7', name: 'Notion AI',    slug: 'notion-ai',   pricing: 'paid',     isFeatured: false, saveCount: 334,  category: 'Productivity', tags: ['Notes', 'Productivity', 'Writing'],  experienceLevel: 'beginner',     description: 'AI built into Notion for writing, summarizing, and organizing your notes and documents.', websiteUrl: 'https://notion.so' },
+  { id: '8', name: 'Runway ML',    slug: 'runway',      pricing: 'freemium', isFeatured: false, saveCount: 298,  category: 'Video',      tags: ['Video', 'Creative', 'Editing'],       experienceLevel: 'intermediate', description: 'Create and edit video with AI. Remove backgrounds, generate video clips from text.', websiteUrl: 'https://runwayml.com' },
+  { id: '9', name: 'Hugging Face', slug: 'huggingface', pricing: 'free',     isFeatured: false, saveCount: 267,  category: 'Research',   tags: ['Open Source', 'Models', 'Research'],  experienceLevel: 'advanced',     description: 'The largest library of open-source AI models. Free to use, built for developers and researchers.', websiteUrl: 'https://huggingface.co' },
+  { id: '10', name: 'Canva AI',    slug: 'canva-ai',    pricing: 'freemium', isFeatured: false, saveCount: 521,  category: 'Design',     tags: ['Design', 'Marketing', 'Social Media'], experienceLevel: 'beginner',    description: 'AI-powered design for people who aren\'t designers. Create beautiful graphics, presentations, and more.', websiteUrl: 'https://canva.com' },
+]
+
+export const MOCK_LEARNING: LearningResource[] = [
+  { id: '1', title: 'AI for complete beginners — no experience needed', type: 'video', platform: 'YouTube', duration: '2h 15m', level: 'beginner', isFree: true, isAffiliate: false, url: 'https://youtube.com', affiliateUrl: undefined, description: 'The best free intro to AI on the internet. Walks you through everything from scratch.', thumbnailBg: '#FEF3C7' },
+  { id: '2', title: 'AI at Work: how professionals use it to get ahead', type: 'book', platform: 'Amazon', duration: '280 pages', level: 'beginner', isFree: false, isAffiliate: true, url: 'https://amazon.com', affiliateUrl: 'https://amazon.com', description: 'Practical guide for professionals who want to use AI tools in their day-to-day work.', thumbnailBg: '#EDE9FE' },
+  { id: '3', title: 'ChatGPT for business owners — practical use cases', type: 'course', platform: 'Udemy', duration: '4h', level: 'intermediate', isFree: false, isAffiliate: true, url: 'https://udemy.com', affiliateUrl: 'https://udemy.com', description: 'Real business applications for AI — from customer service to marketing to operations.', thumbnailBg: '#DCFCE7' },
+  { id: '4', title: 'The 10 AI tools every professional should know in 2026', type: 'guide', platform: 'AI Foresights', duration: '15 min read', level: 'beginner', isFree: true, isAffiliate: false, url: '/learn-ai/10-ai-tools-every-professional', affiliateUrl: undefined, description: 'Our own curated guide to the most useful AI tools for non-technical professionals.', thumbnailBg: '#E0F2FE' },
+]
+
+export const RSS_SOURCES = [
+  'TechCrunch AI', 'Wired', 'The Verge', 'MIT Tech Review', 'VentureBeat', 'Ars Technica',
+]

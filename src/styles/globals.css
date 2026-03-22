@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --sky: #0EA5E9;
+  --sky-dark: #0284C7;
+  --sky-light: #38BDF8;
+  --navy: #0F172A;
+  --navy-mid: #1E293B;
+  --slate: #64748B;
+  --muted: #94A3B8;
+  --border: #E2E8F0;
+  --bg: #F8FAFC;
+}
+
+@layer base {
+  * { box-sizing: border-box; }
+
+  body {
+    @apply bg-brand-bg text-brand-navy antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+
+  a { @apply no-underline; }
+}
+
+@layer components {
+  /* Ad slot placeholder styling */
+  .ad-slot {
+    @apply bg-white border border-dashed border-brand-border rounded-lg
+           flex items-center justify-center text-center;
+  }
+  .ad-slot-inner {
+    @apply text-xs text-brand-muted uppercase tracking-widest font-medium;
+  }
+
+  /* News card hover */
+  .news-card {
+    @apply bg-white border border-brand-border rounded-xl overflow-hidden
+           transition-all duration-200 cursor-pointer;
+  }
+  .news-card:hover {
+    @apply border-brand-sky shadow-sm;
+  }
+
+  /* Category pill */
+  .cat-pill {
+    @apply inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5
+           bg-blue-50 text-blue-700 rounded-md;
+  }
+
+  /* Section header */
+  .section-header {
+    @apply flex items-center justify-between mb-4;
+  }
+  .section-title {
+    @apply flex items-center gap-2 text-base font-semibold text-brand-navy;
+  }
+  .section-title::before {
+    content: '';
+    @apply block w-2 h-2 bg-brand-sky rounded-full;
+  }
+
+  /* Btn primary */
+  .btn-primary {
+    @apply bg-brand-sky text-white font-medium text-sm px-4 py-2 rounded-lg
+           hover:bg-brand-skyDark transition-colors duration-150;
+  }
+
+  /* Tool badge */
+  .badge-free      { @apply bg-emerald-50 text-emerald-700 text-xs font-medium px-2 py-0.5 rounded; }
+  .badge-freemium  { @apply bg-blue-50 text-blue-700 text-xs font-medium px-2 py-0.5 rounded; }
+  .badge-paid      { @apply bg-amber-50 text-amber-700 text-xs font-medium px-2 py-0.5 rounded; }
+  .badge-free-label    { @apply text-emerald-700; }
+  .badge-freemium-label{ @apply text-blue-700; }
+  .badge-paid-label    { @apply text-amber-700; }
+}
+
+/* Horizontal scroll on mobile for categories */
+.scroll-snap-x {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.scroll-snap-start { scroll-snap-align: start; }
+
+/* Hide scrollbar but keep scrolling */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
