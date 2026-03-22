@@ -29,12 +29,13 @@ export default function Footer() {
 
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="inline-block mb-3">
+            <Link href="/" className="block mb-3">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="/logo-horizontal-white.png"
+                src="/logo-horizontal.png"
                 alt="AI Foresights"
-                className="h-10 w-auto object-contain"
+                className="h-10 w-auto"
+                style={{ filter: 'brightness(0) invert(1)' }}
               />
             </Link>
             <p className="text-xs text-brand-slate leading-relaxed">
