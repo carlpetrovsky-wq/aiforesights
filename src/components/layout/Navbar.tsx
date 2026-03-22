@@ -25,13 +25,13 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
 
           {/* Logo — full image with built-in text */}
-          <Link href="/" className="flex items-center shrink-0">
+          <Link href="/" className="flex items-center shrink-0 py-1">
             <Image
-              src="/logo-full.png"
+              src="/logo-cropped.svg"
               alt="AI Foresights — A New Dawn Is Here"
               width={180}
-              height={144}
-              className="h-10 w-auto object-contain"
+              height={156}
+              className="h-12 w-auto object-contain"
               priority
             />
           </Link>
