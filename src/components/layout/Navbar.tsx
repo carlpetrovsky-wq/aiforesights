@@ -22,17 +22,29 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-brand-border">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-[72px]">
 
-          {/* Logo — full image with built-in text */}
-          <Link href="/" className="flex items-center shrink-0 py-1">
+          {/* Logo — full SVG with head + AI FORESIGHTS + tagline */}
+          <Link href="/" className="flex items-center shrink-0">
+            {/* Desktop: wider logo showing full text */}
             <Image
               src="/logo-cropped.svg"
               alt="AI Foresights — A New Dawn Is Here"
-              width={120}
-              height={156}
-              className="h-16 w-auto object-contain"
+              width={220}
+              height={165}
+              className="hidden sm:block h-14 w-auto object-contain"
               priority
+              unoptimized
+            />
+            {/* Mobile: same logo, slightly smaller */}
+            <Image
+              src="/logo-cropped.svg"
+              alt="AI Foresights"
+              width={160}
+              height={120}
+              className="sm:hidden h-11 w-auto object-contain"
+              priority
+              unoptimized
             />
           </Link>
 
