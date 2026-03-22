@@ -1,29 +1,38 @@
 'use client'
+import { useState, useEffect } from 'react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import ArticleCard from '@/components/news/ArticleCard'
 import AdSlot from '@/components/ads/AdSlot'
 import { MOCK_ARTICLES } from '@/lib/data'
-import { useState, useMemo } from 'react'
+import { Article } from '@/lib/types'
+
+const CATEGORY_FILTERS = ['All','Latest news','Future of AI','Best AI tools','Make money']
 
 export default function LatestNewsPage() {
-  const [sortBy, setSortBy] = useState<'latest' | 'popular'>('latest')
-  const [activeCategory, setActiveCategory] = useState('All')
-  const categories = ['All', 'Latest news', 'Future of AI', 'Best AI tools', 'Make money']
+  const [articles, setArticles]       = useState<Article[]>([])
+  const [loading, setLoading]         = useState(true)
+  const [sortBy, setSortBy]           = useState<'latest'|'popular'>('latest')
+  const [activeCategory, setCategory] = useState('All')
 
-  const filtered = useMemo(() => {
-    let articles = [...MOCK_ARTICLES]
-    if (activeCategory !== 'All') {
-      articles = articles.filter(a =>
-        a.category.replace(/-/g, ' ').toLowerCase() === activeCategory.toLowerCase()
-      )
+  useEffect(() => {
+    async function load() {
+      setLoading(true)
+      try {
+        const params = new URLSearchParams({ limit: '24', sortBy })
+        if (activeCategory !== 'All') {
+          params.set('category', activeCategory.toLowerCase().replace(/ /g,'-'))
+        }
+        const res = await fetch(`/api/articles?${params}`)
+        const data = await res.json()
+        setArticles(Array.isArray(data) && data.length > 0 ? data : MOCK_ARTICLES)
+      } catch {
+        setArticles(MOCK_ARTICLES)
+      } finally {
+        setLoading(false)
+      }
     }
-    if (sortBy === 'popular') {
-      articles.sort((a, b) => b.voteCount - a.voteCount)
-    } else {
-      articles.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime())
-    }
-    return articles
+    load()
   }, [sortBy, activeCategory])
 
   return (
@@ -40,8 +49,8 @@ export default function LatestNewsPage() {
       <main className="max-w-6xl mx-auto w-full px-4 sm:px-6 flex-1 py-4">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
           <div className="flex items-center gap-2 flex-wrap">
-            {categories.map(cat => (
-              <button key={cat} onClick={() => setActiveCategory(cat)}
+            {CATEGORY_FILTERS.map(cat => (
+              <button key={cat} onClick={() => setCategory(cat)}
                 className={`text-xs font-medium px-3 py-1.5 rounded-lg transition-colors ${activeCategory === cat ? 'bg-brand-sky text-white' : 'text-brand-slate hover:bg-gray-100 bg-white border border-brand-border'}`}>
                 {cat}
               </button>
@@ -58,13 +67,17 @@ export default function LatestNewsPage() {
             </button>
           </div>
         </div>
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[...Array(9)].map((_, i) => <div key={i} className="bg-gray-100 animate-pulse rounded-xl h-52" />)}
+          </div>
+        ) : articles.length === 0 ? (
           <div className="text-center py-16 border-2 border-dashed border-brand-border rounded-2xl">
             <p className="text-brand-slate text-sm">No articles found for this filter.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filtered.map((a, i) => (
+            {articles.map((a, i) => (
               <div key={a.id}>
                 <ArticleCard article={a} variant={a.isFeatured && i === 0 ? 'featured' : 'default'} />
                 {(i + 1) % 6 === 0 && <div className="mt-4"><AdSlot slot="in-feed" size="banner" /></div>}
