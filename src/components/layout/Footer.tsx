@@ -32,11 +32,12 @@ export default function Footer() {
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="inline-block mb-3">
               <Image
-                src="/logo-horizontal.png"
+                src="/logo-horizontal-white.png"
                 alt="AI Foresights"
                 width={1321}
                 height={200}
                 className="h-10 w-auto object-contain"
+                unoptimized
               />
             </Link>
             <p className="text-xs text-brand-slate leading-relaxed">
