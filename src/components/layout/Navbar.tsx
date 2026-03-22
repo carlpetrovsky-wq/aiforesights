@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
@@ -24,12 +25,15 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-14">
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 shrink-0">
-            <div className="w-7 h-7 bg-brand-navy rounded-lg flex items-center justify-center">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M7 1.5l1.4 4.2h4.4l-3.6 2.6 1.4 4.2L7 10 3.5 12.5l1.4-4.2L1.2 5.7h4.4z" fill="white"/>
-              </svg>
-            </div>
+          <Link href="/" className="flex items-center gap-2.5 shrink-0">
+            <Image
+              src="/logo-icon-64.png"
+              alt="AI Foresights"
+              width={32}
+              height={32}
+              className="w-8 h-8 object-contain"
+              priority
+            />
             <span className="font-semibold text-[15px] text-brand-navy tracking-tight">
               AI <span className="text-brand-sky">Foresights</span>
             </span>
@@ -55,10 +59,7 @@ export default function Navbar() {
 
           {/* Right side */}
           <div className="flex items-center gap-2">
-            <Link
-              href="/#newsletter"
-              className="hidden sm:block btn-primary text-sm"
-            >
+            <Link href="/#newsletter" className="hidden sm:block btn-primary text-sm">
               Subscribe free
             </Link>
             <button
