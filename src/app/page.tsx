@@ -9,14 +9,14 @@ import NewsletterForm from '@/components/ui/NewsletterForm'
 import ToolSearch from '@/components/search/ToolSearch'
 import LearningHub from '@/components/learning/LearningHub'
 import Link from 'next/link'
-import { MOCK_LEARNING, CATEGORIES, RSS_SOURCES } from '@/lib/data'
+import { MOCK_ARTICLES, MOCK_TOOLS, MOCK_LEARNING, CATEGORIES, RSS_SOURCES } from '@/lib/data'
 import { Article, Tool } from '@/lib/types'
 
 export default function HomePage() {
-  const [featured, setFeatured]   = useState<Article[]>([])
-  const [latest, setLatest]       = useState<Article[]>([])
-  const [topTools, setTopTools]   = useState<Tool[]>([])
-  const [loading, setLoading]     = useState(true)
+  const [featured, setFeatured] = useState<Article[]>([])
+  const [latest, setLatest]     = useState<Article[]>([])
+  const [topTools, setTopTools] = useState<Tool[]>([])
+  const [loading, setLoading]   = useState(true)
 
   useEffect(() => {
     async function load() {
@@ -41,8 +41,6 @@ export default function HomePage() {
     load()
   }, [])
 
-  // Fallback to mock data if Supabase returns empty
-  const { MOCK_ARTICLES, MOCK_TOOLS } = require('@/lib/data')
   const displayFeatured = featured.length > 0 ? featured : MOCK_ARTICLES.filter((a: Article) => a.isFeatured).slice(0, 3)
   const displayLatest   = latest.length > 0   ? latest   : MOCK_ARTICLES.filter((a: Article) => !a.isFeatured).slice(0, 6)
   const displayTools    = topTools.length > 0  ? topTools : MOCK_TOOLS.slice(0, 5)
@@ -67,7 +65,7 @@ export default function HomePage() {
           </p>
           <NewsletterForm variant="hero" />
           <div className="flex flex-wrap gap-4 mt-4">
-            {[['2,400+','subscribers'],['Daily','updates'],['50+','tools reviewed'],['Free','forever']].map(([val, lab]) => (
+            {([['2,400+','subscribers'],['Daily','updates'],['50+','tools reviewed'],['Free','forever']] as [string,string][]).map(([val, lab]) => (
               <div key={lab} className="text-xs text-brand-muted">
                 <strong className="text-white font-semibold">{val}</strong> {lab}
               </div>
@@ -136,7 +134,6 @@ export default function HomePage() {
               }
             </div>
 
-            {/* IN-FEED AD */}
             <div className="bg-amber-50 border border-dashed border-amber-200 rounded-xl p-3 mb-4 flex items-center justify-between gap-3">
               <div>
                 <div className="text-[9px] font-semibold text-amber-600 uppercase tracking-widest mb-0.5">Sponsored · Ad Slot 3</div>
@@ -177,7 +174,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* LEARNING HUB */}
       <LearningHub resources={MOCK_LEARNING} />
 
       <div className="bg-brand-bg border-t border-brand-border py-3 px-4 sm:px-6">
@@ -186,7 +182,6 @@ export default function HomePage() {
       <div className="bg-brand-bg py-2 px-4 sm:px-6">
         <AdSlot slot="pre-footer" size="banner" className="max-w-6xl mx-auto" />
       </div>
-
       <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 py-6">
         <NewsletterForm variant="inline" />
       </div>
