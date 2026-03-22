@@ -24,43 +24,28 @@ export default function Navbar() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-[72px]">
 
-          {/* Logo — full SVG with head + AI FORESIGHTS + tagline */}
+          {/* Logo */}
           <Link href="/" className="flex items-center shrink-0">
-            {/* Desktop: wider logo showing full text */}
             <Image
-              src="/logo-cropped.svg"
+              src="/logo-navbar.png"
               alt="AI Foresights — A New Dawn Is Here"
-              width={220}
-              height={165}
-              className="hidden sm:block h-14 w-auto object-contain"
+              width={1280}
+              height={1036}
+              className="h-14 w-auto object-contain"
               priority
-              unoptimized
-            />
-            {/* Mobile: same logo, slightly smaller */}
-            <Image
-              src="/logo-cropped.svg"
-              alt="AI Foresights"
-              width={160}
-              height={120}
-              className="sm:hidden h-11 w-auto object-contain"
-              priority
-              unoptimized
             />
           </Link>
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-0.5">
             {NAV_LINKS.map(link => (
-              <Link
-                key={link.href}
-                href={link.href}
+              <Link key={link.href} href={link.href}
                 className={cn(
                   'px-3 py-1.5 rounded-md text-sm transition-colors',
                   pathname === link.href
                     ? 'bg-blue-50 text-brand-sky font-medium'
                     : 'text-brand-slate hover:text-brand-navy hover:bg-gray-50'
-                )}
-              >
+                )}>
                 {link.label}
               </Link>
             ))}
@@ -71,11 +56,9 @@ export default function Navbar() {
             <Link href="/#newsletter" className="hidden sm:block btn-primary text-sm">
               Subscribe free
             </Link>
-            <button
-              onClick={() => setMobileOpen(!mobileOpen)}
+            <button onClick={() => setMobileOpen(!mobileOpen)}
               className="md:hidden p-2 rounded-lg hover:bg-gray-50 transition-colors"
-              aria-label="Toggle menu"
-            >
+              aria-label="Toggle menu">
               {mobileOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
           </div>
@@ -87,25 +70,19 @@ export default function Navbar() {
         <div className="md:hidden border-t border-brand-border bg-white">
           <nav className="max-w-6xl mx-auto px-4 py-3 flex flex-col gap-1">
             {NAV_LINKS.map(link => (
-              <Link
-                key={link.href}
-                href={link.href}
+              <Link key={link.href} href={link.href}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
                   'px-3 py-2.5 rounded-lg text-sm font-medium transition-colors',
                   pathname === link.href
                     ? 'bg-blue-50 text-brand-sky'
                     : 'text-brand-slate hover:text-brand-navy hover:bg-gray-50'
-                )}
-              >
+                )}>
                 {link.label}
               </Link>
             ))}
-            <Link
-              href="/#newsletter"
-              onClick={() => setMobileOpen(false)}
-              className="mt-2 btn-primary text-center text-sm"
-            >
+            <Link href="/#newsletter" onClick={() => setMobileOpen(false)}
+              className="mt-2 btn-primary text-center text-sm">
               Subscribe free
             </Link>
           </nav>

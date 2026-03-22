@@ -32,11 +32,11 @@ export default function Footer() {
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="inline-block mb-3">
               <Image
-                src="/logo-cropped.svg"
+                src="/logo-navbar.png"
                 alt="AI Foresights"
-                width={160}
-                height={128}
-                className="h-16 w-auto object-contain brightness-0 invert"
+                width={1280}
+                height={1036}
+                className="h-14 w-auto object-contain brightness-0 invert"
               />
             </Link>
             <p className="text-xs text-brand-slate leading-relaxed">
@@ -44,17 +44,14 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Link columns */}
           {Object.entries(FOOTER_LINKS).map(([section, links]) => (
             <div key={section}>
               <h5 className="text-xs font-semibold text-white mb-3 tracking-wide uppercase">{section}</h5>
               <ul className="space-y-1.5">
                 {links.map(link => (
                   <li key={link.href}>
-                    <Link
-                      href={link.href}
-                      className="text-xs text-brand-slate hover:text-brand-skyLight transition-colors"
-                    >
+                    <Link href={link.href}
+                      className="text-xs text-brand-slate hover:text-brand-skyLight transition-colors">
                       {link.label}
                     </Link>
                   </li>
