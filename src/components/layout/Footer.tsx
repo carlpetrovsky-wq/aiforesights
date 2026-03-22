@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import Image from 'next/image'
 
 const FOOTER_LINKS = {
   Explore: [
@@ -31,13 +30,11 @@ export default function Footer() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <Link href="/" className="inline-block mb-3">
-              <Image
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 src="/logo-horizontal-white.png"
                 alt="AI Foresights"
-                width={1321}
-                height={200}
                 className="h-10 w-auto object-contain"
-                unoptimized
               />
             </Link>
             <p className="text-xs text-brand-slate leading-relaxed">
