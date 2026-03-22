@@ -37,8 +37,8 @@ export default function HomePage() {
           <NewsletterForm variant="hero" />
           <div className="flex flex-wrap gap-4 mt-4">
             {[['2,400+','subscribers'],['Daily','updates'],['50+','tools reviewed'],['Free','forever']].map(([val, lab]) => (
-              <div key={lab} className="text-xs text-brand-navyLight">
-                <strong className="text-brand-muted font-semibold">{val}</strong> {lab}
+              <div key={lab} className="text-xs text-brand-muted">
+                <strong className="text-white font-semibold">{val}</strong> {lab}
               </div>
             ))}
           </div>
