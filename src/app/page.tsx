@@ -44,6 +44,7 @@ export default function HomePage() {
         }
         if (statsData?.toolCount) {
           setToolCount(statsData.toolCount.toLocaleString('en-US') + '+')
+        }
       } catch (e) {
         console.error('Failed to load data:', e)
       } finally {
