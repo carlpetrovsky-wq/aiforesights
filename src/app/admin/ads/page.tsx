@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Megaphone, Pencil, Check, X } from 'lucide-react'
+import { Megaphone, Pencil } from 'lucide-react'
 import {
   PageHeader, AdminModal, Field, Input, Textarea,
   Toggle, SaveButton, EmptyState,
@@ -18,6 +18,12 @@ interface AdSlot {
   adsense_unit_id: string | null
   custom_html: string | null
   notes: string | null
+}
+
+const sizeColors: Record<string, string> = {
+  leaderboard: 'bg-sky-500/10 text-sky-400 border-sky-500/20',
+  rectangle: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
+  banner: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
 }
 
 export default function AdsPage() {
@@ -39,15 +45,6 @@ export default function AdsPage() {
 
   useEffect(() => { load() }, [load])
 
-  async function toggleActive(slot: AdSlot) {
-    await fetch('/api/admin/ads', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...slot, is_active: !slot.is_active }),
-    })
-    load()
-  }
-
   async function handleSave() {
     setSaving(true)
     try {
@@ -62,12 +59,6 @@ export default function AdsPage() {
   }
 
   function up(f: string, v: any) { setEditing(prev => ({ ...prev, [f]: v })) }
-
-  const sizeColors: Record<string, string> = {
-    leaderboard: 'bg-sky-500/10 text-sky-400 border-sky-500/20',
-    rectangle: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
-    banner: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-  }
 
   return (
     <div>
@@ -118,7 +109,10 @@ export default function AdsPage() {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <button onClick={() => { setEditing({ ...slot }); setModalOpen(true) }} className="p-1.5 text-slate-500 hover:text-white hover:bg-white/[0.06] rounded-md transition">
+                    <button
+                      onClick={() => { setEditing({ ...slot }); setModalOpen(true) }}
+                      className="p-1.5 text-slate-500 hover:text-white hover:bg-white/[0.06] rounded-md transition"
+                    >
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                   </td>
@@ -129,12 +123,10 @@ export default function AdsPage() {
         )}
       </div>
 
-      {/* Hint */}
       <p className="text-xs text-slate-600 mt-4">
         Ad slots are pre-positioned on the site. Toggle them on/off and add your AdSense unit IDs when your account is approved.
       </p>
 
-      {/* Edit Modal */}
       <AdminModal open={modalOpen} onClose={() => setModalOpen(false)} title={`Edit: ${editing.label || editing.slot_id || 'Ad Slot'}`}>
         <div className="space-y-4">
           <Field label="Label">
@@ -158,7 +150,6 @@ export default function AdsPage() {
             <Input value={editing.notes ?? ''} onChange={e => up('notes', e.target.value)} placeholder="Internal notes…" />
           </Field>
           <Toggle checked={editing.is_active ?? true} onChange={v => up('is_active', v)} label="Active" />
-
           <div className="flex justify-end pt-4 border-t border-white/[0.06] gap-3">
             <button onClick={() => setModalOpen(false)} className="px-4 py-2 text-sm text-slate-400 hover:text-white transition">Cancel</button>
             <SaveButton onClick={handleSave} loading={saving} />
