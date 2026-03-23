@@ -66,11 +66,46 @@ export async function POST(req: NextRequest) {
   }
 }
 
+// Category fallback images (high-quality Unsplash photos, royalty-free)
+const CATEGORY_FALLBACKS: Record<string, string> = {
+  'latest-news':   'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&q=80',
+  'future-of-ai':  'https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=800&q=80',
+  'best-ai-tools': 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=800&q=80',
+  'make-money':    'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=800&q=80',
+  'learn-ai':      'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80',
+}
+
+async function scrapeOgImage(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'AIForesights Bot/1.0' },
+      signal: AbortSignal.timeout(8000),
+    })
+    if (!res.ok) return null
+    const html = await res.text()
+    const og = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)
+      || html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i)
+      || html.match(/<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i)
+    return og ? og[1] : null
+  } catch {
+    return null
+  }
+}
+
 // PUT /api/admin/articles — update article
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json()
     if (!body.id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
+
+    let thumbnailUrl = body.thumbnail_url
+
+    // If being featured and has no image, try to scrape one then fall back to category image
+    if (body.is_featured && !thumbnailUrl && body.source_url) {
+      thumbnailUrl = await scrapeOgImage(body.source_url)
+        || CATEGORY_FALLBACKS[body.category_slug] 
+        || CATEGORY_FALLBACKS['latest-news']
+    }
 
     const { data, error } = await supabaseAdmin
       .from('articles')
@@ -79,7 +114,7 @@ export async function PUT(req: NextRequest) {
         excerpt: body.excerpt,
         content: body.content,
         summary: body.summary,
-        thumbnail_url: body.thumbnail_url,
+        thumbnail_url: thumbnailUrl,
         source_url: body.source_url,
         source_name: body.source_name,
         category_slug: body.category_slug,

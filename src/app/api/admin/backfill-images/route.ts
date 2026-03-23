@@ -4,6 +4,14 @@ export const maxDuration = 60
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 
+const CATEGORY_FALLBACKS: Record<string, string> = {
+  'latest-news':   'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&q=80',
+  'future-of-ai':  'https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=800&q=80',
+  'best-ai-tools': 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=800&q=80',
+  'make-money':    'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=800&q=80',
+  'learn-ai':      'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80',
+}
+
 async function scrapeOgImage(url: string): Promise<string | null> {
   try {
     const res = await fetch(url, {
@@ -25,12 +33,13 @@ export async function POST() {
   const results = { checked: 0, updated: 0, skipped: 0, errors: 0 }
 
   try {
-    // Fetch all articles missing a thumbnail_url
+    // Fetch all articles missing a thumbnail_url — prioritise featured first
     const { data: articles, error } = await supabaseAdmin
       .from('articles')
-      .select('id, source_url, title')
+      .select('id, source_url, title, is_featured, category_slug')
       .is('thumbnail_url', null)
       .not('source_url', 'is', null)
+      .order('is_featured', { ascending: false }) // featured articles processed first
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
     if (!articles?.length) return NextResponse.json({ message: 'No articles need backfilling', ...results })
@@ -43,7 +52,11 @@ export async function POST() {
       const batch = articles.slice(i, i + BATCH)
       await Promise.all(batch.map(async (article) => {
         try {
-          const thumbnailUrl = await scrapeOgImage(article.source_url)
+          let thumbnailUrl = await scrapeOgImage(article.source_url)
+          // For featured articles with no scraped image, use category fallback
+          if (!thumbnailUrl && article.is_featured) {
+            thumbnailUrl = CATEGORY_FALLBACKS[article.category_slug] || CATEGORY_FALLBACKS['latest-news']
+          }
           if (thumbnailUrl) {
             const { error: updateErr } = await supabaseAdmin
               .from('articles')

@@ -4,6 +4,14 @@ import { ChevronUp, ExternalLink } from 'lucide-react'
 import { Article } from '@/lib/types'
 import { timeAgo, cn } from '@/lib/utils'
 
+const CATEGORY_FALLBACKS: Record<string, string> = {
+  'latest-news':   'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&q=80',
+  'future-of-ai':  'https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=800&q=80',
+  'best-ai-tools': 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=800&q=80',
+  'make-money':    'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=800&q=80',
+  'learn-ai':      'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80',
+}
+
 interface ArticleCardProps {
   article: Article
   variant?: 'default' | 'featured' | 'compact'
@@ -53,12 +61,23 @@ export default function ArticleCard({ article, variant = 'default' }: ArticleCar
           variant === 'featured' ? 'aspect-[4/3]' : 'aspect-video',
           'from-slate-100 to-slate-200 relative flex items-center justify-center'
         )}>
-          {article.thumbnailUrl ? (
+          {/* Use article thumbnail, or category fallback for featured, or colored dot for compact */}
+          {(article.thumbnailUrl || (variant === 'featured') || true) ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={article.thumbnailUrl}
+              src={article.thumbnailUrl || CATEGORY_FALLBACKS[article.category] || CATEGORY_FALLBACKS['latest-news']}
               alt={article.title}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              onError={(e) => {
+                // If image fails to load, swap to category fallback, then hide
+                const target = e.currentTarget
+                const fallback = CATEGORY_FALLBACKS[article.category] || CATEGORY_FALLBACKS['latest-news']
+                if (target.src !== fallback) {
+                  target.src = fallback
+                } else {
+                  target.style.display = 'none'
+                }
+              }}
             />
           ) : (
             <div className="w-12 h-12 rounded-full bg-white/60 flex items-center justify-center">
