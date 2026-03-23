@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { DM_Sans, DM_Mono } from 'next/font/google'
 import Script from 'next/script'
+import { createClient } from '@supabase/supabase-js'
 import '../styles/globals.css'
 
 const dmSans = DM_Sans({
@@ -30,24 +31,67 @@ export const metadata: Metadata = {
     url: 'https://aiforesights.com',
     siteName: 'AI Foresights',
     type: 'website',
-    images: [{ url: '/logo-full.png', width: 1280, height: 1024, alt: 'AI Foresights' }],
+    images: [{ url: 'https://aiforesights.com/logo-full.png', width: 1280, height: 1024, alt: 'AI Foresights' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'AI Foresights',
     description: 'The world of AI explained in plain English.',
-    images: ['/logo-full.png'],
+    images: ['https://aiforesights.com/logo-full.png'],
   },
   robots: { index: true, follow: true },
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+async function getSiteSettings() {
+  try {
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    const { data } = await supabase
+      .from('settings')
+      .select('key,value')
+      .in('key', ['adsense_publisher_id', 'google_site_verification', 'google_analytics_id'])
+    return Object.fromEntries((data ?? []).map(r => [r.key, r.value]))
+  } catch {
+    return {}
+  }
+}
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const settings = await getSiteSettings()
+  const adsenseId = settings.adsense_publisher_id || 'ca-pub-2829226345242067'
+  const googleVerification = settings.google_site_verification || ''
+  const gaId = settings.google_analytics_id || ''
+
   return (
     <html lang="en" className={`${dmSans.variable} ${dmMono.variable}`}>
       <head>
+        {/* Google site verification */}
+        {googleVerification && (
+          <meta name="google-site-verification" content={googleVerification} />
+        )}
+
+        {/* Google Analytics */}
+        {gaId && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+              strategy="afterInteractive"
+            />
+            <Script id="ga-init" strategy="afterInteractive">{`
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${gaId}');
+            `}</Script>
+          </>
+        )}
+
+        {/* Google AdSense */}
         <Script
           async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2829226345242067"
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseId}`}
           crossOrigin="anonymous"
           strategy="afterInteractive"
         />
