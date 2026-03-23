@@ -17,7 +17,6 @@ export default function HomePage() {
   const [latest, setLatest]     = useState<Article[]>([])
   const [topTools, setTopTools] = useState<Tool[]>([])
   const [loading, setLoading]   = useState(true)
-  const [subscriberCount, setSubscriberCount] = useState('2,400+')
   const [toolCount, setToolCount] = useState('50+')
   const [activeSource, setActiveSource] = useState<string | null>(null)
 
@@ -37,12 +36,6 @@ export default function HomePage() {
         setFeatured(Array.isArray(featData) ? featData as Article[] : [])
         setLatest(Array.isArray(latData) ? latData as Article[] : [])
         setTopTools(Array.isArray(toolData) ? toolData as Tool[] : [])
-        if (statsData?.subscriberCount) {
-          // Format with commas: "41500" → "41,500+" or keep as-is if already formatted
-          const raw = statsData.subscriberCount.toString().replace(/[^0-9]/g, '')
-          const num = parseInt(raw)
-          setSubscriberCount(raw && num ? num.toLocaleString('en-US') + '+' : statsData.subscriberCount)
-        }
         if (statsData?.toolCount) {
           setToolCount(statsData.toolCount.toLocaleString('en-US') + '+')
         }
@@ -83,7 +76,7 @@ export default function HomePage() {
           </p>
           <NewsletterForm variant="hero" />
           <div className="flex flex-wrap gap-4 mt-4">
-            {([[subscriberCount,'subscribers'],['Daily','updates'],[toolCount,'tools reviewed'],['Free','forever']] as [string,string][]).map(([val, lab]) => (
+            {([['Daily','updates'],[toolCount,'tools reviewed'],['Free','forever']] as [string,string][]).map(([val, lab]) => (
               <div key={lab} className="text-xs text-brand-muted">
                 <strong className="text-white font-semibold">{val}</strong> {lab}
               </div>
