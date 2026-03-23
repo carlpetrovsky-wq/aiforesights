@@ -1,52 +1,49 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-async function addToMailchimp(email: string, name?: string) {
-  const apiKey = process.env.MAILCHIMP_API_KEY
-  const listId = process.env.MAILCHIMP_LIST_ID || 'be88d695d0'
+async function addToMailerLite(email: string, name?: string) {
+  const apiKey = process.env.MAILERLITE_API_KEY
+  const groupId = process.env.MAILERLITE_GROUP_ID
 
-  if (!apiKey) return { success: false, reason: 'No API key' }
-
-  // Mailchimp API keys end with -us1, -us2, etc — that's the datacenter
-  const dc = apiKey.split('-').pop()
-  if (!dc) return { success: false, reason: 'Invalid API key format' }
+  if (!apiKey) return { success: false, reason: 'No API key configured' }
 
   const nameParts = (name || '').trim().split(' ')
   const firstName = nameParts[0] || ''
   const lastName = nameParts.slice(1).join(' ') || ''
 
-  const url = `https://${dc}.api.mailchimp.com/3.0/lists/${listId}/members`
-
-  const body = {
-    email_address: email,
-    status: 'subscribed',
-    merge_fields: {
-      ...(firstName && { FNAME: firstName }),
-      ...(lastName && { LNAME: lastName }),
-    },
-  }
-
   try {
-    const res = await fetch(url, {
+    // Add/update subscriber via MailerLite v2 API
+    const res = await fetch('https://connect.mailerlite.com/api/subscribers', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Basic ${Buffer.from(`anystring:${apiKey}`).toString('base64')}`,
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify({
+        email,
+        fields: {
+          ...(firstName && { name: firstName }),
+          ...(lastName && { last_name: lastName }),
+        },
+        groups: groupId ? [groupId] : [],
+        status: 'active',
+      }),
     })
 
     const data = await res.json()
 
-    // 200 = added, 400 with "Member Exists" = already on list (not an error for us)
-    if (res.ok || data.title === 'Member Exists') {
-      return { success: true }
-    }
+    // 200 = updated existing, 201 = created new — both are success
+    if (res.ok) return { success: true }
 
-    console.error('Mailchimp error:', data)
-    return { success: false, reason: data.detail || data.title }
+    // 409 = already subscribed — treat as success
+    if (res.status === 409) return { success: true }
+
+    console.error('MailerLite error:', data)
+    return { success: false, reason: data?.message || `HTTP ${res.status}` }
+
   } catch (err) {
-    console.error('Mailchimp fetch error:', err)
+    console.error('MailerLite fetch error:', err)
     return { success: false, reason: 'Network error' }
   }
 }
@@ -66,7 +63,7 @@ export async function POST(req: NextRequest) {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     )
 
-    // Check if already subscribed
+    // Check if already subscribed in Supabase
     const { data: existing } = await supabase
       .from('subscribers')
       .select('id, is_active')
@@ -74,13 +71,10 @@ export async function POST(req: NextRequest) {
       .maybeSingle()
 
     if (existing) {
-      return NextResponse.json({
-        success: true,
-        message: "You're already subscribed!",
-      })
+      return NextResponse.json({ success: true, message: "You're already subscribed!" })
     }
 
-    // Save to Supabase
+    // Save to Supabase first
     const { error } = await supabase
       .from('subscribers')
       .insert({
@@ -96,10 +90,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    // Add to Mailchimp (non-blocking — don't fail the signup if Mailchimp is down)
-    const mcResult = await addToMailchimp(cleanEmail, name)
-    if (!mcResult.success) {
-      console.warn('Mailchimp sync failed (subscriber saved to DB):', mcResult.reason)
+    // Sync to MailerLite — non-blocking, never fails the signup
+    const mlResult = await addToMailerLite(cleanEmail, name)
+    if (!mlResult.success) {
+      console.warn('MailerLite sync failed (subscriber saved to DB):', mlResult.reason)
     }
 
     return NextResponse.json({ success: true, message: 'Subscribed successfully!' })
