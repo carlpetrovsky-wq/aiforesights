@@ -8,6 +8,12 @@ export async function GET(req: NextRequest) {
   const category = searchParams.get('category') ?? undefined
   const featured = searchParams.get('featured') === 'true' ? true : undefined
 
-  const articles = await getArticles({ limit, sortBy, category, featured })
+  let articles = await getArticles({ limit, sortBy, category, featured })
+
+  // If no featured articles exist, fall back to the 3 most recent published articles
+  if (featured && articles.length === 0) {
+    articles = await getArticles({ limit, sortBy: 'latest', category })
+  }
+
   return NextResponse.json(articles)
 }

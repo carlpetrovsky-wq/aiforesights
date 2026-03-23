@@ -30,9 +30,16 @@ export default function ArticleCard({ article, variant = 'default' }: ArticleCar
   const ago = timeAgo(article.publishedAt)
   const dotBg = article.sourceColor ? (SOURCE_DOT_COLORS[article.sourceColor] ?? 'bg-blue-400') : 'bg-blue-400'
 
+  // Primary link: external source URL if available, else internal article page
+  const articleHref = article.sourceUrl || `/article/${article.slug}`
+  const isExternal = !!article.sourceUrl
+  const linkProps = isExternal
+    ? { target: '_blank' as const, rel: 'noopener noreferrer' }
+    : {}
+
   if (variant === 'compact') {
     return (
-      <Link href={`/article/${article.slug}`} className="group block">
+      <Link href={articleHref} {...linkProps} className="group block">
         <div className="flex items-start gap-3 py-3 border-b border-brand-border last:border-0 hover:bg-gray-50 -mx-2 px-2 rounded-lg transition-colors">
           <div className="w-14 h-10 rounded-md shrink-0 overflow-hidden bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
             <div className="w-5 h-5 rounded-full bg-blue-200" />
@@ -55,7 +62,7 @@ export default function ArticleCard({ article, variant = 'default' }: ArticleCar
   return (
     <div className="news-card group">
       {/* Image */}
-      <Link href={`/article/${article.slug}`} className="block">
+      <Link href={articleHref} {...linkProps} className="block">
         <div className={cn(
           'w-full overflow-hidden bg-gradient-to-br',
           variant === 'featured' ? 'aspect-[4/3]' : 'aspect-video',
@@ -102,7 +109,7 @@ export default function ArticleCard({ article, variant = 'default' }: ArticleCar
         </div>
 
         {/* Title */}
-        <Link href={`/article/${article.slug}`}>
+        <Link href={articleHref} {...linkProps}>
           <h3 className={cn(
             'font-semibold text-brand-navy leading-snug group-hover:text-brand-sky transition-colors mb-2 line-clamp-2',
             variant === 'featured' ? 'text-base' : 'text-[13px]'
