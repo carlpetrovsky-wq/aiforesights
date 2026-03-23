@@ -67,18 +67,20 @@ function ContactCard({ icon: Icon, title, desc, email, subject }: typeof contact
                   <><Copy className="w-3 h-3" /><span>Copy</span></>
                 )}
               </button>
-              {/* Open in mail client */}
+              {/* Open in Gmail - works on any browser/device */}
               <a
-                href={`mailto:${email}?subject=${encodeURIComponent(subject)}`}
+                href={`https://mail.google.com/mail/?view=cm&to=${email}&su=${encodeURIComponent(subject)}`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex items-center gap-1 text-xs bg-brand-sky text-white px-2.5 py-1 rounded hover:bg-brand-skyDark transition-colors font-medium"
               >
                 <Mail className="w-3 h-3" />
-                Email us
+                Open in Gmail
               </a>
             </div>
           </div>
           <p className="text-[11px] text-brand-muted mt-1.5">
-            Click "Copy" to copy the address, or "Email us" to open in your mail app.
+            Click "Copy" to copy the address, or "Open in Gmail" to compose an email directly.
           </p>
         </div>
       </div>
