@@ -67,8 +67,7 @@ export default function LearnAIPage() {
                   <div className="w-full h-28 flex items-center justify-center relative overflow-hidden" style={{ backgroundColor: r.thumbnailBg }}>
                     {r.thumbnailUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={r.thumbnailUrl} alt={r.title} className="w-full h-full object-cover absolute inset-0"
-                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                      <img src={r.thumbnailUrl} alt={r.title} className="w-full h-full object-cover absolute inset-0" />
                     ) : (
                       <div className={`w-12 h-12 rounded-full ${colors.iconBg} flex items-center justify-center`}>
                         <Icon className={`w-6 h-6 ${colors.text}`} />
@@ -132,8 +131,7 @@ export default function LearnAIPage() {
                   <div className="w-full h-28 flex items-center justify-center relative overflow-hidden" style={{ backgroundColor: r.thumbnailBg }}>
                     {r.thumbnailUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={r.thumbnailUrl} alt={r.title} className="w-full h-full object-cover absolute inset-0"
-                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                      <img src={r.thumbnailUrl} alt={r.title} className="w-full h-full object-cover absolute inset-0" />
                     ) : (
                       <div className={`w-12 h-12 rounded-full ${colors.iconBg} flex items-center justify-center`}>
                         <Icon className={`w-6 h-6 ${colors.text}`} />

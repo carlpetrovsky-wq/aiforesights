@@ -3,6 +3,8 @@ import { DM_Sans, DM_Mono } from 'next/font/google'
 import { createClient } from '@supabase/supabase-js'
 import '../styles/globals.css'
 
+export const dynamic = 'force-dynamic'
+
 const dmSans = DM_Sans({
   variable: '--font-geist-sans',
   subsets: ['latin'],
