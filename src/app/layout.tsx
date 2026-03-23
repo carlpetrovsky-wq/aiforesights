@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { DM_Sans, DM_Mono } from 'next/font/google'
-import Script from 'next/script'
 import { createClient } from '@supabase/supabase-js'
 import '../styles/globals.css'
 
@@ -75,25 +74,21 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {/* Google Analytics */}
         {gaId && (
           <>
-            <Script
-              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
-              strategy="afterInteractive"
+            <script async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`} />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${gaId}');`
+              }}
             />
-            <Script id="ga-init" strategy="afterInteractive">{`
-              window.dataLayer = window.dataLayer || [];
-              function gtag(){dataLayer.push(arguments);}
-              gtag('js', new Date());
-              gtag('config', '${gaId}');
-            `}</Script>
           </>
         )}
 
-        {/* Google AdSense */}
-        <Script
+        {/* Google AdSense - plain script tag required, Next.js Script component adds data-nscript which breaks AdSense crawler */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+        <script
           async
           src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseId}`}
           crossOrigin="anonymous"
-          strategy="afterInteractive"
         />
       </head>
       <body className="min-h-screen bg-brand-bg">{children}</body>
