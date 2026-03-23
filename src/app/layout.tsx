@@ -63,7 +63,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const settings = await getSiteSettings()
   const adsenseId = settings.adsense_publisher_id || 'ca-pub-2829226345242067'
   const googleVerification = settings.google_site_verification || ''
-  const gaId = settings.google_analytics_id || ''
+  const gaId = settings.google_analytics_id || 'G-BT4VB5E79M'
 
   return (
     <html lang="en" className={`${dmSans.variable} ${dmMono.variable}`}>
