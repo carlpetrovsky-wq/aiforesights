@@ -64,17 +64,23 @@ export default function LearnAIPage() {
               return (
                 <div key={r.id} className="border border-brand-border rounded-xl bg-white overflow-hidden hover:border-brand-sky transition-colors group flex flex-col">
                   {/* Visual header */}
-                  <div className="w-full h-28 flex items-center justify-center relative" style={{ backgroundColor: r.thumbnailBg }}>
-                    <div className={`w-12 h-12 rounded-full ${colors.iconBg} flex items-center justify-center`}>
-                      <Icon className={`w-6 h-6 ${colors.text}`} />
-                    </div>
-                    <div className="absolute top-2 left-2 flex gap-1">
+                  <div className="w-full h-28 flex items-center justify-center relative overflow-hidden" style={{ backgroundColor: r.thumbnailBg }}>
+                    {r.thumbnailUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={r.thumbnailUrl} alt={r.title} className="w-full h-full object-cover absolute inset-0"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                    ) : (
+                      <div className={`w-12 h-12 rounded-full ${colors.iconBg} flex items-center justify-center`}>
+                        <Icon className={`w-6 h-6 ${colors.text}`} />
+                      </div>
+                    )}
+                    <div className="absolute top-2 left-2 flex gap-1 z-10">
                       <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${colors.bg} ${colors.text}`}>
                         {TYPE_LABELS[r.type]}
                       </span>
                     </div>
                     {r.isFree && (
-                      <div className="absolute top-2 right-2">
+                      <div className="absolute top-2 right-2 z-10">
                         <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-white text-emerald-700">FREE</span>
                       </div>
                     )}
@@ -123,17 +129,23 @@ export default function LearnAIPage() {
               const isInternal = r.url.startsWith('/')
               return (
                 <div key={r.id} className="border border-brand-border rounded-xl bg-white overflow-hidden hover:border-brand-sky transition-colors group flex flex-col">
-                  <div className="w-full h-28 flex items-center justify-center relative" style={{ backgroundColor: r.thumbnailBg }}>
-                    <div className={`w-12 h-12 rounded-full ${colors.iconBg} flex items-center justify-center`}>
-                      <Icon className={`w-6 h-6 ${colors.text}`} />
-                    </div>
-                    <div className="absolute top-2 left-2">
+                  <div className="w-full h-28 flex items-center justify-center relative overflow-hidden" style={{ backgroundColor: r.thumbnailBg }}>
+                    {r.thumbnailUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={r.thumbnailUrl} alt={r.title} className="w-full h-full object-cover absolute inset-0"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                    ) : (
+                      <div className={`w-12 h-12 rounded-full ${colors.iconBg} flex items-center justify-center`}>
+                        <Icon className={`w-6 h-6 ${colors.text}`} />
+                      </div>
+                    )}
+                    <div className="absolute top-2 left-2 z-10">
                       <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${colors.bg} ${colors.text}`}>
                         {TYPE_LABELS[r.type]}
                       </span>
                     </div>
                     {r.isFree && (
-                      <div className="absolute top-2 right-2">
+                      <div className="absolute top-2 right-2 z-10">
                         <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-white text-emerald-700">FREE</span>
                       </div>
                     )}

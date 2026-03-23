@@ -116,6 +116,7 @@ export const MOCK_TOOLS: Tool[] = [
 
 export const MOCK_LEARNING: LearningResource[] = [
   {
+    thumbnailUrl: 'https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=400&q=80',
     id: '1',
     title: 'ChatGPT & AI for Everyone — Beginner to Advanced',
     type: 'course',
@@ -130,6 +131,7 @@ export const MOCK_LEARNING: LearningResource[] = [
     thumbnailBg: '#DBEAFE',
   },
   {
+    thumbnailUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=400&q=80',
     id: '2',
     title: 'AI for Professionals: Practical Skills for 2026',
     type: 'course',
@@ -144,6 +146,7 @@ export const MOCK_LEARNING: LearningResource[] = [
     thumbnailBg: '#FEF3C7',
   },
   {
+    thumbnailUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&q=80',
     id: '3',
     title: 'Co-Intelligence: Living and Working with AI',
     type: 'book',
@@ -158,6 +161,7 @@ export const MOCK_LEARNING: LearningResource[] = [
     thumbnailBg: '#EDE9FE',
   },
   {
+    thumbnailUrl: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400&q=80',
     id: '4',
     title: 'How to Use Claude & ChatGPT at Work',
     type: 'video',
@@ -172,6 +176,7 @@ export const MOCK_LEARNING: LearningResource[] = [
     thumbnailBg: '#DCFCE7',
   },
   {
+    thumbnailUrl: 'https://images.unsplash.com/photo-1655720828018-edd2daec9349?w=400&q=80',
     id: '5',
     title: 'Prompt Engineering Guide for Professionals',
     type: 'guide',
@@ -186,6 +191,7 @@ export const MOCK_LEARNING: LearningResource[] = [
     thumbnailBg: '#E0F2FE',
   },
   {
+    thumbnailUrl: 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=400&q=80',
     id: '6',
     title: 'Power & Prediction: The Disruptive Economics of AI',
     type: 'book',
@@ -200,6 +206,7 @@ export const MOCK_LEARNING: LearningResource[] = [
     thumbnailBg: '#FEE2E2',
   },
   {
+    thumbnailUrl: 'https://images.unsplash.com/photo-1573804633927-bfcbcd909acd?w=400&q=80',
     id: '7',
     title: 'Google\'s Generative AI Learning Path',
     type: 'course',
@@ -214,6 +221,7 @@ export const MOCK_LEARNING: LearningResource[] = [
     thumbnailBg: '#F0FDF4',
   },
   {
+    thumbnailUrl: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=400&q=80',
     id: '8',
     title: 'The 10 AI Tools Every Professional Needs in 2026',
     type: 'guide',

@@ -43,6 +43,7 @@ export interface LearningResource {
   level: 'beginner' | 'intermediate' | 'advanced'
   isFree: boolean
   thumbnailBg: string
+  thumbnailUrl?: string
   isAffiliate: boolean
 }
 

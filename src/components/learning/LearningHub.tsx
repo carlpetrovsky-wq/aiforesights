@@ -32,11 +32,17 @@ export default function LearningHub({ resources }: LearningHubProps) {
               <div key={r.id}
                 className="flex-none w-44 sm:w-auto scroll-snap-start border border-brand-border rounded-xl overflow-hidden hover:border-brand-sky transition-colors group bg-white">
                 {/* Thumb */}
-                <div className="w-full aspect-video flex items-center justify-center relative"
+                <div className="w-full aspect-video flex items-center justify-center relative overflow-hidden"
                   style={{ backgroundColor: r.thumbnailBg }}>
-                  <span className="text-2xl opacity-40">{TYPE_ICONS[r.type]}</span>
+                  {r.thumbnailUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={r.thumbnailUrl} alt={r.title} className="w-full h-full object-cover absolute inset-0"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
+                  ) : (
+                    <span className="text-2xl opacity-40">{TYPE_ICONS[r.type]}</span>
+                  )}
                   <span className={cn(
-                    'absolute top-1.5 left-1.5 text-[9px] font-semibold px-1.5 py-0.5 rounded capitalize',
+                    'absolute top-1.5 left-1.5 text-[9px] font-semibold px-1.5 py-0.5 rounded capitalize z-10',
                     typeColors.bg, typeColors.text
                   )}>
                     {r.type}
