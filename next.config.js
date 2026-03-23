@@ -8,6 +8,7 @@ const nextConfig = {
   experimental: {
     serverActions: { allowedOrigins: ['*'] },
   },
+  generateBuildId: async () => `build-${Date.now()}`,
 }
 
 module.exports = nextConfig
