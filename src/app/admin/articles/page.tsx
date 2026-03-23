@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Plus, Search, Star, ExternalLink, Pencil, Trash2, FileText } from 'lucide-react'
+import { Plus, Search, Star, ExternalLink, Pencil, Trash2, FileText, ImageIcon, CheckCircle, AlertCircle } from 'lucide-react'
 import {
   PageHeader, AdminModal, Field, Input, Textarea, Select,
   StatusBadge, Toggle, SaveButton, DeleteButton, EmptyState,
@@ -64,6 +64,8 @@ function ArticlesContent() {
   const [editing, setEditing] = useState<Partial<Article>>(emptyArticle())
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [backfilling, setBackfilling] = useState(false)
+  const [backfillResult, setBackfillResult] = useState<{ success: boolean; message: string } | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -129,15 +131,45 @@ function ArticlesContent() {
     setEditing(prev => ({ ...prev, [field]: value }))
   }
 
+  async function backfillImages() {
+    setBackfilling(true)
+    setBackfillResult(null)
+    try {
+      const res = await fetch('/api/admin/backfill-images', { method: 'POST' })
+      const data = await res.json()
+      setBackfillResult({ success: res.ok, message: data.message || data.error || 'Done' })
+      if (res.ok) load()
+    } catch (err) {
+      setBackfillResult({ success: false, message: String(err) })
+    }
+    setBackfilling(false)
+  }
+
   return (
     <div>
       <PageHeader
         title="Articles"
         subtitle={`${articles.length} total`}
         action={
-          <button onClick={openNew} className="inline-flex items-center gap-2 px-4 py-2 bg-brand-sky hover:bg-brand-skyDark text-white text-sm font-medium rounded-lg transition">
-            <Plus className="w-4 h-4" /> New Article
-          </button>
+          <div className="flex items-center gap-2 flex-wrap justify-end">
+            {backfillResult && (
+              <span className={`flex items-center gap-1.5 text-xs ${backfillResult.success ? 'text-emerald-400' : 'text-red-400'}`}>
+                {backfillResult.success ? <CheckCircle className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+                {backfillResult.message}
+              </span>
+            )}
+            <button
+              onClick={backfillImages}
+              disabled={backfilling}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition"
+            >
+              <ImageIcon className={`w-4 h-4 ${backfilling ? 'animate-pulse' : ''}`} />
+              {backfilling ? 'Fetching images…' : 'Backfill Images'}
+            </button>
+            <button onClick={openNew} className="inline-flex items-center gap-2 px-4 py-2 bg-brand-sky hover:bg-brand-skyDark text-white text-sm font-medium rounded-lg transition">
+              <Plus className="w-4 h-4" /> New Article
+            </button>
+          </div>
         }
       />
 
