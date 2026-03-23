@@ -158,11 +158,11 @@ function ToolsContent() {
             <thead className="bg-white/[0.03] border-b border-white/[0.06]">
               <tr>
                 <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Tool</th>
-                <SortableHeader label="Pricing"    sortKey="pricing"      activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} className="hidden sm:table-cell" />
-                <SortableHeader label="Category"   sortKey="category"     activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} className="hidden md:table-cell" />
-                <SortableHeader label="Level"      sortKey="experience_level" activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} className="hidden lg:table-cell" />
-                <SortableHeader label="Added"      sortKey="created_at"   activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} className="hidden lg:table-cell" />
-                <SortableHeader label="Status"     sortKey="status"       activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} />
+                <SortableHeader label="Pricing"    sortKey="pricing"      activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} className="hidden sm:table-cell" />
+                <SortableHeader label="Category"   sortKey="category"     activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} className="hidden md:table-cell" />
+                <SortableHeader label="Level"      sortKey="experience_level" activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} className="hidden lg:table-cell" />
+                <SortableHeader label="Added"      sortKey="created_at"   activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} className="hidden lg:table-cell" />
+                <SortableHeader label="Status"     sortKey="status"       activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} />
                 <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>

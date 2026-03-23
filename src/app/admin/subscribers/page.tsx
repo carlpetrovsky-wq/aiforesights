@@ -139,12 +139,12 @@ export default function SubscribersPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/[0.06]">
-                  <SortableHeader label="Email"    sortKey="email"          activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} />
-                  <SortableHeader label="Name"     sortKey="first_name"     activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} className="hidden sm:table-cell" />
-                  <SortableHeader label="Location" sortKey="city"           activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} className="hidden lg:table-cell" />
-                  <SortableHeader label="Source"   sortKey="source"         activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} className="hidden md:table-cell" />
-                  <SortableHeader label="Signed Up" sortKey="subscribed_at" activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} className="hidden md:table-cell" />
-                  <SortableHeader label="Status"   sortKey="is_active"      activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} />
+                  <SortableHeader label="Email"    sortKey="email"          activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} />
+                  <SortableHeader label="Name"     sortKey="first_name"     activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} className="hidden sm:table-cell" />
+                  <SortableHeader label="Location" sortKey="city"           activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} className="hidden lg:table-cell" />
+                  <SortableHeader label="Source"   sortKey="source"         activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} className="hidden md:table-cell" />
+                  <SortableHeader label="Signed Up" sortKey="subscribed_at" activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} className="hidden md:table-cell" />
+                  <SortableHeader label="Status"   sortKey="is_active"      activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} />
                   <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>

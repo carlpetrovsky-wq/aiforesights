@@ -7,10 +7,10 @@ import { ReactNode, useState, useCallback } from 'react'
 export type SortDir = 'asc' | 'desc' | null
 
 export function useSortedData<T extends Record<string, any>>(data: T[]) {
-  const [sortKey, setSortKey] = useState<keyof T | null>(null)
+  const [sortKey, setSortKey] = useState<string | null>(null)
   const [sortDir, setSortDir] = useState<SortDir>(null)
 
-  const handleSort = useCallback((key: keyof T) => {
+  const handleSort = useCallback((key: string) => {
     setSortKey(prev => {
       if (prev === key) {
         setSortDir(d => d === 'asc' ? 'desc' : d === 'desc' ? null : 'asc')

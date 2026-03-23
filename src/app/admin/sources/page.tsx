@@ -147,10 +147,10 @@ function SourcesContent() {
           <table className="w-full">
             <thead className="bg-white/[0.03] border-b border-white/[0.06]">
               <tr>
-                <SortableHeader label="Source"       sortKey="name"              activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} />
-                <SortableHeader label="Last Fetched" sortKey="last_fetched_at"   activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} className="hidden md:table-cell" />
-                <SortableHeader label="Interval"     sortKey="fetch_interval_minutes" activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} className="hidden lg:table-cell" />
-                <SortableHeader label="Status"       sortKey="is_active"         activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} />
+                <SortableHeader label="Source"       sortKey="name"              activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} />
+                <SortableHeader label="Last Fetched" sortKey="last_fetched_at"   activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} className="hidden md:table-cell" />
+                <SortableHeader label="Interval"     sortKey="fetch_interval_minutes" activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} className="hidden lg:table-cell" />
+                <SortableHeader label="Status"       sortKey="is_active"         activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} />
                 <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>

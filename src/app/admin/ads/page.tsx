@@ -76,10 +76,10 @@ export default function AdsPage() {
           <table className="w-full">
             <thead className="bg-white/[0.03] border-b border-white/[0.06]">
               <tr>
-                <SortableHeader label="Slot"     sortKey="label"     activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} />
-                <SortableHeader label="Position" sortKey="position"  activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} className="hidden sm:table-cell" />
-                <SortableHeader label="Size"     sortKey="size"      activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} className="hidden md:table-cell" />
-                <SortableHeader label="Status"   sortKey="is_active" activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} />
+                <SortableHeader label="Slot"     sortKey="label"     activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} />
+                <SortableHeader label="Position" sortKey="position"  activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} className="hidden sm:table-cell" />
+                <SortableHeader label="Size"     sortKey="size"      activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} className="hidden md:table-cell" />
+                <SortableHeader label="Status"   sortKey="is_active" activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} />
                 <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
