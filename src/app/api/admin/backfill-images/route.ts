@@ -33,16 +33,42 @@ export async function POST() {
   const results = { checked: 0, updated: 0, skipped: 0, errors: 0 }
 
   try {
-    // Fetch all articles missing a thumbnail_url — prioritise featured first
-    const { data: articles, error } = await supabaseAdmin
+    // Fetch articles with NULL or empty thumbnail_url — featured first
+    const { data: nullArticles, error: e1 } = await supabaseAdmin
       .from('articles')
       .select('id, source_url, title, is_featured, category_slug')
       .is('thumbnail_url', null)
       .not('source_url', 'is', null)
-      .order('is_featured', { ascending: false }) // featured articles processed first
+      .order('is_featured', { ascending: false })
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-    if (!articles?.length) return NextResponse.json({ message: 'No articles need backfilling', ...results })
+    const { data: emptyArticles, error: e2 } = await supabaseAdmin
+      .from('articles')
+      .select('id, source_url, title, is_featured, category_slug')
+      .eq('thumbnail_url', '')
+      .not('source_url', 'is', null)
+      .order('is_featured', { ascending: false })
+
+    if (e1) return NextResponse.json({ error: e1.message }, { status: 500 })
+
+    // Also force-refresh featured articles that may have bad/blocked image URLs
+    const { data: featuredArticles } = await supabaseAdmin
+      .from('articles')
+      .select('id, source_url, title, is_featured, category_slug, thumbnail_url')
+      .eq('is_featured', true)
+
+    // Deduplicate — combine all candidates
+    const seen = new Set<string>()
+    const articles = [
+      ...(nullArticles ?? []),
+      ...(emptyArticles ?? []),
+      ...(featuredArticles ?? []),
+    ].filter(a => {
+      if (seen.has(a.id)) return false
+      seen.add(a.id)
+      return true
+    })
+
+    if (!articles.length) return NextResponse.json({ message: 'No articles need backfilling', ...results })
 
     results.checked = articles.length
 
@@ -53,11 +79,17 @@ export async function POST() {
       await Promise.all(batch.map(async (article) => {
         try {
           let thumbnailUrl = await scrapeOgImage(article.source_url)
-          // For featured articles with no scraped image, use category fallback
-          if (!thumbnailUrl && article.is_featured) {
-            thumbnailUrl = CATEGORY_FALLBACKS[article.category_slug] || CATEGORY_FALLBACKS['latest-news']
+
+          // For featured articles: if scraping failed OR they already have a
+          // thumbnail (which might be broken/blocked), ensure they get at minimum
+          // a solid category fallback stored in the DB
+          if (!thumbnailUrl) {
+            if (article.is_featured || !article.thumbnail_url) {
+              thumbnailUrl = CATEGORY_FALLBACKS[article.category_slug] || CATEGORY_FALLBACKS['latest-news']
+            }
           }
-          if (thumbnailUrl) {
+
+          if (thumbnailUrl && thumbnailUrl !== article.thumbnail_url) {
             const { error: updateErr } = await supabaseAdmin
               .from('articles')
               .update({ thumbnail_url: thumbnailUrl })
