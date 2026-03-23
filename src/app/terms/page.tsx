@@ -126,7 +126,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-lg font-bold text-brand-navy mb-3">13. Contact</h2>
             <p className="leading-relaxed">
-              For questions about these Terms, please contact us at <a href="mailto:privacy@aiforesights.com" className="text-brand-sky hover:underline">privacy@aiforesights.com</a>.
+              For questions about these Terms, please contact us at <a href="mailto:help@aiforesights.com" className="text-brand-sky hover:underline">help@aiforesights.com</a>.
             </p>
           </section>
 

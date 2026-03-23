@@ -13,14 +13,14 @@ export default function ContactPage() {
       icon: MessageSquare,
       title: 'General Inquiries',
       desc: 'Questions about the site, feedback, or anything else.',
-      email: 'privacy@aiforesights.com',
+      email: 'help@aiforesights.com',
       subject: 'General Inquiry',
     },
     {
       icon: Briefcase,
       title: 'Advertising & Partnerships',
       desc: 'Sponsorships, ad placements, and partnership opportunities.',
-      email: 'privacy@aiforesights.com',
+      email: 'help@aiforesights.com',
       subject: 'Advertising Inquiry',
     },
     {

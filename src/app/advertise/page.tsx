@@ -104,12 +104,12 @@ export default function AdvertisePage() {
               <p className="text-brand-muted text-sm mb-4">
                 Reach out to discuss placements, pricing, and availability. We respond within one business day.
               </p>
-              <a
-                href="mailto:privacy@aiforesights.com?subject=Advertising Inquiry"
+              <Link
+                href="/contact"
                 className="btn-primary inline-block"
               >
                 Contact us about advertising
-              </a>
+              </Link>
             </div>
           </div>
         </section>
