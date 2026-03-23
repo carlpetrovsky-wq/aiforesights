@@ -17,21 +17,26 @@ export default function HomePage() {
   const [latest, setLatest]     = useState<Article[]>([])
   const [topTools, setTopTools] = useState<Tool[]>([])
   const [loading, setLoading]   = useState(true)
+  const [subscriberCount, setSubscriberCount] = useState('2,400+')
+  const [toolCount, setToolCount] = useState('50+')
 
   useEffect(() => {
     async function load() {
       try {
-        const [featRes, latRes, toolRes] = await Promise.all([
+        const [featRes, latRes, toolRes, statsRes] = await Promise.all([
           fetch('/api/articles?featured=true&limit=3'),
           fetch('/api/articles?limit=6&sortBy=latest'),
           fetch('/api/tools?limit=5'),
+          fetch('/api/stats'),
         ])
-        const [featData, latData, toolData] = await Promise.all([
-          featRes.json(), latRes.json(), toolRes.json(),
+        const [featData, latData, toolData, statsData] = await Promise.all([
+          featRes.json(), latRes.json(), toolRes.json(), statsRes.ok ? statsRes.json() : {},
         ])
         setFeatured(Array.isArray(featData) ? featData : [])
         setLatest(Array.isArray(latData) ? latData : [])
         setTopTools(Array.isArray(toolData) ? toolData : [])
+        if (statsData.subscriberCount) setSubscriberCount(statsData.subscriberCount)
+        if (statsData.toolCount) setToolCount(statsData.toolCount + '+')
       } catch (e) {
         console.error('Failed to load data:', e)
       } finally {
@@ -65,7 +70,7 @@ export default function HomePage() {
           </p>
           <NewsletterForm variant="hero" />
           <div className="flex flex-wrap gap-4 mt-4">
-            {([['2,400+','subscribers'],['Daily','updates'],['50+','tools reviewed'],['Free','forever']] as [string,string][]).map(([val, lab]) => (
+            {([[subscriberCount,'subscribers'],['Daily','updates'],[toolCount,'tools reviewed'],['Free','forever']] as [string,string][]).map(([val, lab]) => (
               <div key={lab} className="text-xs text-brand-muted">
                 <strong className="text-white font-semibold">{val}</strong> {lab}
               </div>

@@ -5,6 +5,25 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import Anthropic from '@anthropic-ai/sdk'
 
+// ── OpenGraph image scraper ────────────────────────────────────────────────────
+async function scrapeOgImage(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'AIForesights Bot/1.0' },
+      signal: AbortSignal.timeout(8000),
+    })
+    if (!res.ok) return null
+    const html = await res.text()
+    // Try og:image first, then twitter:image
+    const og = html.match(/<meta[^>]*property=["']og:image["'][^>]*content=["']([^"']+)["']/i)
+      || html.match(/<meta[^>]*content=["']([^"']+)["'][^>]*property=["']og:image["']/i)
+      || html.match(/<meta[^>]*name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i)
+    return og ? og[1] : null
+  } catch {
+    return null
+  }
+}
+
 // ── Minimal RSS parser (no external dep needed — uses built-in fetch) ─────────
 async function fetchFeed(feedUrl: string): Promise<RssItem[]> {
   try {
@@ -153,8 +172,11 @@ export async function POST(req: NextRequest) {
             continue
           }
 
-          // Summarize with Claude
-          const summary = await summarizeArticle(item.title, item.description, source.name)
+          // Summarize with Claude and scrape OG image in parallel
+          const [summary, thumbnailUrl] = await Promise.all([
+            summarizeArticle(item.title, item.description, source.name),
+            scrapeOgImage(item.link),
+          ])
 
           // Parse pub date safely
           let publishedAt: string
@@ -174,6 +196,7 @@ export async function POST(req: NextRequest) {
               slug,
               excerpt: item.description.replace(/<[^>]+>/g, '').slice(0, 300) || summary,
               summary,
+              thumbnail_url: thumbnailUrl,
               source_url: item.link,
               source_id: source.id,
               source_name: source.name,
