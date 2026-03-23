@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Plus, Rss, Pencil, Trash2, Globe, Clock } from 'lucide-react'
+import { Plus, Rss, Pencil, Trash2, Globe, Clock, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react'
 import {
   PageHeader, AdminModal, Field, Input, Select,
   Toggle, SaveButton, DeleteButton, EmptyState,
@@ -39,6 +39,8 @@ function SourcesContent() {
   const [editing, setEditing] = useState<Partial<Source>>(emptySource())
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [fetching, setFetching] = useState(false)
+  const [fetchResult, setFetchResult] = useState<{ success: boolean; message: string } | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -92,15 +94,45 @@ function SourcesContent() {
 
   function up(f: string, v: any) { setEditing(prev => ({ ...prev, [f]: v })) }
 
+  async function fetchNow() {
+    setFetching(true)
+    setFetchResult(null)
+    try {
+      const res = await fetch('/api/admin/rss-fetch', { method: 'POST' })
+      const data = await res.json()
+      setFetchResult({ success: res.ok, message: data.message || data.error || 'Done' })
+      if (res.ok) load()
+    } catch (err) {
+      setFetchResult({ success: false, message: String(err) })
+    }
+    setFetching(false)
+  }
+
   return (
     <div>
       <PageHeader
         title="RSS Sources"
         subtitle={`${sources.filter(s => s.is_active).length} active / ${sources.length} total`}
         action={
-          <button onClick={() => { setEditing(emptySource()); setModalOpen(true) }} className="inline-flex items-center gap-2 px-4 py-2 bg-brand-sky hover:bg-brand-skyDark text-white text-sm font-medium rounded-lg transition">
-            <Plus className="w-4 h-4" /> Add Source
-          </button>
+          <div className="flex items-center gap-2">
+            {fetchResult && (
+              <span className={`flex items-center gap-1.5 text-xs ${fetchResult.success ? 'text-emerald-400' : 'text-red-400'}`}>
+                {fetchResult.success ? <CheckCircle className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+                {fetchResult.message}
+              </span>
+            )}
+            <button
+              onClick={fetchNow}
+              disabled={fetching}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition"
+            >
+              <RefreshCw className={`w-4 h-4 ${fetching ? 'animate-spin' : ''}`} />
+              {fetching ? 'Fetching…' : 'Fetch Now'}
+            </button>
+            <button onClick={() => { setEditing(emptySource()); setModalOpen(true) }} className="inline-flex items-center gap-2 px-4 py-2 bg-brand-sky hover:bg-brand-skyDark text-white text-sm font-medium rounded-lg transition">
+              <Plus className="w-4 h-4" /> Add Source
+            </button>
+          </div>
         }
       />
 

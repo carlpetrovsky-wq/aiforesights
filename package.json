@@ -16,7 +16,9 @@
     "tailwind-merge": "^2.4.0",
     "lucide-react": "^0.383.0",
     "date-fns": "^3.6.0",
-    "@supabase/supabase-js": "^2.44.4"
+    "@supabase/supabase-js": "^2.44.4",
+    "rss-parser": "^3.13.0",
+    "@anthropic-ai/sdk": "^0.27.0"
   },
   "devDependencies": {
     "typescript": "^5",

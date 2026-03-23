@@ -1,0 +1,36 @@
+name: Fetch RSS Feeds
+
+on:
+  schedule:
+    # Runs at 7:00 AM UTC daily (2:00 AM CST / 1:00 AM CDT)
+    - cron: '0 7 * * *'
+  workflow_dispatch: # Allow manual trigger from GitHub Actions UI
+
+jobs:
+  fetch-rss:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Trigger RSS Pipeline
+        run: |
+          echo "Triggering RSS fetch at $(date)"
+          
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://aiforesights.vercel.app/api/rss/fetch" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            --max-time 55)
+          
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+          
+          echo "HTTP Status: $HTTP_CODE"
+          echo "Response: $BODY"
+          
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "RSS fetch failed with status $HTTP_CODE"
+            exit 1
+          fi
+          
+          echo "RSS fetch completed successfully"
