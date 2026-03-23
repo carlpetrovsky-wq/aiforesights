@@ -36,14 +36,14 @@ export async function POST() {
     // Fetch articles with NULL or empty thumbnail_url — featured first
     const { data: nullArticles, error: e1 } = await supabaseAdmin
       .from('articles')
-      .select('id, source_url, title, is_featured, category_slug')
+      .select('id, source_url, title, is_featured, category_slug, thumbnail_url')
       .is('thumbnail_url', null)
       .not('source_url', 'is', null)
       .order('is_featured', { ascending: false })
 
     const { data: emptyArticles, error: e2 } = await supabaseAdmin
       .from('articles')
-      .select('id, source_url, title, is_featured, category_slug')
+      .select('id, source_url, title, is_featured, category_slug, thumbnail_url')
       .eq('thumbnail_url', '')
       .not('source_url', 'is', null)
       .order('is_featured', { ascending: false })
