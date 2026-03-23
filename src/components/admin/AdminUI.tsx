@@ -1,7 +1,65 @@
 'use client'
 
-import { X } from 'lucide-react'
-import { ReactNode } from 'react'
+import { X, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react'
+import { ReactNode, useState, useCallback } from 'react'
+
+/* ─── Sortable table hook ────────────────────────────── */
+export type SortDir = 'asc' | 'desc' | null
+
+export function useSortedData<T extends Record<string, any>>(data: T[]) {
+  const [sortKey, setSortKey] = useState<keyof T | null>(null)
+  const [sortDir, setSortDir] = useState<SortDir>(null)
+
+  const handleSort = useCallback((key: keyof T) => {
+    setSortKey(prev => {
+      if (prev === key) {
+        setSortDir(d => d === 'asc' ? 'desc' : d === 'desc' ? null : 'asc')
+        return key
+      }
+      setSortDir('asc')
+      return key
+    })
+  }, [])
+
+  const sorted = [...data].sort((a, b) => {
+    if (!sortKey || !sortDir) return 0
+    const av = a[sortKey] ?? ''
+    const bv = b[sortKey] ?? ''
+    const cmp = String(av).localeCompare(String(bv), undefined, { numeric: true, sensitivity: 'base' })
+    return sortDir === 'asc' ? cmp : -cmp
+  })
+
+  return { sorted, sortKey, sortDir, handleSort }
+}
+
+/* ─── Sortable column header ─────────────────────────── */
+export function SortableHeader({
+  label, sortKey, activeSortKey, sortDir, onSort, className = '',
+}: {
+  label: string
+  sortKey: string
+  activeSortKey: string | null
+  sortDir: SortDir
+  onSort: (key: string) => void
+  className?: string
+}) {
+  const isActive = activeSortKey === sortKey
+  return (
+    <th
+      className={`px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider cursor-pointer select-none hover:text-slate-300 transition-colors group ${className}`}
+      onClick={() => onSort(sortKey)}
+    >
+      <span className="inline-flex items-center gap-1">
+        {label}
+        <span className="opacity-60 group-hover:opacity-100 transition-opacity">
+          {isActive && sortDir === 'asc'  ? <ChevronUp className="w-3 h-3 text-brand-sky" /> :
+           isActive && sortDir === 'desc' ? <ChevronDown className="w-3 h-3 text-brand-sky" /> :
+           <ChevronsUpDown className="w-3 h-3" />}
+        </span>
+      </span>
+    </th>
+  )
+}
 
 /* ─── Modal ─────────────────────────────────────────── */
 export function AdminModal({

@@ -6,6 +6,7 @@ import { Plus, Search, Star, Pencil, ExternalLink, Wrench } from 'lucide-react'
 import {
   PageHeader, AdminModal, Field, Input, Textarea, Select,
   StatusBadge, Toggle, SaveButton, DeleteButton, EmptyState,
+  SortableHeader, useSortedData,
 } from '@/components/admin/AdminUI'
 
 interface Tool {
@@ -26,6 +27,8 @@ interface Tool {
   status: string
   is_featured: boolean
   affiliate_url: string | null
+  created_at: string
+  updated_at: string | null
 }
 
 const emptyTool = (): Partial<Tool> => ({
@@ -52,6 +55,7 @@ function ToolsContent() {
   const [editing, setEditing] = useState<Partial<Tool>>(emptyTool())
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const { sorted: sortedTools, sortKey, sortDir, handleSort } = useSortedData(tools)
   const [tagsInput, setTagsInput] = useState('')
 
   const load = useCallback(async () => {
@@ -143,42 +147,69 @@ function ToolsContent() {
         />
       </div>
 
-      {/* Grid */}
+      {/* Table */}
       <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl overflow-hidden">
         {loading ? (
           <div className="p-8 text-center text-slate-500 text-sm">Loading…</div>
         ) : tools.length === 0 ? (
           <EmptyState message="No tools found" icon={Wrench} />
         ) : (
-          <div className="divide-y divide-white/[0.04]">
-            {tools.map(t => (
-              <div key={t.id} className="flex items-center gap-4 px-5 py-4 hover:bg-white/[0.02] transition">
-                <div className="w-9 h-9 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center flex-shrink-0">
-                  <span className="text-xs font-bold text-slate-400">{t.name.charAt(0)}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-slate-200">{t.name}</span>
-                    {t.is_featured && <Star className="w-3 h-3 text-amber-400" />}
-                    <StatusBadge status={t.status} />
-                  </div>
-                  <p className="text-xs text-slate-500 truncate mt-0.5">{t.description}</p>
-                </div>
-                <span className={`text-xs font-medium px-2 py-0.5 rounded-md border ${pricingColor[t.pricing] || pricingColor.free}`}>
-                  {t.pricing}
-                </span>
-                <span className="text-xs text-slate-500 hidden sm:block">{t.save_count} saves</span>
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  <button onClick={() => openEdit(t)} className="p-1.5 text-slate-500 hover:text-white hover:bg-white/[0.06] rounded-md transition">
-                    <Pencil className="w-3.5 h-3.5" />
-                  </button>
-                  <a href={t.website_url} target="_blank" rel="noopener" className="p-1.5 text-slate-500 hover:text-white hover:bg-white/[0.06] rounded-md transition">
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
-                </div>
-              </div>
-            ))}
-          </div>
+          <table className="w-full">
+            <thead className="bg-white/[0.03] border-b border-white/[0.06]">
+              <tr>
+                <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Tool</th>
+                <SortableHeader label="Pricing"    sortKey="pricing"      activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} className="hidden sm:table-cell" />
+                <SortableHeader label="Category"   sortKey="category"     activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} className="hidden md:table-cell" />
+                <SortableHeader label="Level"      sortKey="experience_level" activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} className="hidden lg:table-cell" />
+                <SortableHeader label="Added"      sortKey="created_at"   activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} className="hidden lg:table-cell" />
+                <SortableHeader label="Status"     sortKey="status"       activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} />
+                <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/[0.04]">
+              {sortedTools.map(t => (
+                <tr key={t.id} className="hover:bg-white/[0.02] transition">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-bold text-slate-400">{t.name.charAt(0)}</span>
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-sm font-medium text-slate-200 truncate">{t.name}</span>
+                          {t.is_featured && <Star className="w-3 h-3 text-amber-400 flex-shrink-0" />}
+                        </div>
+                        <p className="text-xs text-slate-500 truncate max-w-[200px]">{t.description}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 hidden sm:table-cell">
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-md border ${pricingColor[t.pricing] || pricingColor.free}`}>
+                      {t.pricing}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-xs text-slate-500 hidden md:table-cell">{t.category || '—'}</td>
+                  <td className="px-4 py-3 text-xs text-slate-500 hidden lg:table-cell capitalize">{t.experience_level}</td>
+                  <td className="px-4 py-3 text-xs text-slate-500 hidden lg:table-cell">
+                    {t.created_at ? new Date(t.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
+                  </td>
+                  <td className="px-4 py-3"><StatusBadge status={t.status} /></td>
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex items-center gap-1 justify-end">
+                      <button onClick={() => openEdit(t)} className="p-1.5 text-slate-500 hover:text-white hover:bg-white/[0.06] rounded-md transition">
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <a href={t.website_url} target="_blank" rel="noopener" className="p-1.5 text-slate-500 hover:text-white hover:bg-white/[0.06] rounded-md transition">
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
         )}
       </div>
 

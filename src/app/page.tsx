@@ -36,8 +36,14 @@ export default function HomePage() {
         setFeatured(Array.isArray(featData) ? featData as Article[] : [])
         setLatest(Array.isArray(latData) ? latData as Article[] : [])
         setTopTools(Array.isArray(toolData) ? toolData as Tool[] : [])
-        if (statsData?.subscriberCount) setSubscriberCount(statsData.subscriberCount)
-        if (statsData?.toolCount) setToolCount(statsData.toolCount + '+')
+        if (statsData?.subscriberCount) {
+          // Format with commas: "41500" → "41,500+" or keep as-is if already formatted
+          const raw = statsData.subscriberCount.toString().replace(/[^0-9]/g, '')
+          const num = parseInt(raw)
+          setSubscriberCount(raw && num ? num.toLocaleString('en-US') + '+' : statsData.subscriberCount)
+        }
+        if (statsData?.toolCount) {
+          setToolCount(statsData.toolCount.toLocaleString('en-US') + '+')
       } catch (e) {
         console.error('Failed to load data:', e)
       } finally {

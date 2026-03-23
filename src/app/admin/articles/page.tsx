@@ -6,6 +6,7 @@ import { Plus, Search, Star, ExternalLink, Pencil, Trash2, FileText, ImageIcon, 
 import {
   PageHeader, AdminModal, Field, Input, Textarea, Select,
   StatusBadge, Toggle, SaveButton, DeleteButton, EmptyState,
+  SortableHeader, useSortedData,
 } from '@/components/admin/AdminUI'
 
 interface Article {
@@ -58,6 +59,7 @@ function ArticlesContent() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
+  const { sorted: sortedArticles, sortKey, sortDir, handleSort } = useSortedData(articles)
 
   // Modal
   const [modalOpen, setModalOpen] = useState(false)
@@ -209,15 +211,15 @@ function ArticlesContent() {
               <thead>
                 <tr className="border-b border-white/[0.06]">
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Title</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden sm:table-cell">Category</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden md:table-cell">Source</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden lg:table-cell">Published</th>
-                  <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                  <SortableHeader label="Category" sortKey="category_slug" activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} className="hidden sm:table-cell" />
+                  <SortableHeader label="Source" sortKey="source_name" activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} className="hidden md:table-cell" />
+                  <SortableHeader label="Published" sortKey="published_at" activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} className="hidden lg:table-cell" />
+                  <SortableHeader label="Status" sortKey="status" activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} />
                   <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.04]">
-                {articles.map(a => (
+                {sortedArticles.map(a => (
                   <tr key={a.id} className="hover:bg-white/[0.02] transition">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">

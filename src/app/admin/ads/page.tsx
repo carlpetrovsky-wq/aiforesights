@@ -5,6 +5,7 @@ import { Megaphone, Pencil, Check, X } from 'lucide-react'
 import {
   PageHeader, AdminModal, Field, Input, Textarea,
   Toggle, SaveButton, EmptyState,
+  SortableHeader, useSortedData,
 } from '@/components/admin/AdminUI'
 
 interface AdSlot {
@@ -25,6 +26,7 @@ export default function AdsPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Partial<AdSlot>>({})
   const [saving, setSaving] = useState(false)
+  const { sorted: sortedSlots, sortKey, sortDir, handleSort } = useSortedData(slots)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -80,56 +82,53 @@ export default function AdsPage() {
         ) : slots.length === 0 ? (
           <EmptyState message="No ad slots configured" icon={Megaphone} />
         ) : (
-          <div className="divide-y divide-white/[0.04]">
-            {slots.map(slot => (
-              <div key={slot.id} className="flex items-center gap-4 px-5 py-4 hover:bg-white/[0.02] transition">
-                {/* Icon */}
-                <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                  slot.is_active ? 'bg-emerald-500/10' : 'bg-white/[0.04]'
-                }`}>
-                  <Megaphone className={`w-4 h-4 ${slot.is_active ? 'text-emerald-400' : 'text-slate-600'}`} />
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-slate-200">{slot.label || slot.slot_id}</span>
+          <table className="w-full">
+            <thead className="bg-white/[0.03] border-b border-white/[0.06]">
+              <tr>
+                <SortableHeader label="Slot"     sortKey="label"     activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} />
+                <SortableHeader label="Position" sortKey="position"  activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} className="hidden sm:table-cell" />
+                <SortableHeader label="Size"     sortKey="size"      activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} className="hidden md:table-cell" />
+                <SortableHeader label="Status"   sortKey="is_active" activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} />
+                <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/[0.04]">
+              {sortedSlots.map(slot => (
+                <tr key={slot.id} className="hover:bg-white/[0.02] transition">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${slot.is_active ? 'bg-emerald-500/10' : 'bg-white/[0.04]'}`}>
+                        <Megaphone className={`w-4 h-4 ${slot.is_active ? 'text-emerald-400' : 'text-slate-600'}`} />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-slate-200">{slot.label || slot.slot_id}</div>
+                        {slot.adsense_unit_id && <div className="text-xs text-emerald-500/70">AdSense configured</div>}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-xs text-slate-500 hidden sm:table-cell">{slot.position || '—'}</td>
+                  <td className="px-4 py-3 hidden md:table-cell">
                     <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border ${sizeColors[slot.size || ''] || 'bg-white/[0.04] text-slate-500 border-white/[0.08]'}`}>
                       {slot.size || '—'}
                     </span>
-                  </div>
-                  <div className="text-xs text-slate-500 mt-0.5">
-                    {slot.position || 'No position set'}
-                    {slot.adsense_unit_id && (
-                      <span className="ml-2 text-emerald-500/70">• AdSense configured</span>
-                    )}
-                  </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded-md border ${slot.is_active ? 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10' : 'text-slate-500 border-white/[0.08] bg-white/[0.03]'}`}>
+                      {slot.is_active ? 'Active' : 'Paused'}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <button onClick={() => { setEditing({ ...slot }); setModalOpen(true) }} className="p-1.5 text-slate-500 hover:text-white hover:bg-white/[0.06] rounded-md transition">
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+                <div className="flex items-center gap-2 flex-shrink-0 hidden">
+                  {/* kept for toggleActive reference - handled in table now */}
                 </div>
-
-                {/* Actions */}
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <button
-                    onClick={() => toggleActive(slot)}
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center border transition ${
-                      slot.is_active
-                        ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20'
-                        : 'bg-white/[0.03] border-white/[0.08] text-slate-600 hover:text-slate-400 hover:bg-white/[0.06]'
-                    }`}
-                    title={slot.is_active ? 'Disable' : 'Enable'}
-                  >
-                    {slot.is_active ? <Check className="w-3.5 h-3.5" /> : <X className="w-3.5 h-3.5" />}
-                  </button>
-                  <button
-                    onClick={() => { setEditing({ ...slot }); setModalOpen(true) }}
-                    className="p-1.5 text-slate-500 hover:text-white hover:bg-white/[0.06] rounded-md transition"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
       {/* Hint */}

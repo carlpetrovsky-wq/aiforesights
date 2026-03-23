@@ -5,6 +5,7 @@ import { Search, Download, Users, Mail, Calendar, MapPin, Pencil, Trash2, UserX,
 import {
   PageHeader, AdminModal, Field, Input, Textarea,
   Toggle, SaveButton, DeleteButton, EmptyState,
+  SortableHeader, useSortedData,
 } from '@/components/admin/AdminUI'
 
 interface Subscriber {
@@ -30,6 +31,7 @@ export default function SubscribersPage() {
   const [subs, setSubs] = useState<Subscriber[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const { sorted: sortedSubs, sortKey, sortDir, handleSort } = useSortedData(subs)
 
   // Modal
   const [modalOpen, setModalOpen] = useState(false)
@@ -137,23 +139,17 @@ export default function SubscribersPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/[0.06]">
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">
-                    <div className="flex items-center gap-1.5"><Mail className="w-3 h-3" /> Email</div>
-                  </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden sm:table-cell">Name</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden lg:table-cell">
-                    <div className="flex items-center gap-1.5"><MapPin className="w-3 h-3" /> Location</div>
-                  </th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden md:table-cell">Source</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden md:table-cell">
-                    <div className="flex items-center gap-1.5"><Calendar className="w-3 h-3" /> Signed Up</div>
-                  </th>
-                  <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                  <SortableHeader label="Email"    sortKey="email"          activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} />
+                  <SortableHeader label="Name"     sortKey="first_name"     activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} className="hidden sm:table-cell" />
+                  <SortableHeader label="Location" sortKey="city"           activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} className="hidden lg:table-cell" />
+                  <SortableHeader label="Source"   sortKey="source"         activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} className="hidden md:table-cell" />
+                  <SortableHeader label="Signed Up" sortKey="subscribed_at" activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} className="hidden md:table-cell" />
+                  <SortableHeader label="Status"   sortKey="is_active"      activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} />
                   <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.04]">
-                {subs.map(s => {
+                {sortedSubs.map(s => {
                   const displayName = [s.first_name, s.last_name].filter(Boolean).join(' ') || s.name || '—'
                   const location = [s.city, s.state, s.country].filter(Boolean).join(', ') || '—'
                   return (

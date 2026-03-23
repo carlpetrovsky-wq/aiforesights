@@ -6,6 +6,7 @@ import { Plus, Rss, Pencil, Trash2, Globe, Clock, RefreshCw, CheckCircle, AlertC
 import {
   PageHeader, AdminModal, Field, Input, Select,
   Toggle, SaveButton, DeleteButton, EmptyState,
+  SortableHeader, useSortedData,
 } from '@/components/admin/AdminUI'
 
 interface Source {
@@ -41,6 +42,7 @@ function SourcesContent() {
   const [deleting, setDeleting] = useState(false)
   const [fetching, setFetching] = useState(false)
   const [fetchResult, setFetchResult] = useState<{ success: boolean; message: string } | null>(null)
+  const { sorted: sortedSources, sortKey, sortDir, handleSort } = useSortedData(sources)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -142,60 +144,66 @@ function SourcesContent() {
         ) : sources.length === 0 ? (
           <EmptyState message="No RSS sources configured" icon={Rss} />
         ) : (
-          <div className="divide-y divide-white/[0.04]">
-            {sources.map(s => (
-              <div key={s.id} className="flex items-center gap-4 px-5 py-4 hover:bg-white/[0.02] transition">
-                <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${s.is_active ? 'bg-emerald-500/10' : 'bg-white/[0.04]'}`}>
-                  <Rss className={`w-4 h-4 ${s.is_active ? 'text-emerald-400' : 'text-slate-600'}`} />
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-slate-200 truncate">{s.name}</span>
-                    {!s.is_active && <span className="text-xs text-slate-600 bg-white/[0.04] px-1.5 py-0.5 rounded">paused</span>}
-                  </div>
-                  <div className="flex items-center gap-3 mt-0.5">
-                    <span className="text-xs text-slate-500 flex items-center gap-1 truncate">
-                      <Globe className="w-3 h-3" /> {s.feed_url || s.url}
-                    </span>
-                    <span className="text-xs text-slate-600 flex items-center gap-1">
-                      <Clock className="w-3 h-3" /> {s.fetch_interval_minutes}m
-                    </span>
-                  </div>
-                </div>
-
-                {/* Last fetched timestamp */}
-                <div className="hidden md:flex flex-col items-end flex-shrink-0 min-w-[120px]">
-                  <span className="text-xs text-slate-500">
+          <table className="w-full">
+            <thead className="bg-white/[0.03] border-b border-white/[0.06]">
+              <tr>
+                <SortableHeader label="Source"       sortKey="name"              activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} />
+                <SortableHeader label="Last Fetched" sortKey="last_fetched_at"   activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} className="hidden md:table-cell" />
+                <SortableHeader label="Interval"     sortKey="fetch_interval_minutes" activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} className="hidden lg:table-cell" />
+                <SortableHeader label="Status"       sortKey="is_active"         activeSortKey={sortKey as string} sortDir={sortDir} onSort={handleSort} />
+                <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/[0.04]">
+              {sortedSources.map(s => (
+                <tr key={s.id} className="hover:bg-white/[0.02] transition">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${s.is_active ? 'bg-emerald-500/10' : 'bg-white/[0.04]'}`}>
+                        <Rss className={`w-4 h-4 ${s.is_active ? 'text-emerald-400' : 'text-slate-600'}`} />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-slate-200 truncate">{s.name}</span>
+                        </div>
+                        <span className="text-xs text-slate-500 truncate max-w-[260px] block">{s.feed_url || s.url}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-xs text-slate-500 hidden md:table-cell">
                     {s.last_fetched_at
-                      ? new Date(s.last_fetched_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
-                      : <span className="text-slate-600 italic">never fetched</span>}
-                  </span>
-                  <span className="text-[10px] text-slate-600">last fetched</span>
-                </div>
-
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  <button
-                    onClick={() => toggleActive(s)}
-                    className={`px-2.5 py-1 text-xs font-medium rounded-md border transition ${
-                      s.is_active
-                        ? 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10 hover:bg-emerald-500/20'
-                        : 'text-slate-500 border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06]'
-                    }`}
-                  >
-                    {s.is_active ? 'Active' : 'Paused'}
-                  </button>
-                  <button
-                    onClick={() => { setEditing({ ...s }); setModalOpen(true) }}
-                    className="p-1.5 text-slate-500 hover:text-white hover:bg-white/[0.06] rounded-md transition"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+                      ? new Date(s.last_fetched_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                      : <span className="italic text-slate-600">never fetched</span>}
+                  </td>
+                  <td className="px-4 py-3 text-xs text-slate-500 hidden lg:table-cell">
+                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {s.fetch_interval_minutes}m</span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <button
+                      onClick={() => toggleActive(s)}
+                      className={`px-2.5 py-1 text-xs font-medium rounded-md border transition ${
+                        s.is_active
+                          ? 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10 hover:bg-emerald-500/20'
+                          : 'text-slate-500 border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06]'
+                      }`}
+                    >
+                      {s.is_active ? 'Active' : 'Paused'}
+                    </button>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <button
+                      onClick={() => { setEditing({ ...s }); setModalOpen(true) }}
+                      className="p-1.5 text-slate-500 hover:text-white hover:bg-white/[0.06] rounded-md transition"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
+
       </div>
 
       {/* Modal */}
