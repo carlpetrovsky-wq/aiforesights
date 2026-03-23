@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Plus, Search, Star, ExternalLink, Pencil, Trash2, FileText } from 'lucide-react'
 import {
@@ -52,7 +52,7 @@ const categories = [
   { slug: 'learn-ai', label: 'Learn AI' },
 ]
 
-export default function ArticlesPage() {
+function ArticlesContent() {
   const searchParams = useSearchParams()
   const [articles, setArticles] = useState<Article[]>([])
   const [loading, setLoading] = useState(true)
@@ -286,4 +286,8 @@ export default function ArticlesPage() {
       </AdminModal>
     </div>
   )
+}
+
+export default function ArticlesPage() {
+  return <Suspense><ArticlesContent /></Suspense>
 }

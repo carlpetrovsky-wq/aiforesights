@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Plus, Rss, Pencil, Trash2, Globe, Clock } from 'lucide-react'
 import {
@@ -31,7 +31,7 @@ const emptySource = (): Partial<Source> => ({
   logo_url: '',
 })
 
-export default function SourcesPage() {
+function SourcesContent() {
   const searchParams = useSearchParams()
   const [sources, setSources] = useState<Source[]>([])
   const [loading, setLoading] = useState(true)
@@ -193,4 +193,8 @@ export default function SourcesPage() {
       </AdminModal>
     </div>
   )
+}
+
+export default function SourcesPage() {
+  return <Suspense><SourcesContent /></Suspense>
 }

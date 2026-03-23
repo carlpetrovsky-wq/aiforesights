@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Plus, Search, Star, Pencil, ExternalLink, Wrench } from 'lucide-react'
 import {
@@ -43,7 +43,7 @@ const emptyTool = (): Partial<Tool> => ({
   affiliate_url: '',
 })
 
-export default function ToolsPage() {
+function ToolsContent() {
   const searchParams = useSearchParams()
   const [tools, setTools] = useState<Tool[]>([])
   const [loading, setLoading] = useState(true)
@@ -247,4 +247,8 @@ export default function ToolsPage() {
       </AdminModal>
     </div>
   )
+}
+
+export default function ToolsPage() {
+  return <Suspense><ToolsContent /></Suspense>
 }
