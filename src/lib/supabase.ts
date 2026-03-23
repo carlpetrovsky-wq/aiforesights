@@ -33,7 +33,35 @@ export async function getArticles({
 
   const { data, error } = await query
   if (error) { console.error('getArticles error:', error); return [] }
-  return data ?? []
+  return (data ?? []).map(mapArticle)
+}
+
+// Map Supabase snake_case DB fields → camelCase Article type
+function mapArticle(row: Record<string, unknown>) {
+  let tags: string[] = []
+  if (Array.isArray(row.tags)) tags = row.tags
+  else if (typeof row.tags === 'string') {
+    try { tags = JSON.parse(row.tags) } catch { tags = [] }
+  }
+
+  return {
+    id:           row.id,
+    title:        row.title,
+    slug:         row.slug,
+    excerpt:      row.excerpt ?? '',
+    summary:      row.summary ?? '',
+    thumbnailUrl: row.thumbnail_url ?? undefined,
+    sourceUrl:    row.source_url,
+    sourceName:   row.source_name ?? '',
+    sourceColor:  row.source_color ?? undefined,
+    author:       row.author ?? undefined,
+    publishedAt:  row.published_at ?? row.created_at,
+    category:     row.category_slug ?? 'latest-news',
+    tags,
+    voteCount:    row.vote_count ?? 0,
+    isFeatured:   row.is_featured ?? false,
+    status:       row.status ?? 'published',
+  }
 }
 
 export async function getArticleBySlug(slug: string) {
@@ -75,7 +103,28 @@ export async function getTools({
 
   const { data, error } = await query
   if (error) { console.error('getTools error:', error); return [] }
-  return data ?? []
+  return (data ?? []).map((row: Record<string, unknown>) => {
+    let tags: string[] = []
+    if (Array.isArray(row.tags)) tags = row.tags
+    else if (typeof row.tags === 'string') {
+      try { tags = JSON.parse(row.tags) } catch { tags = [] }
+    }
+    return {
+      id:              row.id,
+      name:            row.name,
+      slug:            row.slug,
+      description:     row.description ?? '',
+      websiteUrl:      row.website_url,
+      logoUrl:         row.logo_url ?? undefined,
+      pricing:         row.pricing ?? 'free',
+      category:        row.category ?? '',
+      tags,
+      experienceLevel: row.experience_level ?? 'beginner',
+      saveCount:       row.save_count ?? 0,
+      isFeatured:      row.is_featured ?? false,
+      affiliateUrl:    row.affiliate_url ?? undefined,
+    }
+  })
 }
 
 // ── Subscribers ─────────────────────────────────────────────
