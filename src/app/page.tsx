@@ -31,7 +31,7 @@ export default function HomePage() {
         ])
         const [featData, latData, toolData, statsData] = await Promise.all([
           featRes.json(), latRes.json(), toolRes.json(), statsRes.ok ? statsRes.json() : {},
-        ])
+        ]) as [unknown[], unknown[], unknown[], { subscriberCount?: string; toolCount?: number }]
         setFeatured(Array.isArray(featData) ? featData : [])
         setLatest(Array.isArray(latData) ? latData : [])
         setTopTools(Array.isArray(toolData) ? toolData : [])
