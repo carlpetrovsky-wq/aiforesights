@@ -19,6 +19,7 @@ export default function HomePage() {
   const [loading, setLoading]   = useState(true)
   const [subscriberCount, setSubscriberCount] = useState('2,400+')
   const [toolCount, setToolCount] = useState('50+')
+  const [activeSource, setActiveSource] = useState<string | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -54,8 +55,12 @@ export default function HomePage() {
     load()
   }, [])
 
-  const displayFeatured = featured.length > 0 ? featured : MOCK_ARTICLES.filter((a: Article) => a.isFeatured).slice(0, 3)
-  const displayLatest   = latest.length > 0   ? latest   : MOCK_ARTICLES.filter((a: Article) => !a.isFeatured).slice(0, 6)
+  const displayFeatured = activeSource
+    ? (featured.length > 0 ? featured : MOCK_ARTICLES.filter((a: Article) => a.isFeatured).slice(0, 3)).filter((a: Article) => a.sourceName === activeSource)
+    : featured.length > 0 ? featured : MOCK_ARTICLES.filter((a: Article) => a.isFeatured).slice(0, 3)
+  const displayLatest = activeSource
+    ? (latest.length > 0 ? latest : MOCK_ARTICLES.filter((a: Article) => !a.isFeatured).slice(0, 6)).filter((a: Article) => a.sourceName === activeSource)
+    : latest.length > 0 ? latest : MOCK_ARTICLES.filter((a: Article) => !a.isFeatured).slice(0, 6)
   const displayTools    = topTools.length > 0  ? topTools : MOCK_TOOLS.slice(0, 5)
 
   return (
@@ -108,7 +113,17 @@ export default function HomePage() {
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
           <span className="text-[11px] text-brand-muted shrink-0">Sources:</span>
           {RSS_SOURCES.map(s => (
-            <span key={s} className="text-[10px] bg-white border border-brand-border text-brand-slate px-2.5 py-1 rounded-full shrink-0 whitespace-nowrap">{s}</span>
+            <button
+              key={s}
+              onClick={() => setActiveSource(activeSource === s ? null : s)}
+              className={`text-[10px] px-2.5 py-1 rounded-full shrink-0 whitespace-nowrap border transition-colors ${
+                activeSource === s
+                  ? 'bg-brand-sky text-white border-brand-sky'
+                  : 'bg-white border-brand-border text-brand-slate hover:border-brand-sky hover:text-brand-sky'
+              }`}
+            >
+              {s}
+            </button>
           ))}
         </div>
       </div>

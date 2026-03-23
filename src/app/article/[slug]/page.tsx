@@ -5,6 +5,9 @@ import Footer from '@/components/layout/Footer'
 import Link from 'next/link'
 import { ExternalLink, ArrowLeft, Clock, User } from 'lucide-react'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 const CATEGORY_FALLBACKS: Record<string, string> = {
   'latest-news':   'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200&q=80',
   'future-of-ai':  'https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=1200&q=80',
@@ -22,7 +25,6 @@ async function getArticle(slug: string) {
     .from('articles')
     .select('*')
     .eq('slug', slug)
-    .eq('status', 'published')
     .single()
   return data
 }
