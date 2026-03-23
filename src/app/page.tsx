@@ -29,14 +29,15 @@ export default function HomePage() {
           fetch('/api/tools?limit=5'),
           fetch('/api/stats'),
         ])
-        const [featData, latData, toolData, statsData] = await Promise.all([
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const [featData, latData, toolData, statsData]: [any[], any[], any[], any] = await Promise.all([
           featRes.json(), latRes.json(), toolRes.json(), statsRes.ok ? statsRes.json() : {},
-        ]) as [unknown[], unknown[], unknown[], { subscriberCount?: string; toolCount?: number }]
-        setFeatured(Array.isArray(featData) ? featData : [])
-        setLatest(Array.isArray(latData) ? latData : [])
-        setTopTools(Array.isArray(toolData) ? toolData : [])
-        if (statsData.subscriberCount) setSubscriberCount(statsData.subscriberCount)
-        if (statsData.toolCount) setToolCount(statsData.toolCount + '+')
+        ])
+        setFeatured(Array.isArray(featData) ? featData as Article[] : [])
+        setLatest(Array.isArray(latData) ? latData as Article[] : [])
+        setTopTools(Array.isArray(toolData) ? toolData as Tool[] : [])
+        if (statsData?.subscriberCount) setSubscriberCount(statsData.subscriberCount)
+        if (statsData?.toolCount) setToolCount(statsData.toolCount + '+')
       } catch (e) {
         console.error('Failed to load data:', e)
       } finally {
