@@ -49,9 +49,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Brand */}
       <div className="px-4 py-5 border-b border-white/[0.06]">
         <Link href="/admin" className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-brand-sky flex items-center justify-center">
-            <span className="text-white text-xs font-bold">AF</span>
-          </div>
+          <img src="/logo-icon-64.png" alt="AI Foresights" className="w-8 h-8 rounded-lg" />
           <div>
             <span className="text-sm font-semibold text-white">AI Foresights</span>
             <span className="block text-[10px] text-slate-500 uppercase tracking-wider font-medium">Admin</span>
@@ -109,9 +107,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Mobile header */}
       <div className="lg:hidden flex items-center justify-between px-4 py-3 bg-brand-navy border-b border-white/[0.06]">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-md bg-brand-sky flex items-center justify-center">
-            <span className="text-white text-[10px] font-bold">AF</span>
-          </div>
+          <img src="/logo-icon-64.png" alt="AI Foresights" className="w-7 h-7 rounded-md" />
           <span className="text-sm font-semibold text-white">Admin</span>
         </div>
         <button onClick={() => setSidebarOpen(!sidebarOpen)} className="text-slate-400 hover:text-white p-1">

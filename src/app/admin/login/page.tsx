@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Lock, Eye, EyeOff, AlertCircle } from 'lucide-react'
+import { Eye, EyeOff, AlertCircle } from 'lucide-react'
 
 export default function AdminLoginPage() {
   const router = useRouter()
@@ -41,9 +41,7 @@ export default function AdminLoginPage() {
       <div className="w-full max-w-sm">
         {/* Logo / Brand */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-sky/10 border border-brand-sky/20 mb-4">
-            <Lock className="w-6 h-6 text-brand-sky" />
-          </div>
+          <img src="/logo-icon-64.png" alt="AI Foresights" className="w-14 h-14 rounded-2xl mx-auto mb-4" />
           <h1 className="text-xl font-bold text-white">AI Foresights</h1>
           <p className="text-sm text-brand-muted mt-1">Admin Panel</p>
         </div>

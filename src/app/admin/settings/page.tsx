@@ -29,7 +29,7 @@ export default function SettingsPage() {
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch('/api/admin/settings')
+      const res = await fetch(`/api/admin/settings?t=${Date.now()}`)
       if (res.ok) {
         const data: Setting[] = await res.json()
         setSettings(data)
@@ -58,6 +58,7 @@ export default function SettingsPage() {
       if (res.ok) {
         setSaved(true)
         setTimeout(() => setSaved(false), 2000)
+        load() // reload from DB to confirm persistence
       }
     } catch { /* silent */ }
     setSaving(false)
