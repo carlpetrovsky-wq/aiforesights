@@ -164,6 +164,16 @@ function SourcesContent() {
                   </div>
                 </div>
 
+                {/* Last fetched timestamp */}
+                <div className="hidden md:flex flex-col items-end flex-shrink-0 min-w-[120px]">
+                  <span className="text-xs text-slate-500">
+                    {s.last_fetched_at
+                      ? new Date(s.last_fetched_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                      : <span className="text-slate-600 italic">never fetched</span>}
+                  </span>
+                  <span className="text-[10px] text-slate-600">last fetched</span>
+                </div>
+
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <button
                     onClick={() => toggleActive(s)}

@@ -16,7 +16,12 @@ export async function GET(req: NextRequest) {
     .limit(limit)
 
   if (status && status !== 'all') query = query.eq('status', status)
-  if (search) query = query.ilike('title', `%${search}%`)
+  if (search) {
+    // Search across title, category, and source name
+    query = query.or(
+      `title.ilike.%${search}%,category_slug.ilike.%${search}%,source_name.ilike.%${search}%`
+    )
+  }
 
   const { data, error } = await query
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

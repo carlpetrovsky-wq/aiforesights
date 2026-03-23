@@ -82,8 +82,9 @@ export function Select(props: React.SelectHTMLAttributes<HTMLSelectElement> & { 
   return (
     <select
       {...props}
-      className={`w-full px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white
+      className={`w-full px-3 py-2 bg-slate-800 border border-white/[0.08] rounded-lg text-sm text-white
         focus:outline-none focus:ring-2 focus:ring-brand-sky/30 focus:border-brand-sky/30 transition
+        [&>option]:bg-slate-800 [&>option]:text-white
         ${props.className ?? ''}`}
     >
       {props.children}

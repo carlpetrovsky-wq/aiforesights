@@ -211,8 +211,8 @@ function ArticlesContent() {
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Title</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden sm:table-cell">Category</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden md:table-cell">Source</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden lg:table-cell">Published</th>
                   <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
-                  <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden md:table-cell">Votes</th>
                   <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
@@ -227,8 +227,10 @@ function ArticlesContent() {
                     </td>
                     <td className="px-4 py-3 text-slate-500 hidden sm:table-cell">{a.category_slug?.replace(/-/g, ' ') || '—'}</td>
                     <td className="px-4 py-3 text-slate-500 hidden md:table-cell">{a.source_name || '—'}</td>
+                    <td className="px-4 py-3 text-slate-500 hidden lg:table-cell text-xs">
+                      {a.published_at ? new Date(a.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}
+                    </td>
                     <td className="px-4 py-3 text-center"><StatusBadge status={a.status} /></td>
-                    <td className="px-4 py-3 text-center text-slate-500 hidden md:table-cell">{a.vote_count}</td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
                         <button onClick={() => openEdit(a)} className="p-1.5 text-slate-500 hover:text-white hover:bg-white/[0.06] rounded-md transition">
