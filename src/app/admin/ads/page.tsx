@@ -126,6 +126,7 @@ export default function AdsPage() {
               ))}
             </tbody>
           </table>
+        )}
       </div>
 
       {/* Hint */}

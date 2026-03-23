@@ -210,8 +210,6 @@ function ToolsContent() {
           </table>
         )}
       </div>
-        )}
-      </div>
 
       {/* Modal */}
       <AdminModal open={modalOpen} onClose={() => setModalOpen(false)} title={editing.id ? 'Edit Tool' : 'Add Tool'} wide>
