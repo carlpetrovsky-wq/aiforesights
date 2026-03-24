@@ -87,18 +87,37 @@ export default async function ArticlePage({ params }: { params: { slug: string }
         {(() => {
           const isOwnContent = article.source_name === 'AI Foresights' || article.source_url?.includes('aiforesights.com')
           if (isOwnContent) {
-            // Our own articles: show summary as full article body, no "AI Summary" label
-            return article.summary ? (
+            const body = (article as any).content || article.summary || article.excerpt || ''
+            if (!body) return null
+            const blocks = body.split('\n').filter(Boolean)
+            return (
               <div className="prose prose-base max-w-none text-brand-slate mb-8 leading-relaxed space-y-4">
-                {article.summary.split('\n').filter(Boolean).map((para: string, i: number) => (
-                  <p key={i} className="leading-relaxed">{para}</p>
-                ))}
+                {blocks.map((block: string, i: number) => {
+                  if (block.startsWith('## ')) {
+                    return <h2 key={i} className="text-xl font-bold text-brand-navy mt-8 mb-3">{block.slice(3)}</h2>
+                  }
+                  if (block.startsWith('### ')) {
+                    return <h3 key={i} className="text-lg font-semibold text-brand-navy mt-6 mb-2">{block.slice(4)}</h3>
+                  }
+                  if (block.startsWith('- ')) {
+                    return <li key={i} className="ml-4 list-disc leading-relaxed">{block.slice(2)}</li>
+                  }
+                  if (block.includes('**')) {
+                    const parts = block.split(/(\*\*[^*]+\*\*)/)
+                    return (
+                      <p key={i} className="leading-relaxed">
+                        {parts.map((part: string, j: number) =>
+                          part.startsWith('**') && part.endsWith('**')
+                            ? <strong key={j}>{part.slice(2, -2)}</strong>
+                            : part
+                        )}
+                      </p>
+                    )
+                  }
+                  return <p key={i} className="leading-relaxed">{block}</p>
+                })}
               </div>
-            ) : article.excerpt ? (
-              <div className="prose prose-base max-w-none text-brand-slate mb-8">
-                <p className="leading-relaxed">{article.excerpt}</p>
-              </div>
-            ) : null
+            )
           } else {
             // External RSS articles: show AI Summary box + excerpt
             return (

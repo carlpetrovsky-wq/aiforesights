@@ -50,6 +50,7 @@ function mapArticle(row: Record<string, unknown>) {
     slug:         row.slug,
     excerpt:      row.excerpt ?? '',
     summary:      row.summary ?? '',
+    content:      row.content ?? '',
     thumbnailUrl: row.thumbnail_url ?? undefined,
     sourceUrl:    row.source_url,
     sourceName:   row.source_name ?? '',

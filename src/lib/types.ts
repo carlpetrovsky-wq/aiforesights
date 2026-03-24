@@ -4,6 +4,7 @@ export interface Article {
   slug: string
   excerpt: string
   summary?: string
+  content?: string
   thumbnailUrl?: string
   sourceUrl: string
   sourceName: string
