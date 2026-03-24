@@ -14,6 +14,7 @@ export default function LatestNewsPage() {
   const [loading, setLoading]         = useState(true)
   const [sortBy, setSortBy]           = useState<'latest'|'popular'>('latest')
   const [activeCategory, setCategory] = useState('All')
+  const [ratings, setRatings] = useState<Record<string, { average: number; count: number }>>({})
 
   useEffect(() => {
     async function load() {
@@ -25,7 +26,17 @@ export default function LatestNewsPage() {
         }
         const res = await fetch(`/api/articles?${params}`)
         const data = await res.json()
-        setArticles(Array.isArray(data) && data.length > 0 ? data : MOCK_ARTICLES)
+        const arts = Array.isArray(data) && data.length > 0 ? data : MOCK_ARTICLES
+        setArticles(arts)
+        // Fetch ratings
+        try {
+          const slugs = arts.map((a: any) => a.slug).join(',')
+          if (slugs) {
+            const rRes = await fetch(`/api/ratings?slugs=${slugs}`)
+            const rData = await rRes.json()
+            setRatings(rData)
+          }
+        } catch {}
       } catch {
         setArticles(MOCK_ARTICLES)
       } finally {
