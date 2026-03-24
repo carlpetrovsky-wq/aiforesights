@@ -4,6 +4,7 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import Link from 'next/link'
 import { ExternalLink, ArrowLeft, Clock, User } from 'lucide-react'
+import ArticleFooter from '@/components/article/ArticleFooter'
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -32,6 +33,8 @@ async function getArticle(slug: string) {
 export default async function ArticlePage({ params }: { params: { slug: string } }) {
   const article = await getArticle(params.slug)
   if (!article) notFound()
+  const isOwnContent = article.source_name === 'AI Foresights' || (article.source_url || '').includes('aiforesights.com')
+  const relatedArticles = await getRelatedArticles(params.slug, article.category_slug || 'latest-news')
 
   const image = article.thumbnail_url || CATEGORY_FALLBACKS[article.category_slug] || CATEGORY_FALLBACKS['latest-news']
   const publishedDate = article.published_at
@@ -141,23 +144,47 @@ export default async function ArticlePage({ params }: { params: { slug: string }
           }
         })()}
 
-        {/* Read full article CTA — only show for external sources, not our own content */}
+        {/* Read full article CTA — only for external sources */}
         {article.source_url && article.source_name !== 'AI Foresights' && !article.source_url.includes('aiforesights.com') && (
           <a
             href={article.source_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-5 py-3 bg-brand-sky hover:bg-brand-skyDark text-white font-medium rounded-lg transition text-sm"
+            className="inline-flex items-center gap-2 px-5 py-3 bg-brand-sky hover:bg-brand-skyDark text-white font-medium rounded-lg transition text-sm mb-8"
           >
             Read full article on {article.source_name || 'source'}
             <ExternalLink className="w-4 h-4" />
           </a>
         )}
+
+        {/* Article footer: star rating, related articles, newsletter CTA, back to top */}
+        <ArticleFooter
+          articleSlug={params.slug}
+          category={article.category_slug || 'latest-news'}
+          relatedArticles={relatedArticles}
+          isOwnContent={isOwnContent}
+        />
       </main>
 
       <Footer />
     </div>
   )
+}
+
+async function getRelatedArticles(slug: string, category: string) {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+  const { data } = await supabase
+    .from('articles')
+    .select('slug, title, thumbnail_url, category_slug')
+    .eq('category_slug', category)
+    .eq('status', 'published')
+    .neq('slug', slug)
+    .order('published_at', { ascending: false })
+    .limit(3)
+  return data || []
 }
 
 export async function generateMetadata({ params }: { params: { slug: string } }) {
