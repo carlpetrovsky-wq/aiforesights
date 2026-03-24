@@ -79,7 +79,7 @@ export default function LatestNewsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {articles.map((a, i) => (
               <div key={a.id}>
-                <ArticleCard article={a} variant={a.isFeatured && i === 0 ? 'featured' : 'default'} />
+                <ArticleCard article={a} variant={a.isFeatured && i === 0 ? 'featured' : 'default'} ratingAverage={ratings[a.slug]?.average} ratingCount={ratings[a.slug]?.count} />
                 {(i + 1) % 6 === 0 && <div className="mt-4"><AdSlot slot="in-feed" size="banner" /></div>}
               </div>
             ))}

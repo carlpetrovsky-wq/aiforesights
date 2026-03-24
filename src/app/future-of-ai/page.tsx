@@ -12,6 +12,7 @@ import { TrendingUp, Brain, Globe, Zap } from 'lucide-react'
 export default function FutureOfAIPage() {
   const [articles, setArticles] = useState<Article[]>([])
   const [loading, setLoading] = useState(true)
+  const [ratings, setRatings] = useState<Record<string, { average: number; count: number }>>({})
 
   useEffect(() => {
     async function load() {
@@ -22,6 +23,15 @@ export default function FutureOfAIPage() {
         setArticles(Array.isArray(data) && data.length > 0 ? data : MOCK_ARTICLES)
       } catch {
         setArticles(MOCK_ARTICLES.slice(0, 6))
+        // Fetch ratings for all articles
+        const slugsToRate = (Array.isArray(articles) ? articles : []).map((a: any) => a.slug).join(',')
+        if (slugsToRate) {
+          try {
+            const rRes = await fetch(`/api/ratings?slugs=${slugsToRate}`)
+            const rData = await rRes.json()
+            setRatings(rData)
+          } catch {}
+        }
       } finally {
         setLoading(false)
       }
@@ -68,7 +78,7 @@ export default function FutureOfAIPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {articles.map((a, i) => (
               <div key={a.id}>
-                <ArticleCard article={a} variant={a.isFeatured && i === 0 ? 'featured' : 'default'} />
+                <ArticleCard article={a} variant={a.isFeatured && i === 0 ? 'featured' : 'default'} ratingAverage={ratings[a.slug]?.average} ratingCount={ratings[a.slug]?.count} />
                 {(i + 1) % 6 === 0 && <div className="mt-4"><AdSlot slot="in-feed" size="banner" /></div>}
               </div>
             ))}
