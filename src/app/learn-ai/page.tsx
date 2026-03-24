@@ -62,7 +62,13 @@ export default function LearnAIPage() {
               const colors = TYPE_COLORS[r.type] || TYPE_COLORS.guide
               const isInternal = r.url.startsWith('/')
               return (
-                <div key={r.id} className="border border-brand-border rounded-xl bg-white overflow-hidden hover:border-brand-sky transition-colors group flex flex-col">
+                <a
+                  key={r.id}
+                  href={r.affiliateUrl || r.url}
+                  target={isInternal ? undefined : '_blank'}
+                  rel={isInternal ? undefined : 'noopener noreferrer'}
+                  className="border border-brand-border rounded-xl bg-white overflow-hidden hover:border-brand-sky hover:shadow-md transition-all group flex flex-col cursor-pointer"
+                >
                   {/* Visual header */}
                   <div className="w-full h-28 flex items-center justify-center relative overflow-hidden" style={{ backgroundColor: r.thumbnailBg }}>
                     {r.thumbnailUrl ? (
@@ -96,17 +102,12 @@ export default function LearnAIPage() {
                       <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded capitalize ${LEVEL_COLORS[r.level]}`}>{r.level}</span>
                       <span className="text-[10px] text-brand-muted">· {r.duration}</span>
                     </div>
-                    <a
-                      href={r.affiliateUrl || r.url}
-                      target={isInternal ? undefined : '_blank'}
-                      rel={isInternal ? undefined : 'noopener noreferrer'}
-                      className="flex items-center gap-1 text-[10px] text-brand-sky hover:underline font-medium mt-auto"
-                    >
+                    <div className="flex items-center gap-1 text-[10px] text-brand-sky font-medium mt-auto">
                       {r.isFree ? 'Free' : r.isAffiliate ? 'Affiliate link' : 'Visit'} · {r.platform}
                       {!isInternal && <ExternalLink className="w-2.5 h-2.5" />}
-                    </a>
+                    </div>
                   </div>
-                </div>
+                </a>
               )
             })}
           </div>
@@ -127,7 +128,13 @@ export default function LearnAIPage() {
               const colors = TYPE_COLORS[r.type] || TYPE_COLORS.guide
               const isInternal = r.url.startsWith('/')
               return (
-                <div key={r.id} className="border border-brand-border rounded-xl bg-white overflow-hidden hover:border-brand-sky transition-colors group flex flex-col">
+                <a
+                  key={r.id}
+                  href={r.affiliateUrl || r.url}
+                  target={isInternal ? undefined : '_blank'}
+                  rel={isInternal ? undefined : 'noopener noreferrer'}
+                  className="border border-brand-border rounded-xl bg-white overflow-hidden hover:border-brand-sky hover:shadow-md transition-all group flex flex-col cursor-pointer"
+                >
                   <div className="w-full h-28 flex items-center justify-center relative overflow-hidden" style={{ backgroundColor: r.thumbnailBg }}>
                     {r.thumbnailUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -159,17 +166,12 @@ export default function LearnAIPage() {
                       <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded capitalize ${LEVEL_COLORS[r.level]}`}>{r.level}</span>
                       <span className="text-[10px] text-brand-muted">· {r.duration}</span>
                     </div>
-                    <a
-                      href={r.affiliateUrl || r.url}
-                      target={isInternal ? undefined : '_blank'}
-                      rel={isInternal ? undefined : 'noopener noreferrer'}
-                      className="flex items-center gap-1 text-[10px] text-brand-sky hover:underline font-medium mt-auto"
-                    >
+                    <div className="flex items-center gap-1 text-[10px] text-brand-sky font-medium mt-auto">
                       {r.isFree ? 'Free' : r.isAffiliate ? 'Affiliate link' : 'Visit'} · {r.platform}
                       {!isInternal && <ExternalLink className="w-2.5 h-2.5" />}
-                    </a>
+                    </div>
                   </div>
-                </div>
+                </a>
               )
             })}
           </div>
