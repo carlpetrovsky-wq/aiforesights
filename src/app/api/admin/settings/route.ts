@@ -6,6 +6,7 @@ export async function GET() {
   const { data, error } = await supabaseAdmin
     .from('settings')
     .select('*')
+    .not('key', 'in', '(mailchimp_list_id,mailchimp_api_key)')
     .order('key')
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
