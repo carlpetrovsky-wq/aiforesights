@@ -30,9 +30,11 @@ export default function ArticleCard({ article, variant = 'default' }: ArticleCar
   const ago = timeAgo(article.publishedAt)
   const dotBg = article.sourceColor ? (SOURCE_DOT_COLORS[article.sourceColor] ?? 'bg-blue-400') : 'bg-blue-400'
 
-  // Primary link: external source URL if available, else internal article page
-  const articleHref = article.sourceUrl || `/article/${article.slug}`
-  const isExternal = !!article.sourceUrl
+  // For our own content (AI Foresights), always use internal article page
+  // For external sources, link to their sourceUrl
+  const isOwnContent = article.sourceName === 'AI Foresights' || article.sourceUrl?.includes('aiforesights.com')
+  const articleHref = (!isOwnContent && article.sourceUrl) ? article.sourceUrl : `/article/${article.slug}`
+  const isExternal = !isOwnContent && !!article.sourceUrl
   const linkProps = isExternal
     ? { target: '_blank' as const, rel: 'noopener noreferrer' }
     : {}

@@ -102,8 +102,8 @@ export default async function ArticlePage({ params }: { params: { slug: string }
           </div>
         )}
 
-        {/* Read full article CTA */}
-        {article.source_url && (
+        {/* Read full article CTA — only show for external sources, not our own content */}
+        {article.source_url && article.source_name !== 'AI Foresights' && !article.source_url.includes('aiforesights.com') && (
           <a
             href={article.source_url}
             target="_blank"
