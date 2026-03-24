@@ -12,6 +12,7 @@ import { DollarSign, Briefcase, Clock, TrendingUp } from 'lucide-react'
 export default function MakeMoneyPage() {
   const [articles, setArticles] = useState<Article[]>([])
   const [loading, setLoading] = useState(true)
+  const [ratings, setRatings] = useState<Record<string, { average: number; count: number }>>({}) 
 
   useEffect(() => {
     async function load() {
@@ -19,7 +20,17 @@ export default function MakeMoneyPage() {
       try {
         const res = await fetch('/api/articles?limit=24&category=make-money&sortBy=latest')
         const data = await res.json()
-        setArticles(Array.isArray(data) && data.length > 0 ? data : MOCK_ARTICLES.slice(0, 6))
+        const articles = Array.isArray(data) && data.length > 0 ? data : MOCK_ARTICLES.slice(0, 6)
+        setArticles(articles)
+        // Fetch ratings for all articles
+        if (articles.length > 0) {
+          const slugs = articles.map((a: any) => a.slug).join(',')
+          try {
+            const rRes = await fetch(`/api/ratings?slugs=${slugs}`)
+            const rData = await rRes.json()
+            setRatings(rData)
+          } catch {}
+        }
       } catch {
         setArticles(MOCK_ARTICLES.slice(0, 6))
       } finally {
@@ -68,7 +79,7 @@ export default function MakeMoneyPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {articles.map((a, i) => (
               <div key={a.id}>
-                <ArticleCard article={a} variant={a.isFeatured && i === 0 ? 'featured' : 'default'} />
+                <ArticleCard article={a} variant={a.isFeatured && i === 0 ? 'featured' : 'default'} ratingAverage={ratings[a.slug]?.average} ratingCount={ratings[a.slug]?.count} />
                 {(i + 1) % 6 === 0 && <div className="mt-4"><AdSlot slot="in-feed" size="banner" /></div>}
               </div>
             ))}

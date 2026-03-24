@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import RatingBadge from '@/components/article/RatingBadge'
 import { ChevronUp, ExternalLink } from 'lucide-react'
 import { Article } from '@/lib/types'
 import { timeAgo, cn } from '@/lib/utils'
@@ -15,6 +16,8 @@ const CATEGORY_FALLBACKS: Record<string, string> = {
 interface ArticleCardProps {
   article: Article
   variant?: 'default' | 'featured' | 'compact'
+  ratingAverage?: number
+  ratingCount?: number
 }
 
 const SOURCE_DOT_COLORS: Record<string, string> = {
@@ -26,7 +29,7 @@ const SOURCE_DOT_COLORS: Record<string, string> = {
   '#F97316': 'bg-orange-400',
 }
 
-export default function ArticleCard({ article, variant = 'default' }: ArticleCardProps) {
+export default function ArticleCard({ article, variant = 'default', ratingAverage, ratingCount }: ArticleCardProps) {
   const ago = timeAgo(article.publishedAt)
   const dotBg = article.sourceColor ? (SOURCE_DOT_COLORS[article.sourceColor] ?? 'bg-blue-400') : 'bg-blue-400'
 
@@ -113,11 +116,14 @@ export default function ArticleCard({ article, variant = 'default' }: ArticleCar
         {/* Title */}
         <Link href={articleHref} {...linkProps}>
           <h3 className={cn(
-            'font-semibold text-brand-navy leading-snug group-hover:text-brand-sky transition-colors mb-2 line-clamp-2',
+            'font-semibold text-brand-navy leading-snug group-hover:text-brand-sky transition-colors mb-1 line-clamp-2',
             variant === 'featured' ? 'text-base' : 'text-[13px]'
           )}>
             {article.title}
           </h3>
+          {ratingAverage !== undefined && ratingCount !== undefined && ratingCount > 0 && (
+            <RatingBadge average={ratingAverage} count={ratingCount} />
+          )}
         </Link>
 
         {/* Excerpt — featured only */}
