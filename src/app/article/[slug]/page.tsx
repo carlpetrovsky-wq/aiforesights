@@ -84,23 +84,43 @@ export default async function ArticlePage({ params }: { params: { slug: string }
           className="w-full aspect-video object-cover rounded-xl mb-6 shadow-sm"
         />
 
-        {/* AI Summary box */}
-        {article.summary && (
-          <div className="bg-brand-sky/5 border border-brand-sky/20 rounded-xl p-5 mb-6">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xs font-semibold text-brand-sky uppercase tracking-wider">AI Summary</span>
-              <span className="text-xs text-brand-slate">— plain English for professionals</span>
-            </div>
-            <p className="text-brand-navy text-sm leading-relaxed">{article.summary}</p>
-          </div>
-        )}
-
-        {/* Excerpt / full content if available */}
-        {article.excerpt && (
-          <div className="prose prose-sm max-w-none text-brand-slate mb-8">
-            <p className="leading-relaxed">{article.excerpt}</p>
-          </div>
-        )}
+        {(() => {
+          const isOwnContent = article.source_name === 'AI Foresights' || article.source_url?.includes('aiforesights.com')
+          if (isOwnContent) {
+            // Our own articles: show summary as full article body, no "AI Summary" label
+            return article.summary ? (
+              <div className="prose prose-base max-w-none text-brand-slate mb-8 leading-relaxed space-y-4">
+                {article.summary.split('\n').filter(Boolean).map((para: string, i: number) => (
+                  <p key={i} className="leading-relaxed">{para}</p>
+                ))}
+              </div>
+            ) : article.excerpt ? (
+              <div className="prose prose-base max-w-none text-brand-slate mb-8">
+                <p className="leading-relaxed">{article.excerpt}</p>
+              </div>
+            ) : null
+          } else {
+            // External RSS articles: show AI Summary box + excerpt
+            return (
+              <>
+                {article.summary && (
+                  <div className="bg-brand-sky/5 border border-brand-sky/20 rounded-xl p-5 mb-6">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs font-semibold text-brand-sky uppercase tracking-wider">AI Summary</span>
+                      <span className="text-xs text-brand-slate">— plain English for professionals</span>
+                    </div>
+                    <p className="text-brand-navy text-sm leading-relaxed">{article.summary}</p>
+                  </div>
+                )}
+                {article.excerpt && (
+                  <div className="prose prose-sm max-w-none text-brand-slate mb-8">
+                    <p className="leading-relaxed">{article.excerpt}</p>
+                  </div>
+                )}
+              </>
+            )
+          }
+        })()}
 
         {/* Read full article CTA — only show for external sources, not our own content */}
         {article.source_url && article.source_name !== 'AI Foresights' && !article.source_url.includes('aiforesights.com') && (
