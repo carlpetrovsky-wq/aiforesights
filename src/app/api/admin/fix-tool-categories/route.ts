@@ -106,7 +106,6 @@ const TOOL_AUDIT: Record<string, { category: string; tags: string[] }> = {
   'gamma-ai':          { category: 'Productivity', tags: ['presentations', 'slides', 'documents', 'ai generated', 'design'] },
   'tome':              { category: 'Productivity', tags: ['presentations', 'slides', 'ai generated', 'storytelling', 'design'] },
   'harvey-ai':         { category: 'Productivity', tags: ['legal', 'contracts', 'research', 'enterprise', 'compliance'] },
-  'microsoft-copilot': { category: 'Chatbots', tags: ['chatbot', 'microsoft', 'office', 'productivity', 'bing', 'ai assistant'] },
 
   // ── WRITING & CONTENT ─────────────────────────────────────────────────────
   'jasper-ai':         { category: 'Writing & Content', tags: ['writing', 'marketing', 'copywriting', 'content', 'blog', 'ai writing'] },
