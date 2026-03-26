@@ -11,6 +11,7 @@ const PRICING_FILTERS  = ['All', 'Free', 'Freemium', 'Paid']
 const LEVEL_FILTERS    = ['All levels', 'Beginner', 'Intermediate', 'Advanced']
 const CATEGORY_FILTERS = [
   'All categories',
+  'Chatbots',
   'AI Agents',
   'AI Models',
   'App Builders',
