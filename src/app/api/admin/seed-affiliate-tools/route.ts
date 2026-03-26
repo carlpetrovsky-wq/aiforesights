@@ -57,7 +57,7 @@ const MISSING_AFFILIATE_TOOLS = [
     name: 'NordVPN',
     slug: 'nordvpn',
     category: 'Productivity',
-    description: 'The world's leading VPN service that protects your privacy online. NordVPN encrypts your internet connection, hides your IP address, and lets you access content from anywhere in the world. Essential for anyone using public WiFi, working remotely, or concerned about online privacy. Threat Protection blocks ads and malware automatically.',
+    description: "The world's leading VPN service that protects your privacy online. NordVPN encrypts your internet connection, hides your IP address, and lets you access content from anywhere in the world. Essential for anyone using public WiFi, working remotely, or concerned about online privacy. Threat Protection blocks ads and malware automatically.",
     website_url: 'https://nordvpn.com',
     pricing: 'paid',
     experience_level: 'beginner',
