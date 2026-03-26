@@ -104,8 +104,8 @@ export async function getTools({
   if (experienceLevel && experienceLevel !== 'all') query = query.eq('experience_level', experienceLevel)
   if (featured !== undefined) query = query.eq('is_featured', featured)
   if (search) {
-    // Search across name, description, and tags (cast tags array to text)
-    query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%,tags.cs.{${search}}`)
+    // name and description partial match covers most searches
+    query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%`)
   }
 
   const { data, error } = await query

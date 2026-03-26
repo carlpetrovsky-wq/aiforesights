@@ -177,5 +177,19 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Patch descriptions to ensure key search terms appear naturally
+  const DESCRIPTION_PATCHES: Record<string, string> = {
+    'chatgpt':           'The original AI chatbot assistant. Great for writing, brainstorming, coding, and answering questions in plain English. The tool that introduced millions of people to AI.',
+    'claude':            'Anthropic\'s AI chatbot, known for thoughtful and nuanced responses. Exceptional for reading long documents, writing, analysis, and handling sensitive topics carefully.',
+    'gemini':            'Google\'s AI chatbot assistant built into Gmail, Docs, Sheets, and Slides. Best for users already in the Google ecosystem who want AI help without switching apps.',
+    'meta-ai':           'Meta\'s free AI chatbot assistant inside Facebook, Instagram, WhatsApp, and Messenger. Easy to access if you already use Meta\'s apps — no extra account needed.',
+    'microsoft-copilot': 'Microsoft\'s AI chatbot built into Word, Excel, PowerPoint, and Outlook. If your workplace uses Microsoft 365, Copilot is already available to you at no extra cost.',
+    'perplexity':        'AI chatbot and search engine that gives you direct answers with cited sources. Replaces Googling for research — every answer links back to where it came from.',
+  }
+
+  for (const [slug, description] of Object.entries(DESCRIPTION_PATCHES)) {
+    await supabaseAdmin.from('tools').update({ description }).eq('slug', slug)
+  }
+
   return NextResponse.json({ success: true, updated, skipped, errors: errors.slice(0, 5) })
 }
