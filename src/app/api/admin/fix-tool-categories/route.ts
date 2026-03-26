@@ -141,6 +141,12 @@ const TOOL_AUDIT: Record<string, { category: string; tags: string[] }> = {
   'khanmigo':          { category: 'Education', tags: ['education', 'tutoring', 'students', 'learning', 'math', 'k12'] },
   'duolingo-max':      { category: 'Education', tags: ['education', 'language learning', 'beginner', 'conversation', 'practice'] },
 
+  // ── SLUG ALIASES (original seeded tools with different slug format) ─────────
+  'huggingface':       { category: 'AI Models', tags: ['model', 'open source', 'models', 'research', 'developer', 'hub'] },
+  'perplexity':        { category: 'Chatbots', tags: ['chatbot', 'search', 'research', 'citations', 'real-time', 'ai assistant'] },
+  'jasper':            { category: 'Writing & Content', tags: ['writing', 'marketing', 'copywriting', 'content', 'blog', 'ai writing'] },
+  'runway':            { category: 'Video & Audio', tags: ['video', 'video editing', 'ai video', 'creative', 'film'] },
+
   // ── HEALTHCARE ────────────────────────────────────────────────────────────
   'nabla-copilot':     { category: 'Healthcare', tags: ['healthcare', 'medical', 'notes', 'doctors', 'documentation', 'clinical'] },
 }
