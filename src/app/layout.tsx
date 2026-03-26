@@ -73,6 +73,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <meta name="google-site-verification" content={googleVerification} />
         )}
         {/* Impact.com domain verification */}
+        {/* @ts-ignore */}
         <meta name="impact-site-verification" value="dcaff389-1fb1-454a-b7d6-9275d8eb1579" />
 
         {/* Google Analytics */}
