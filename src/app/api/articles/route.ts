@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { getArticles } from '@/lib/supabase'
 
@@ -10,9 +11,14 @@ export async function GET(req: NextRequest) {
 
   let articles = await getArticles({ limit, sortBy, category, featured })
 
-  // If no featured articles exist, fall back to the 3 most recent published articles
-  if (featured && articles.length === 0) {
-    articles = await getArticles({ limit, sortBy: 'latest', category })
+  // Hybrid: if fetching featured but fewer than limit exist, fill remaining
+  // slots with most recent articles (excluding already-included ones)
+  if (featured && articles.length < limit) {
+    const existingIds = new Set(articles.map((a: any) => a.id))
+    const needed = limit - articles.length
+    const recent = await getArticles({ limit: limit + 10, sortBy: 'latest', category })
+    const fill = recent.filter((a: any) => !existingIds.has(a.id)).slice(0, needed)
+    articles = [...articles, ...fill]
   }
 
   return NextResponse.json(articles)
