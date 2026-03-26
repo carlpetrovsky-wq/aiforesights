@@ -94,6 +94,17 @@ function ArticlesContent() {
     setModalOpen(true)
   }
 
+  async function toggleFeatured(id: string, current: boolean) {
+    try {
+      await fetch('/api/admin/articles', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, is_featured: !current }),
+      })
+      setArticles(prev => prev.map(a => a.id === id ? { ...a, is_featured: !current } : a))
+    } catch {}
+  }
+
   function openEdit(a: Article) {
     setEditing({ ...a })
     setModalOpen(true)
@@ -215,6 +226,7 @@ function ArticlesContent() {
                   <SortableHeader label="Source" sortKey="source_name" activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} className="hidden md:table-cell" />
                   <SortableHeader label="Published" sortKey="published_at" activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} className="hidden lg:table-cell" />
                   <SortableHeader label="Status" sortKey="status" activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} />
+                  <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden sm:table-cell">Featured</th>
                   <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
@@ -233,6 +245,15 @@ function ArticlesContent() {
                       {a.published_at ? new Date(a.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}
                     </td>
                     <td className="px-4 py-3 text-center"><StatusBadge status={a.status} /></td>
+                    <td className="px-4 py-3 text-center hidden sm:table-cell">
+                      <button
+                        onClick={() => toggleFeatured(a.id, a.is_featured)}
+                        className={`p-1.5 rounded-md transition ${a.is_featured ? 'text-amber-400 hover:text-amber-300 bg-amber-400/10' : 'text-slate-600 hover:text-amber-400 hover:bg-white/[0.06]'}`}
+                        title={a.is_featured ? 'Remove from featured' : 'Mark as featured'}
+                      >
+                        <Star className={`w-3.5 h-3.5 ${a.is_featured ? 'fill-amber-400' : ''}`} />
+                      </button>
+                    </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
                         <button onClick={() => openEdit(a)} className="p-1.5 text-slate-500 hover:text-white hover:bg-white/[0.06] rounded-md transition">

@@ -24,7 +24,7 @@ export default function HomePage() {
     async function load() {
       try {
         const [featRes, latRes, toolRes, statsRes] = await Promise.all([
-          fetch('/api/articles?featured=true&limit=3'),
+          fetch('/api/articles?limit=3&sortBy=latest'),
           fetch('/api/articles?limit=6&sortBy=latest'),
           fetch('/api/tools?limit=5'),
           fetch('/api/stats'),
