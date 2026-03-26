@@ -82,12 +82,14 @@ export async function getTools({
   pricing,
   experienceLevel,
   search,
+  category: categoryFilter,
   featured,
 }: {
   limit?: number
   pricing?: string
   experienceLevel?: string
   search?: string
+  category?: string
   featured?: boolean
 } = {}) {
   let query = supabase
@@ -97,6 +99,7 @@ export async function getTools({
     .order('save_count', { ascending: false })
     .limit(limit)
 
+  if (categoryFilter) query = query.eq('category', categoryFilter)
   if (pricing && pricing !== 'all') query = query.eq('pricing', pricing.toLowerCase())
   if (experienceLevel && experienceLevel !== 'all') query = query.eq('experience_level', experienceLevel)
   if (featured !== undefined) query = query.eq('is_featured', featured)

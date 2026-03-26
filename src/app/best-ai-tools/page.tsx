@@ -7,23 +7,42 @@ import AdSlot from '@/components/ads/AdSlot'
 import { MOCK_TOOLS } from '@/lib/data'
 import { Tool } from '@/lib/types'
 
-const PRICING_FILTERS = ['All', 'Free', 'Freemium', 'Paid']
-const LEVEL_FILTERS   = ['All levels', 'Beginner', 'Intermediate', 'Advanced']
+const PRICING_FILTERS  = ['All', 'Free', 'Freemium', 'Paid']
+const LEVEL_FILTERS    = ['All levels', 'Beginner', 'Intermediate', 'Advanced']
+const CATEGORY_FILTERS = [
+  'All categories',
+  'AI Agents',
+  'AI Models',
+  'App Builders',
+  'Coding & Dev',
+  'Customer Service',
+  'Data & Analytics',
+  'Design',
+  'Education',
+  'Healthcare',
+  'Image Generation',
+  'Productivity',
+  'Search & Research',
+  'Video & Audio',
+  'Writing & Content',
+]
 
 export default function BestAIToolsPage() {
   const [tools, setTools]       = useState<Tool[]>([])
   const [loading, setLoading]   = useState(true)
   const [pricing, setPricing]   = useState('All')
   const [level, setLevel]       = useState('All levels')
+  const [category, setCategory] = useState('All categories')
   const [search, setSearch]     = useState('')
 
   useEffect(() => {
     async function load() {
       setLoading(true)
       try {
-        const params = new URLSearchParams({ limit: '50' })
+        const params = new URLSearchParams({ limit: '200' })
         if (pricing !== 'All') params.set('pricing', pricing.toLowerCase())
         if (level !== 'All levels') params.set('level', level.toLowerCase())
+        if (category !== 'All categories') params.set('category', category)
         if (search) params.set('search', search)
         const res = await fetch(`/api/tools?${params}`)
         const data = await res.json()
@@ -35,7 +54,7 @@ export default function BestAIToolsPage() {
       }
     }
     load()
-  }, [pricing, level, search])
+  }, [pricing, level, category, search])
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -74,11 +93,23 @@ export default function BestAIToolsPage() {
               </button>
             ))}
           </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-brand-slate font-medium">Category:</span>
+            <select
+              value={category}
+              onChange={e => setCategory(e.target.value)}
+              className="text-xs font-medium px-3 py-1.5 rounded-lg border border-brand-border bg-white text-brand-slate focus:outline-none focus:border-brand-sky cursor-pointer"
+            >
+              {CATEGORY_FILTERS.map(f => (
+                <option key={f} value={f}>{f}</option>
+              ))}
+            </select>
+          </div>
         </div>
         <div className="flex items-center gap-3 mb-4">
           <span className="text-sm text-brand-slate">{loading ? 'Loading…' : `${tools.length} tools`}</span>
-          {(pricing !== 'All' || level !== 'All levels' || search) && (
-            <button onClick={() => { setPricing('All'); setLevel('All levels'); setSearch('') }}
+          {(pricing !== 'All' || level !== 'All levels' || category !== 'All categories' || search) && (
+            <button onClick={() => { setPricing('All'); setLevel('All levels'); setCategory('All categories'); setSearch('') }}
               className="text-xs text-brand-sky hover:underline">Clear filters</button>
           )}
         </div>
@@ -89,7 +120,7 @@ export default function BestAIToolsPage() {
         ) : tools.length === 0 ? (
           <div className="text-center py-16 border-2 border-dashed border-brand-border rounded-2xl">
             <p className="text-brand-slate text-sm">No tools match your filters.</p>
-            <button onClick={() => { setPricing('All'); setLevel('All levels'); setSearch('') }}
+            <button onClick={() => { setPricing('All'); setLevel('All levels'); setCategory('All categories'); setSearch('') }}
               className="mt-3 text-xs text-brand-sky hover:underline">Clear filters</button>
           </div>
         ) : (

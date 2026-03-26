@@ -8,7 +8,8 @@ export async function GET(req: NextRequest) {
   const experienceLevel = searchParams.get('level') ?? undefined
   const search          = searchParams.get('search') ?? undefined
   const featured        = searchParams.get('featured') === 'true' ? true : undefined
+  const category        = searchParams.get('category') ?? undefined
 
-  const tools = await getTools({ limit, pricing, experienceLevel, search, featured })
+  const tools = await getTools({ limit, pricing, experienceLevel, search, featured, category })
   return NextResponse.json(tools)
 }
