@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 
 const NEW_TOOLS = [
@@ -75,8 +76,11 @@ const NEW_TOOLS = [
 ]
 
 export async function POST(req: NextRequest) {
-  const authHeader = req.headers.get('authorization')
-  if (authHeader?.replace('Bearer ', '') !== process.env.ADMIN_TOKEN) {
+  // Accept either cookie auth (admin panel) or Bearer token auth
+  const cookieToken = req.cookies.get('admin_token')?.value
+  const bearerToken = req.headers.get('authorization')?.replace('Bearer ', '')
+  const expected = process.env.ADMIN_TOKEN
+  if (!expected || (cookieToken !== expected && bearerToken !== expected)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
