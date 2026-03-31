@@ -27,7 +27,7 @@ export default function HomePage() {
           fetch(`/api/articles?featured=true&limit=3&t=${Date.now()}`, { cache: 'no-store' }),
           fetch(`/api/articles?limit=6&sortBy=latest&t=${Date.now()}`, { cache: 'no-store' }),
           fetch(`/api/tools?limit=5&t=${Date.now()}`, { cache: 'no-store' }),
-          fetch(`/api/stats&t=${Date.now()}`, { cache: 'no-store' }),
+          fetch(`/api/stats?t=${Date.now()}`, { cache: 'no-store' }),
         ])
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const [featData, latData, toolData, statsData]: [any[], any[], any[], any] = await Promise.all([
