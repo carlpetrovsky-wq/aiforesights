@@ -17,7 +17,13 @@ export async function getArticles({
   category?: string
   featured?: boolean
 } = {}) {
-  let query = supabase
+  // Use service role client to bypass PostgREST query cache
+  const { createClient } = await import('@supabase/supabase-js')
+  const adminClient = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+  let query = adminClient
     .from('articles')
     .select('*')
     .eq('status', 'published')
