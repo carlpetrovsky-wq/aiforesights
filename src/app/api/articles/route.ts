@@ -18,11 +18,15 @@ function mapRow(row: any) {
     content:      row.content ?? '',
     publishedAt:  row.published_at,
     categorySlug: row.category_slug ?? '',
+    category:     row.category_slug ?? '',
     sourceName:   row.source_name ?? '',
     sourceUrl:    row.source_url ?? '',
     thumbnailUrl: row.thumbnail_url ?? null,
     thumbnailBg:  row.thumbnail_bg ?? '#0EA5E9',
     isFeatured:   row.is_featured ?? false,
+    excerpt:      row.summary ?? '',
+    sourceColor:  row.source_color ?? null,
+    voteCount:    row.vote_count ?? 0,
     tags:         Array.isArray(row.tags) ? row.tags : [],
   }
 }
@@ -35,10 +39,12 @@ export async function GET(req: NextRequest) {
   const featured = searchParams.get('featured') === 'true' ? true : undefined
 
   // Use supabaseAdmin to bypass PostgREST result cache
+  // neq on a non-existent value forces a fresh Postgres query each time
   let query = supabaseAdmin
     .from('articles')
     .select('*')
     .eq('status', 'published')
+    .neq('id', '00000000-0000-0000-0000-000000000000')
     .limit(limit)
 
   if (category) query = query.eq('category_slug', category)
