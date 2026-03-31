@@ -51,9 +51,13 @@ export default function HomePage() {
   const displayFeatured = activeSource
     ? (featured.length > 0 ? featured : MOCK_ARTICLES.filter((a: Article) => a.isFeatured).slice(0, 3)).filter((a: Article) => a.sourceName === activeSource)
     : featured.length > 0 ? featured : MOCK_ARTICLES.filter((a: Article) => a.isFeatured).slice(0, 3)
+  // Exclude featured articles from latest news to prevent duplicates
+  const featuredIds = new Set(displayFeatured.map((a: Article) => a.id))
+  const latestDeduped = latest.filter((a: Article) => !featuredIds.has(a.id))
+  const mockLatest = MOCK_ARTICLES.filter((a: Article) => !a.isFeatured).slice(0, 6)
   const displayLatest = activeSource
-    ? (latest.length > 0 ? latest : MOCK_ARTICLES.filter((a: Article) => !a.isFeatured).slice(0, 6)).filter((a: Article) => a.sourceName === activeSource)
-    : latest.length > 0 ? latest : MOCK_ARTICLES.filter((a: Article) => !a.isFeatured).slice(0, 6)
+    ? (latestDeduped.length > 0 ? latestDeduped : mockLatest).filter((a: Article) => a.sourceName === activeSource)
+    : latestDeduped.length > 0 ? latestDeduped : mockLatest
   const displayTools    = topTools.length > 0  ? topTools : MOCK_TOOLS.slice(0, 5)
 
   return (
