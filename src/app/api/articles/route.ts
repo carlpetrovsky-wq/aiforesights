@@ -21,5 +21,7 @@ export async function GET(req: NextRequest) {
     articles = [...articles, ...fill]
   }
 
-  return NextResponse.json(articles)
+  return NextResponse.json(articles, {
+    headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate' }
+  })
 }
