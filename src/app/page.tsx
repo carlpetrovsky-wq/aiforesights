@@ -24,10 +24,10 @@ export default function HomePage() {
     async function load() {
       try {
         const [featRes, latRes, toolRes, statsRes] = await Promise.all([
-          fetch('/api/articles?featured=true&limit=3', { cache: 'no-store' }),
-          fetch('/api/articles?limit=6&sortBy=latest', { cache: 'no-store' }),
-          fetch('/api/tools?limit=5', { cache: 'no-store' }),
-          fetch('/api/stats', { cache: 'no-store' }),
+          fetch(`/api/articles?featured=true&limit=3&t=${Date.now()}`, { cache: 'no-store' }),
+          fetch(`/api/articles?limit=6&sortBy=latest&t=${Date.now()}`, { cache: 'no-store' }),
+          fetch(`/api/tools?limit=5&t=${Date.now()}`, { cache: 'no-store' }),
+          fetch(`/api/stats&t=${Date.now()}`, { cache: 'no-store' }),
         ])
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const [featData, latData, toolData, statsData]: [any[], any[], any[], any] = await Promise.all([
