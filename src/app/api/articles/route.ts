@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let articles = (data ?? []).map((row: any) => ({
+  let articles: any[] = (data ?? []).map((row: any) => ({
     id:           row.id,
     title:        row.title,
     slug:         row.slug,
