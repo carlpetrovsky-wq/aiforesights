@@ -29,7 +29,7 @@ const SOURCE_DOT_COLORS: Record<string, string> = {
   '#F97316': 'bg-orange-400',
 }
 
-export default function ArticleCard({ article, variant = 'default', ratingAverage, ratingCount }: ArticleCardProps) {
+export default function ArticleCard({ article, variant = 'default', ratingAverage, ratingCount, showBadge }: ArticleCardProps & { showBadge?: boolean }) {
   const ago = timeAgo(article.publishedAt)
   const dotBg = article.sourceColor ? (SOURCE_DOT_COLORS[article.sourceColor] ?? 'bg-blue-400') : 'bg-blue-400'
 
@@ -96,7 +96,7 @@ export default function ArticleCard({ article, variant = 'default', ratingAverag
               <div className={cn('w-5 h-5 rounded-full', dotBg)} />
             </div>
           )}
-          {article.isFeatured && (
+          {(article.isFeatured || showBadge) && (
             <span className="absolute top-2.5 left-2.5 bg-brand-sky text-white text-[10px] font-semibold px-2 py-0.5 rounded">
               Featured
             </span>

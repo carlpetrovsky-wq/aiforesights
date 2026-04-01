@@ -142,8 +142,8 @@ export default function HomePage() {
                 ))
               ) : (
                 <>
-                  {displayFeatured[0] && <div className="sm:row-span-2"><ArticleCard article={displayFeatured[0]} variant="featured" /></div>}
-                  {displayFeatured.slice(1).map(a => <ArticleCard key={a.id} article={a} variant="default" />)}
+                  {displayFeatured[0] && <div className="sm:row-span-2"><ArticleCard article={displayFeatured[0]} variant="featured" showBadge={true} /></div>}
+                  {displayFeatured.slice(1).map(a => <ArticleCard key={a.id} article={a} variant="default" showBadge={true} />)}
                 </>
               )}
             </div>
