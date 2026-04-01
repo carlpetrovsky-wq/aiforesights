@@ -97,7 +97,8 @@ Write a 2-3 sentence plain-English summary. No jargon, no bullet points. Start d
     return (msg.content[0] as { type: string; text: string }).text?.trim() || ''
   } catch (err) {
     console.error('Claude summarization failed:', err)
-    return ''
+    // Fall back to cleaned description text so article still gets a summary
+    return description.replace(/<[^>]+>/g, '').trim().slice(0, 300)
   }
 }
 
