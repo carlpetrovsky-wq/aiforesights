@@ -61,25 +61,5 @@ export async function GET(req: NextRequest) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let articles: any[] = (data ?? []).map(mapRow)
 
-  // Hybrid fill: if fetching featured but fewer than limit exist, fill with most recent
-  if (featured && articles.length < limit) {
-    const existingIds = new Set(articles.map((a) => a.id))
-    const needed = limit - articles.length
-
-    const { data: recent } = await supabaseAdmin
-      .from('articles')
-      .select('*')
-      .eq('status', 'published')
-      .order('published_at', { ascending: false })
-      .limit(limit + 10)
-
-    const fill = (recent ?? [])
-      .map(mapRow)
-      .filter((a) => !existingIds.has(a.id))
-      .slice(0, needed)
-
-    articles = [...articles, ...fill]
-  }
-
   return NextResponse.json(articles, { headers: NO_CACHE })
 }

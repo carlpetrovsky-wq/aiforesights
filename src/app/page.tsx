@@ -49,8 +49,8 @@ export default function HomePage() {
   }, [])
 
   const displayFeatured = activeSource
-    ? (featured.length > 0 ? featured : MOCK_ARTICLES.filter((a: Article) => a.isFeatured).slice(0, 3)).filter((a: Article) => a.sourceName === activeSource)
-    : featured.length > 0 ? featured : MOCK_ARTICLES.filter((a: Article) => a.isFeatured).slice(0, 3)
+    ? featured.filter((a: Article) => a.sourceName === activeSource)
+    : featured
   // Exclude featured articles from latest news to prevent duplicates
   const featuredIds = new Set(displayFeatured.map((a: Article) => a.id))
   const latestDeduped = latest.filter((a: Article) => !featuredIds.has(a.id))
