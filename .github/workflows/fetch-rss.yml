@@ -2,35 +2,56 @@ name: Fetch RSS Feeds
 
 on:
   schedule:
-    # Runs at 7:00 AM UTC daily (2:00 AM CST / 1:00 AM CDT)
+    # Run 3x daily: 7AM, 1PM, 7PM UTC (2AM, 8AM, 2PM CST)
     - cron: '0 7 * * *'
-  workflow_dispatch: # Allow manual trigger from GitHub Actions UI
+    - cron: '0 13 * * *'
+    - cron: '0 19 * * *'
+  workflow_dispatch:
 
 jobs:
   fetch-rss:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
 
     steps:
-      - name: Trigger RSS Pipeline
+      - name: Fetch RSS batch 1
         run: |
-          echo "Triggering RSS fetch at $(date)"
-          
+          echo "Batch 1 at $(date)"
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
-            "https://aiforesights.vercel.app/api/rss/fetch" \
+            "https://aiforesights.vercel.app/api/rss/fetch?batch=1" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             --max-time 55)
-          
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-          BODY=$(echo "$RESPONSE" | head -n-1)
-          
-          echo "HTTP Status: $HTTP_CODE"
-          echo "Response: $BODY"
-          
-          if [ "$HTTP_CODE" != "200" ]; then
-            echo "RSS fetch failed with status $HTTP_CODE"
-            exit 1
-          fi
-          
-          echo "RSS fetch completed successfully"
+          echo "Status: $HTTP_CODE — $(echo "$RESPONSE" | head -n-1)"
+
+      - name: Wait between batches
+        run: sleep 10
+
+      - name: Fetch RSS batch 2
+        run: |
+          echo "Batch 2 at $(date)"
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://aiforesights.vercel.app/api/rss/fetch?batch=2" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            --max-time 55)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          echo "Status: $HTTP_CODE — $(echo "$RESPONSE" | head -n-1)"
+
+      - name: Wait between batches
+        run: sleep 10
+
+      - name: Fetch RSS batch 3
+        run: |
+          echo "Batch 3 at $(date)"
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://aiforesights.vercel.app/api/rss/fetch?batch=3" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            --max-time 55)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          echo "Status: $HTTP_CODE — $(echo "$RESPONSE" | head -n-1)"
+
+      - name: Done
+        run: echo "All batches complete at $(date)"

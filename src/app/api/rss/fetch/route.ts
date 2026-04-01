@@ -139,15 +139,26 @@ export async function POST(req: NextRequest) {
     errors: [] as string[],
   }
 
+  // Batch support: split sources into 3 groups to fit within Vercel's 60s limit
+  const batchParam = req.nextUrl?.searchParams?.get('batch') || new URL(req.url).searchParams.get('batch') || '0'
+  const batchIndex = parseInt(batchParam) - 1 // 0-indexed (-1 means all)
+  const BATCH_SIZE = 12
+
   try {
     // Get all active sources
-    const { data: sources, error: srcErr } = await supabaseAdmin
+    const { data: allSources, error: srcErr } = await supabaseAdmin
       .from('sources')
       .select('*')
       .eq('is_active', true)
+      .order('name')
 
     if (srcErr) throw new Error(`Failed to fetch sources: ${srcErr.message}`)
-    if (!sources?.length) return NextResponse.json({ message: 'No active sources', ...results })
+    if (!allSources?.length) return NextResponse.json({ message: 'No active sources', ...results })
+
+    // Apply batching if requested
+    const sources = batchIndex >= 0
+      ? allSources.slice(batchIndex * BATCH_SIZE, (batchIndex + 1) * BATCH_SIZE)
+      : allSources
 
     results.sourcesChecked = sources.length
 
