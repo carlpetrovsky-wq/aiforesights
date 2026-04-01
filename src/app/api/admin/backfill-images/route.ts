@@ -33,40 +33,28 @@ export async function POST() {
   const results = { checked: 0, updated: 0, skipped: 0, errors: 0 }
 
   try {
-    // Fetch articles with NULL or empty thumbnail_url — featured first
-    const { data: nullArticles, error: e1 } = await supabaseAdmin
-      .from('articles')
-      .select('id, source_url, title, is_featured, category_slug, thumbnail_url')
-      .is('thumbnail_url', null)
-      .not('source_url', 'is', null)
-      .order('is_featured', { ascending: false })
+    // Fetch ALL articles that need real images:
+    // 1. NULL thumbnail
+    // 2. Empty string thumbnail
+    // 3. Unsplash placeholder (category fallback — not a real article image)
+    const UNSPLASH_PATTERN = 'images.unsplash.com'
 
-    const { data: emptyArticles, error: e2 } = await supabaseAdmin
+    const { data: allArticles, error: e1 } = await supabaseAdmin
       .from('articles')
       .select('id, source_url, title, is_featured, category_slug, thumbnail_url')
-      .eq('thumbnail_url', '')
       .not('source_url', 'is', null)
       .order('is_featured', { ascending: false })
+      .order('published_at', { ascending: false })
+      .limit(200)
 
     if (e1) return NextResponse.json({ error: e1.message }, { status: 500 })
 
-    // Also force-refresh featured articles that may have bad/blocked image URLs
-    const { data: featuredArticles } = await supabaseAdmin
-      .from('articles')
-      .select('id, source_url, title, is_featured, category_slug, thumbnail_url')
-      .eq('is_featured', true)
-
-    // Deduplicate — combine all candidates
-    const seen = new Set<string>()
-    const articles = [
-      ...(nullArticles ?? []),
-      ...(emptyArticles ?? []),
-      ...(featuredArticles ?? []),
-    ].filter(a => {
-      if (seen.has(a.id)) return false
-      seen.add(a.id)
-      return true
-    })
+    // Filter to only those that need a real image
+    const articles = (allArticles ?? []).filter(a =>
+      !a.thumbnail_url ||
+      a.thumbnail_url === '' ||
+      a.thumbnail_url.includes(UNSPLASH_PATTERN)
+    )
 
     if (!articles.length) return NextResponse.json({ message: 'No articles need backfilling', ...results })
 
