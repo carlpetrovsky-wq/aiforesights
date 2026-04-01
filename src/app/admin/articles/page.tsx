@@ -6,7 +6,7 @@ import { Plus, Search, Star, ExternalLink, Pencil, Trash2, FileText, ImageIcon, 
 import {
   PageHeader, AdminModal, Field, Input, Textarea, Select,
   StatusBadge, Toggle, SaveButton, DeleteButton, EmptyState,
-  SortableHeader, useSortedData,
+  SortableHeader,
 } from '@/components/admin/AdminUI'
 
 interface Article {
@@ -62,7 +62,18 @@ function ArticlesContent() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
-  const { sorted: sortedArticles, sortKey, sortDir, handleSort } = useSortedData(articles)
+  const [sortKey, setSortKey] = useState<string>('published_at')
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
+
+  function handleSort(key: string) {
+    if (key === sortKey) {
+      setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortKey(key)
+      setSortDir('desc')
+    }
+    setPage(0)
+  }
 
   // Modal
   const [modalOpen, setModalOpen] = useState(false)
@@ -77,6 +88,8 @@ function ArticlesContent() {
     const params = new URLSearchParams()
     if (statusFilter !== 'all') params.set('status', statusFilter)
     if (search) params.set('search', search)
+    params.set('sortBy', sortKey)
+    params.set('sortDir', sortDir)
     params.set('limit', String(PAGE_SIZE))
     params.set('offset', String(page * PAGE_SIZE))
     try {
@@ -94,7 +107,7 @@ function ArticlesContent() {
       }
     } catch { /* silent */ }
     setLoading(false)
-  }, [statusFilter, search, page])
+  }, [statusFilter, search, page, sortKey, sortDir])
 
   useEffect(() => { setPage(0) }, [statusFilter, search])
   useEffect(() => { load() }, [load])
@@ -226,6 +239,27 @@ function ArticlesContent() {
         </select>
       </div>
 
+      {/* Pagination — top */}
+      {total > PAGE_SIZE && (
+        <div className="flex items-center justify-between px-4 py-3 mb-2 bg-white/[0.02] border border-white/[0.06] rounded-xl">
+          <span className="text-xs text-slate-500">
+            Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} of {total}
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setPage(p => Math.max(0, p - 1))}
+              disabled={page === 0}
+              className="px-3 py-1 text-xs bg-white/[0.06] hover:bg-white/[0.10] disabled:opacity-40 text-slate-300 rounded-lg transition"
+            >← Prev</button>
+            <button
+              onClick={() => setPage(p => p + 1)}
+              disabled={(page + 1) * PAGE_SIZE >= total}
+              className="px-3 py-1 text-xs bg-white/[0.06] hover:bg-white/[0.10] disabled:opacity-40 text-slate-300 rounded-lg transition"
+            >Next →</button>
+          </div>
+        </div>
+      )}
+
       {/* Table */}
       <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl overflow-hidden">
         {loading ? (
@@ -247,7 +281,7 @@ function ArticlesContent() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.04]">
-                {sortedArticles.map(a => (
+                {articles.map(a => (
                   <tr key={a.id} className="hover:bg-white/[0.02] transition">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
@@ -289,9 +323,11 @@ function ArticlesContent() {
           </div>
         )}
 
-      {/* Pagination */}
+      </div>
+
+      {/* Pagination — bottom */}
       {total > PAGE_SIZE && (
-        <div className="flex items-center justify-between px-4 py-3 border-t border-white/[0.06]">
+        <div className="flex items-center justify-between px-4 py-3 mt-2 bg-white/[0.02] border border-white/[0.06] rounded-xl">
           <span className="text-xs text-slate-500">
             Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} of {total}
           </span>
@@ -309,7 +345,6 @@ function ArticlesContent() {
           </div>
         </div>
       )}
-      </div>
 
       {/* Create / Edit Modal */}
       <AdminModal

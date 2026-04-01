@@ -10,10 +10,15 @@ export async function GET(req: NextRequest) {
   const limit = Number(searchParams.get('limit') ?? 100)
   const offset = Number(searchParams.get('offset') ?? 0)
 
+  const sortBy = searchParams.get('sortBy') ?? 'published_at'
+  const sortDir = searchParams.get('sortDir') ?? 'desc'
+  const validSortKeys = ['published_at', 'created_at', 'title', 'source_name', 'category_slug', 'status', 'vote_count']
+  const safeSort = validSortKeys.includes(sortBy) ? sortBy : 'published_at'
+
   let query = supabaseAdmin
     .from('articles')
     .select('*', { count: 'exact' })
-    .order('created_at', { ascending: false })
+    .order(safeSort, { ascending: sortDir === 'asc' })
     .range(offset, offset + limit - 1)
 
   if (status && status !== 'all') query = query.eq('status', status)
