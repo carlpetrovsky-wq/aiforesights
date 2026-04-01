@@ -198,6 +198,14 @@ export async function POST(req: NextRequest) {
             publishedAt = new Date().toISOString()
           }
 
+          // Skip articles older than 1 year — stale AI news is not useful
+          const oneYearAgo = new Date()
+          oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
+          if (new Date(publishedAt) < oneYearAgo) {
+            results.articlesSkipped++
+            continue
+          }
+
           const category = guessCategory(item.title, item.description)
           const slug = toSlug(item.title)
 
