@@ -264,7 +264,7 @@ function ArticlesContent() {
       <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl overflow-hidden">
         {loading ? (
           <div className="p-8 text-center text-slate-500 text-sm">Loading…</div>
-        ) : sortedArticles.length === 0 ? (
+        ) : articles.length === 0 ? (
           <EmptyState message="No articles found" icon={FileText} />
         ) : (
           <div className="overflow-x-auto">
