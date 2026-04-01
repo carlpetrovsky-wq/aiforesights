@@ -2,11 +2,9 @@ name: Fetch RSS Feeds
 
 on:
   schedule:
-    # Run 3x daily: 7AM, 1PM, 7PM UTC (2AM, 8AM, 2PM CST)
+    # Runs at 7:00 AM UTC daily (2:00 AM CST / 1:00 AM CDT)
     - cron: '0 7 * * *'
-    - cron: '0 13 * * *'
-    - cron: '0 19 * * *'
-  workflow_dispatch:
+  workflow_dispatch: # Allow manual trigger from GitHub Actions UI
 
 jobs:
   fetch-rss:
@@ -14,7 +12,7 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - name: Fetch RSS batch 1
+      - name: Fetch RSS — Batch 1 (sources 1–12)
         run: |
           echo "Batch 1 at $(date)"
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
@@ -23,12 +21,10 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             --max-time 55)
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-          echo "Status: $HTTP_CODE — $(echo "$RESPONSE" | head -n-1)"
+          BODY=$(echo "$RESPONSE" | head -n-1)
+          echo "Status: $HTTP_CODE | $BODY"
 
-      - name: Wait between batches
-        run: sleep 10
-
-      - name: Fetch RSS batch 2
+      - name: Fetch RSS — Batch 2 (sources 13–24)
         run: |
           echo "Batch 2 at $(date)"
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
@@ -37,12 +33,10 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             --max-time 55)
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-          echo "Status: $HTTP_CODE — $(echo "$RESPONSE" | head -n-1)"
+          BODY=$(echo "$RESPONSE" | head -n-1)
+          echo "Status: $HTTP_CODE | $BODY"
 
-      - name: Wait between batches
-        run: sleep 10
-
-      - name: Fetch RSS batch 3
+      - name: Fetch RSS — Batch 3 (sources 25–36)
         run: |
           echo "Batch 3 at $(date)"
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
@@ -51,7 +45,20 @@ jobs:
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             --max-time 55)
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
-          echo "Status: $HTTP_CODE — $(echo "$RESPONSE" | head -n-1)"
+          BODY=$(echo "$RESPONSE" | head -n-1)
+          echo "Status: $HTTP_CODE | $BODY"
 
-      - name: Done
-        run: echo "All batches complete at $(date)"
+      - name: Fetch RSS — Batch 4 (sources 37–48, future growth)
+        run: |
+          echo "Batch 4 at $(date)"
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://aiforesights.vercel.app/api/rss/fetch?batch=4" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            --max-time 55)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+          echo "Status: $HTTP_CODE | $BODY"
+
+      - name: Summary
+        run: echo "RSS pipeline completed at $(date)"
