@@ -38,25 +38,30 @@ export async function GET(req: NextRequest) {
   const category = searchParams.get('category') ?? undefined
   const featured = searchParams.get('featured') === 'true' ? true : undefined
 
-  // Use supabaseAdmin to bypass PostgREST result cache
-  // neq on a non-existent value forces a fresh Postgres query each time
-  let query = supabaseAdmin
-    .from('articles')
-    .select('*')
-    .eq('status', 'published')
-    .neq('id', '00000000-0000-0000-0000-000000000000')
-    .limit(limit)
+  // Build query params
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+  const serviceKey  = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
-  if (category) query = query.eq('category_slug', category)
-  if (featured !== undefined) query = query.eq('is_featured', featured)
-  if (sortBy === 'popular') {
-    query = query.order('vote_count', { ascending: false })
-  } else {
-    query = query.order('published_at', { ascending: false })
-  }
+  let filters = `status=eq.published`
+  if (category) filters += `&category_slug=eq.${encodeURIComponent(category)}`
+  if (featured !== undefined) filters += `&is_featured=eq.${featured}`
+  const order = sortBy === 'popular' ? 'vote_count.desc' : 'published_at.desc'
 
-  const { data, error } = await query
-  if (error) return NextResponse.json([], { headers: NO_CACHE })
+  // Direct REST fetch with Cache-Control: no-cache to bypass PostgREST result cache
+  const pgUrl = `${supabaseUrl}/rest/v1/articles?select=*&${filters}&order=${order}&limit=${limit}`
+  const pgRes = await fetch(pgUrl, {
+    headers: {
+      'apikey': serviceKey,
+      'Authorization': `Bearer ${serviceKey}`,
+      'Cache-Control': 'no-cache, no-store',
+      'Pragma': 'no-cache',
+    },
+    cache: 'no-store',
+  })
+
+  if (!pgRes.ok) return NextResponse.json([], { headers: NO_CACHE })
+  const data = await pgRes.json()
+  const error = null
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let articles: any[] = (data ?? []).map(mapRow)
