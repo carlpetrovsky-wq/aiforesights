@@ -41,7 +41,7 @@ export async function POST() {
 
     const { data: allArticles, error: e1 } = await supabaseAdmin
       .from('articles')
-      .select('id, source_url, title, is_featured, category_slug, thumbnail_url')
+      .select('id, source_url, source_name, title, is_featured, category_slug, thumbnail_url')
       .not('source_url', 'is', null)
       .order('is_featured', { ascending: false })
       .order('published_at', { ascending: false })
