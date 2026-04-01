@@ -4,46 +4,41 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import { cookies } from 'next/headers'
 
 const NEW_SOURCES = [
-  // Tier 1: Official AI Lab Blogs
-  { name: 'Anthropic Blog',        feed_url: 'https://www.anthropic.com/rss.xml',                                         url: 'https://www.anthropic.com/news' },
-  { name: 'OpenAI Blog',           feed_url: 'https://openai.com/blog/rss',                                               url: 'https://openai.com/blog' },
-  { name: 'Google DeepMind',       feed_url: 'https://deepmind.google/blog/rss.xml',                                      url: 'https://deepmind.google/blog' },
-  { name: 'Google AI Blog',        feed_url: 'https://blog.google/technology/ai/rss/',                                    url: 'https://blog.google/technology/ai' },
-  { name: 'Meta AI Blog',          feed_url: 'https://ai.meta.com/blog/rss/',                                             url: 'https://ai.meta.com/blog' },
-  { name: 'Microsoft AI Blog',     feed_url: 'https://blogs.microsoft.com/ai/feed/',                                      url: 'https://blogs.microsoft.com/ai' },
-  { name: 'Hugging Face Blog',     feed_url: 'https://huggingface.co/blog/feed.xml',                                      url: 'https://huggingface.co/blog' },
-  { name: 'Mistral Blog',          feed_url: 'https://mistral.ai/rss.xml',                                                url: 'https://mistral.ai/news' },
-  { name: 'Cohere Blog',           feed_url: 'https://cohere.com/blog/rss.xml',                                           url: 'https://cohere.com/blog' },
-  // Tier 2: High-Signal AI Newsletters
-  { name: 'The Batch',             feed_url: 'https://www.deeplearning.ai/the-batch/feed/',                               url: 'https://www.deeplearning.ai/the-batch' },
-  { name: 'Import AI',             feed_url: 'https://importai.substack.com/feed',                                        url: 'https://importai.substack.com' },
-  { name: 'The Rundown AI',        feed_url: 'https://www.therundown.ai/feed',                                            url: 'https://www.therundown.ai' },
-  { name: "Ben's Bites",           feed_url: 'https://bensbites.beehiiv.com/feed',                                        url: 'https://bensbites.com' },
-  { name: 'TLDR AI',               feed_url: 'https://tldr.tech/ai/rss',                                                  url: 'https://tldr.tech/ai' },
-  { name: 'Last Week in AI',       feed_url: 'https://lastweekin.ai/feed',                                                url: 'https://lastweekin.ai' },
-  { name: 'The Gradient',          feed_url: 'https://thegradient.pub/rss/',                                              url: 'https://thegradient.pub' },
-  // Tier 3: Tech & Business Media
-  { name: 'Fortune AI',            feed_url: 'https://fortune.com/feed/section/artificial-intelligence/',                 url: 'https://fortune.com/section/artificial-intelligence' },
-  { name: 'Harvard Biz Review AI', feed_url: 'https://hbr.org/topic/subject/ai.rss',                                     url: 'https://hbr.org/topic/subject/ai' },
-  { name: 'Fast Company Tech',     feed_url: 'https://www.fastcompany.com/technology/rss',                                url: 'https://www.fastcompany.com/technology' },
-  { name: 'ZDNet AI',              feed_url: 'https://www.zdnet.com/topic/artificial-intelligence/rss.xml',               url: 'https://www.zdnet.com/topic/artificial-intelligence' },
-  { name: 'IEEE Spectrum AI',      feed_url: 'https://spectrum.ieee.org/feeds/topic/artificial-intelligence.rss',         url: 'https://spectrum.ieee.org/topic/artificial-intelligence' },
-  { name: 'SiliconAngle AI',       feed_url: 'https://siliconangle.com/category/ai/feed/',                                url: 'https://siliconangle.com/category/ai' },
-  { name: 'Ars Technica AI',       feed_url: 'https://feeds.arstechnica.com/arstechnica/technology-lab',                  url: 'https://arstechnica.com/ai' },
-  // Tier 4: Make Money / Side Hustle / Business
-  { name: 'Side Hustle Nation',    feed_url: 'https://www.sidehustlenation.com/feed/',                                    url: 'https://www.sidehustlenation.com' },
-  { name: 'Smart Passive Income',  feed_url: 'https://feeds.feedblitz.com/smartpassiveincome',                            url: 'https://www.smartpassiveincome.com' },
-  { name: 'Indie Hackers',         feed_url: 'https://www.indiehackers.com/feed.xml',                                     url: 'https://www.indiehackers.com' },
-  { name: 'Product Hunt Daily',    feed_url: 'https://www.producthunt.com/feed',                                          url: 'https://www.producthunt.com' },
-  { name: 'Starter Story',         feed_url: 'https://www.starterstory.com/stories.rss',                                  url: 'https://www.starterstory.com' },
-  { name: 'a16z Blog',             feed_url: 'https://a16z.com/feed/',                                                    url: 'https://a16z.com' },
-  { name: 'Y Combinator Blog',     feed_url: 'https://www.ycombinator.com/blog/rss',                                      url: 'https://www.ycombinator.com/blog' },
-  { name: 'Entrepreneurship HBR',  feed_url: 'https://hbr.org/topic/subject/entrepreneurship.rss',                       url: 'https://hbr.org/topic/subject/entrepreneurship' },
-  // Tier 5: Learn AI / Education
-  { name: 'Towards Data Science',  feed_url: 'https://towardsdatascience.com/feed',                                       url: 'https://towardsdatascience.com' },
-  { name: 'ML Mastery',            feed_url: 'https://machinelearningmastery.com/feed/',                                  url: 'https://machinelearningmastery.com' },
-  { name: 'Hacker News AI',        feed_url: 'https://hnrss.org/best?q=AI+LLM+GPT',                                      url: 'https://news.ycombinator.com' },
-  { name: 'Papers With Code',      feed_url: 'https://paperswithcode.com/rss.xml',                                        url: 'https://paperswithcode.com' },
+  { name: 'Anthropic Blog',        url: 'https://www.anthropic.com/news',                          feed_url: 'https://www.anthropic.com/rss.xml' },
+  { name: 'OpenAI Blog',           url: 'https://openai.com/blog',                                 feed_url: 'https://openai.com/blog/rss' },
+  { name: 'Google DeepMind',       url: 'https://deepmind.google/blog',                            feed_url: 'https://deepmind.google/blog/rss.xml' },
+  { name: 'Google AI Blog',        url: 'https://blog.google/technology/ai',                       feed_url: 'https://blog.google/technology/ai/rss/' },
+  { name: 'Meta AI Blog',          url: 'https://ai.meta.com/blog',                                feed_url: 'https://ai.meta.com/blog/rss/' },
+  { name: 'Microsoft AI Blog',     url: 'https://blogs.microsoft.com/ai',                          feed_url: 'https://blogs.microsoft.com/ai/feed/' },
+  { name: 'Hugging Face Blog',     url: 'https://huggingface.co/blog',                             feed_url: 'https://huggingface.co/blog/feed.xml' },
+  { name: 'Mistral Blog',          url: 'https://mistral.ai/news',                                 feed_url: 'https://mistral.ai/rss.xml' },
+  { name: 'Cohere Blog',           url: 'https://cohere.com/blog',                                 feed_url: 'https://cohere.com/blog/rss.xml' },
+  { name: 'The Batch',             url: 'https://www.deeplearning.ai/the-batch',                   feed_url: 'https://www.deeplearning.ai/the-batch/feed/' },
+  { name: 'Import AI',             url: 'https://importai.substack.com',                           feed_url: 'https://importai.substack.com/feed' },
+  { name: 'The Rundown AI',        url: 'https://www.therundown.ai',                               feed_url: 'https://www.therundown.ai/feed' },
+  { name: "Ben's Bites",           url: 'https://bensbites.com',                                   feed_url: 'https://bensbites.beehiiv.com/feed' },
+  { name: 'TLDR AI',               url: 'https://tldr.tech/ai',                                    feed_url: 'https://tldr.tech/ai/rss' },
+  { name: 'Last Week in AI',       url: 'https://lastweekin.ai',                                   feed_url: 'https://lastweekin.ai/feed' },
+  { name: 'The Gradient',          url: 'https://thegradient.pub',                                 feed_url: 'https://thegradient.pub/rss/' },
+  { name: 'Fortune AI',            url: 'https://fortune.com/section/artificial-intelligence',     feed_url: 'https://fortune.com/feed/section/artificial-intelligence/' },
+  { name: 'Harvard Biz Review AI', url: 'https://hbr.org/topic/subject/ai',                       feed_url: 'https://hbr.org/topic/subject/ai.rss' },
+  { name: 'Fast Company Tech',     url: 'https://www.fastcompany.com/technology',                  feed_url: 'https://www.fastcompany.com/technology/rss' },
+  { name: 'ZDNet AI',              url: 'https://www.zdnet.com/topic/artificial-intelligence',     feed_url: 'https://www.zdnet.com/topic/artificial-intelligence/rss.xml' },
+  { name: 'IEEE Spectrum AI',      url: 'https://spectrum.ieee.org/topic/artificial-intelligence', feed_url: 'https://spectrum.ieee.org/feeds/topic/artificial-intelligence.rss' },
+  { name: 'SiliconAngle AI',       url: 'https://siliconangle.com/category/ai',                   feed_url: 'https://siliconangle.com/category/ai/feed/' },
+  { name: 'Ars Technica AI',       url: 'https://arstechnica.com/ai',                             feed_url: 'https://feeds.arstechnica.com/arstechnica/technology-lab' },
+  { name: 'Side Hustle Nation',    url: 'https://www.sidehustlenation.com',                        feed_url: 'https://www.sidehustlenation.com/feed/' },
+  { name: 'Smart Passive Income',  url: 'https://www.smartpassiveincome.com',                      feed_url: 'https://feeds.feedblitz.com/smartpassiveincome' },
+  { name: 'Indie Hackers',         url: 'https://www.indiehackers.com',                            feed_url: 'https://www.indiehackers.com/feed.xml' },
+  { name: 'Product Hunt Daily',    url: 'https://www.producthunt.com',                             feed_url: 'https://www.producthunt.com/feed' },
+  { name: 'Starter Story',         url: 'https://www.starterstory.com',                            feed_url: 'https://www.starterstory.com/stories.rss' },
+  { name: 'a16z Blog',             url: 'https://a16z.com',                                        feed_url: 'https://a16z.com/feed/' },
+  { name: 'Y Combinator Blog',     url: 'https://www.ycombinator.com/blog',                       feed_url: 'https://www.ycombinator.com/blog/rss' },
+  { name: 'Entrepreneurship HBR',  url: 'https://hbr.org/topic/subject/entrepreneurship',          feed_url: 'https://hbr.org/topic/subject/entrepreneurship.rss' },
+  { name: 'Towards Data Science',  url: 'https://towardsdatascience.com',                          feed_url: 'https://towardsdatascience.com/feed' },
+  { name: 'ML Mastery',            url: 'https://machinelearningmastery.com',                      feed_url: 'https://machinelearningmastery.com/feed/' },
+  { name: 'Hacker News AI',        url: 'https://news.ycombinator.com',                            feed_url: 'https://hnrss.org/best?q=AI+LLM+GPT' },
+  { name: 'Papers With Code',      url: 'https://paperswithcode.com',                              feed_url: 'https://paperswithcode.com/rss.xml' },
 ]
 
 export async function POST(req: NextRequest) {
@@ -53,16 +48,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const results = { inserted: 0, skipped: 0, errors: [] as string[] }
+  const results = { inserted: 0, skipped: 0, errors: [] as string[], firstError: null as any }
+
+  // Test: try to read from sources first to confirm supabaseAdmin works
+  const { data: existing, error: readErr } = await supabaseAdmin
+    .from('sources')
+    .select('name')
+  
+  if (readErr) {
+    return NextResponse.json({ error: 'DB read failed', detail: readErr }, { status: 500 })
+  }
+
+  const existingNames = new Set((existing ?? []).map((s: any) => s.name))
 
   for (const source of NEW_SOURCES) {
-    const { data: existing } = await supabaseAdmin
-      .from('sources')
-      .select('id')
-      .eq('name', source.name)
-      .maybeSingle()
-
-    if (existing) { results.skipped++; continue }
+    if (existingNames.has(source.name)) {
+      results.skipped++
+      continue
+    }
 
     const { error } = await supabaseAdmin.from('sources').insert({
       name: source.name,
@@ -74,7 +77,8 @@ export async function POST(req: NextRequest) {
     })
 
     if (error) {
-      results.errors.push(`${source.name}: ${error.message}`)
+      results.errors.push(`${source.name}: ${error.message} (code: ${error.code})`)
+      if (!results.firstError) results.firstError = error
     } else {
       results.inserted++
     }
@@ -82,6 +86,7 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({
     message: `Done: ${results.inserted} inserted, ${results.skipped} skipped, ${results.errors.length} errors`,
+    existingInDB: existing?.length ?? 0,
     ...results
   })
 }
