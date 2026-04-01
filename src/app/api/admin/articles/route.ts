@@ -7,13 +7,14 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const status = searchParams.get('status')
   const search = searchParams.get('search')
-  const limit = Number(searchParams.get('limit') ?? 50)
+  const limit = Number(searchParams.get('limit') ?? 100)
+  const offset = Number(searchParams.get('offset') ?? 0)
 
   let query = supabaseAdmin
     .from('articles')
-    .select('*')
+    .select('*', { count: 'exact' })
     .order('created_at', { ascending: false })
-    .limit(limit)
+    .range(offset, offset + limit - 1)
 
   if (status && status !== 'all') query = query.eq('status', status)
   if (search) {
@@ -25,7 +26,7 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await query
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
-  return NextResponse.json(data ?? [])
+  return NextResponse.json({ articles: data ?? [], total: count ?? 0, offset, limit })
 }
 
 // POST /api/admin/articles — create new article

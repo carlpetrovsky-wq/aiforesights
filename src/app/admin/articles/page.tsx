@@ -56,6 +56,9 @@ const categories = [
 function ArticlesContent() {
   const searchParams = useSearchParams()
   const [articles, setArticles] = useState<Article[]>([])
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(0)
+  const PAGE_SIZE = 100
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
@@ -74,13 +77,26 @@ function ArticlesContent() {
     const params = new URLSearchParams()
     if (statusFilter !== 'all') params.set('status', statusFilter)
     if (search) params.set('search', search)
+    params.set('limit', String(PAGE_SIZE))
+    params.set('offset', String(page * PAGE_SIZE))
     try {
       const res = await fetch(`/api/admin/articles?${params}`)
-      if (res.ok) setArticles(await res.json())
+      if (res.ok) {
+        const data = await res.json()
+        // Handle both old array format and new {articles, total} format
+        if (Array.isArray(data)) {
+          setArticles(data)
+          setTotal(data.length)
+        } else {
+          setArticles(data.articles ?? [])
+          setTotal(data.total ?? 0)
+        }
+      }
     } catch { /* silent */ }
     setLoading(false)
-  }, [statusFilter, search])
+  }, [statusFilter, search, page])
 
+  useEffect(() => { setPage(0) }, [statusFilter, search])
   useEffect(() => { load() }, [load])
   useEffect(() => {
     if (searchParams.get('new') === '1') {
@@ -162,7 +178,7 @@ function ArticlesContent() {
     <div>
       <PageHeader
         title="Articles"
-        subtitle={`${articles.length} total`}
+        subtitle={`${total} total`}
         action={
           <div className="flex items-center gap-2 flex-wrap justify-end">
             {backfillResult && (
@@ -214,7 +230,7 @@ function ArticlesContent() {
       <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl overflow-hidden">
         {loading ? (
           <div className="p-8 text-center text-slate-500 text-sm">Loading…</div>
-        ) : articles.length === 0 ? (
+        ) : sortedArticles.length === 0 ? (
           <EmptyState message="No articles found" icon={FileText} />
         ) : (
           <div className="overflow-x-auto">
@@ -272,6 +288,27 @@ function ArticlesContent() {
             </table>
           </div>
         )}
+
+      {/* Pagination */}
+      {total > PAGE_SIZE && (
+        <div className="flex items-center justify-between px-4 py-3 border-t border-white/[0.06]">
+          <span className="text-xs text-slate-500">
+            Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, total)} of {total}
+          </span>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setPage(p => Math.max(0, p - 1))}
+              disabled={page === 0}
+              className="px-3 py-1 text-xs bg-white/[0.06] hover:bg-white/[0.10] disabled:opacity-40 text-slate-300 rounded-lg transition"
+            >← Prev</button>
+            <button
+              onClick={() => setPage(p => p + 1)}
+              disabled={(page + 1) * PAGE_SIZE >= total}
+              className="px-3 py-1 text-xs bg-white/[0.06] hover:bg-white/[0.10] disabled:opacity-40 text-slate-300 rounded-lg transition"
+            >Next →</button>
+          </div>
+        </div>
+      )}
       </div>
 
       {/* Create / Edit Modal */}
