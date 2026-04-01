@@ -164,6 +164,8 @@ export async function POST(req: NextRequest) {
     results.sourcesChecked = sources.length
 
     for (const source of sources) {
+      // Track image URLs used by this source in this run to detect generic/shared images
+      const seenImages: Record<string, number> = {}
       const feedUrl = source.feed_url || source.url
       if (!feedUrl) continue
 
@@ -185,10 +187,17 @@ export async function POST(req: NextRequest) {
           }
 
           // Summarize with Claude and scrape OG image in parallel
-          const [summary, thumbnailUrl] = await Promise.all([
+          const [summary, rawThumbnailUrl] = await Promise.all([
             summarizeArticle(item.title, item.description, source.name),
             scrapeOgImage(item.link),
           ])
+
+          // Reject generic/shared images (same URL used 3+ times from same source)
+          let thumbnailUrl = rawThumbnailUrl
+          if (thumbnailUrl) {
+            seenImages[thumbnailUrl] = (seenImages[thumbnailUrl] || 0) + 1
+            if (seenImages[thumbnailUrl] >= 3) thumbnailUrl = null
+          }
 
           // Parse pub date safely
           let publishedAt: string

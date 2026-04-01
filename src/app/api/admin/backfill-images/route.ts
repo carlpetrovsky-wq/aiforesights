@@ -60,6 +60,10 @@ export async function POST() {
 
     results.checked = articles.length
 
+    // Track scraped image URLs per source to detect generic/shared images
+    // If same image URL appears on 3+ articles from same source, it's a logo/stock image
+    const sourceImageCounts: Record<string, Record<string, number>> = {}
+
     // Process in batches of 5 to avoid hammering servers
     const BATCH = 5
     for (let i = 0; i < articles.length; i += BATCH) {
@@ -68,13 +72,21 @@ export async function POST() {
         try {
           let thumbnailUrl = await scrapeOgImage(article.source_url)
 
-          // For featured articles: if scraping failed OR they already have a
-          // thumbnail (which might be broken/blocked), ensure they get at minimum
-          // a solid category fallback stored in the DB
-          if (!thumbnailUrl) {
-            if (article.is_featured || !article.thumbnail_url) {
-              thumbnailUrl = CATEGORY_FALLBACKS[article.category_slug] || CATEGORY_FALLBACKS['latest-news']
+          if (thumbnailUrl) {
+            // Track how many times this image appears for this source
+            const src = article.source_name || 'unknown'
+            if (!sourceImageCounts[src]) sourceImageCounts[src] = {}
+            sourceImageCounts[src][thumbnailUrl] = (sourceImageCounts[src][thumbnailUrl] || 0) + 1
+
+            // If same image appears 3+ times for same source, it's generic — reject it
+            if (sourceImageCounts[src][thumbnailUrl] >= 3) {
+              thumbnailUrl = null
             }
+          }
+
+          // Fall back to category image if nothing found
+          if (!thumbnailUrl) {
+            thumbnailUrl = CATEGORY_FALLBACKS[article.category_slug] || CATEGORY_FALLBACKS['latest-news']
           }
 
           if (thumbnailUrl && thumbnailUrl !== article.thumbnail_url) {
