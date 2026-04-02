@@ -2,8 +2,11 @@ name: Fetch RSS Feeds
 
 on:
   schedule:
-    # Runs at 7:00 AM UTC daily (2:00 AM CST / 1:00 AM CDT)
+    # 4x daily: 7AM, 1PM, 7PM, 1AM UTC (2AM, 8AM, 2PM, 8PM CST)
     - cron: '0 7 * * *'
+    - cron: '0 13 * * *'
+    - cron: '0 19 * * *'
+    - cron: '0 1 * * *'
   workflow_dispatch: # Allow manual trigger from GitHub Actions UI
 
 jobs:
