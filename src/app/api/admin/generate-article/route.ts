@@ -71,6 +71,7 @@ export async function POST(req: NextRequest) {
     const topicOverride: string | null = body.topic || null
     const markFeatured: boolean = body.featured === true
     const excludeTitles: string[] = body.excludeTitles || []
+    const forceCategory: string | null = body.forceCategory || null
 
     // 1. Pull last 48h RSS articles
     const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()
@@ -99,7 +100,9 @@ export async function POST(req: NextRequest) {
 
     // 3. Build digest
     const digest = recentArticles
-      .filter(a => !excludeTitles.some(t => a.title?.toLowerCase().includes(t.toLowerCase().slice(0, 20))))
+      .filter(a => !excludeTitles.some(t => 
+        a.title?.toLowerCase().includes(t.toLowerCase().slice(0, 40))
+      ))
       .map((a, i) => `${i + 1}. [${a.category_slug}] ${a.title}\n   ${a.excerpt || a.summary || ''}`)
       .join('\n\n')
 
@@ -125,7 +128,7 @@ Return ONLY the JSON object. No preamble, no code fences.`
 
     const userPrompt = topicOverride
       ? `Write an original 650-800 word article about this topic for AIForesights.com readers:\n\n"${topicOverride}"\n\nMake it practical and relatable for non-technical professionals.`
-      : `Here are the last 48 hours of AI news headlines. Pick the most significant trend or story${excludeTitles.length > 0 ? ' (pick a DIFFERENT topic than: ' + excludeTitles.join(', ') + ')' : ''}, and write an original 650-800 word article explaining what it means for everyday people.\n\nRecent headlines:\n${digest}`
+      : `Here are the last 48 hours of AI news headlines. ${forceCategory ? `You MUST write an article in the "${forceCategory}" category — pick the most relevant story for that category.` : 'Pick the most significant trend or story.'} ${excludeTitles.length > 0 ? 'Do NOT write about: ' + excludeTitles.join('; ') + '.' : ''} Write an original 650-800 word article explaining what it means for everyday people.\n\nRecent headlines:\n${digest}`
 
     const completion = await anthropic.messages.create({
       model: 'claude-sonnet-4-5',
@@ -153,9 +156,11 @@ Return ONLY the JSON object. No preamble, no code fences.`
       return NextResponse.json({ error: 'Missing title or content', raw: rawText }, { status: 500 })
     }
 
-    const finalCategory = ['latest-news', 'future-of-ai', 'best-ai-tools', 'make-money', 'learn-ai'].includes(rawCategory)
-      ? rawCategory
-      : guessCategory(title, rawContent)
+    const finalCategory = forceCategory && ['latest-news', 'future-of-ai', 'best-ai-tools', 'make-money', 'learn-ai'].includes(forceCategory)
+      ? forceCategory
+      : ['latest-news', 'future-of-ai', 'best-ai-tools', 'make-money', 'learn-ai'].includes(rawCategory)
+        ? rawCategory
+        : guessCategory(title, rawContent)
 
     // 6. Inject tool links
     const content = injectToolLinks(rawContent, tools)

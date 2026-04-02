@@ -12,7 +12,7 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - name: Generate Article 1 (featured)
+      - name: Generate Article 1 (featured, auto-topic)
         id: article1
         run: |
           echo "Generating article 1 at $(date)"
@@ -26,27 +26,43 @@ jobs:
           BODY=$(echo "$RESPONSE" | head -n-1)
           echo "Status: $HTTP_CODE"
           echo "Response: $BODY"
-          # Extract title for article 2 to avoid duplicate topics
-          TITLE=$(echo "$BODY" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('article',{}).get('title','')[:40])" 2>/dev/null || echo "")
+          TITLE=$(echo "$BODY" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('article',{}).get('title',''))" 2>/dev/null || echo "")
+          CATEGORY=$(echo "$BODY" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('article',{}).get('category_slug',''))" 2>/dev/null || echo "")
           echo "title=$TITLE" >> $GITHUB_OUTPUT
+          echo "category=$CATEGORY" >> $GITHUB_OUTPUT
+          echo "Article 1 title: $TITLE | category: $CATEGORY"
           if [ "$HTTP_CODE" != "200" ]; then
             echo "Article 1 failed with status $HTTP_CODE"
             exit 1
           fi
 
       - name: Wait between generations
-        run: sleep 5
+        run: sleep 8
 
-      - name: Generate Article 2 (featured, different topic)
+      - name: Generate Article 2 (featured, forced different category)
         run: |
           TITLE1="${{ steps.article1.outputs.title }}"
-          echo "Generating article 2 at $(date) (avoiding topic: $TITLE1)"
-          EXCLUDE_JSON=$(echo "$TITLE1" | python3 -c "import sys,json; t=sys.stdin.read().strip(); print(json.dumps([t]) if t else '[]')")
+          CATEGORY1="${{ steps.article1.outputs.category }}"
+          echo "Generating article 2 — avoiding category: $CATEGORY1, title: $TITLE1"
+
+          # Pick a forced category different from article 1
+          # Rotate through: latest-news → future-of-ai → make-money → learn-ai → best-ai-tools
+          case "$CATEGORY1" in
+            "latest-news")   FORCE_CAT="future-of-ai" ;;
+            "future-of-ai")  FORCE_CAT="make-money" ;;
+            "make-money")    FORCE_CAT="learn-ai" ;;
+            "learn-ai")      FORCE_CAT="best-ai-tools" ;;
+            "best-ai-tools") FORCE_CAT="latest-news" ;;
+            *)               FORCE_CAT="make-money" ;;
+          esac
+          echo "Forcing article 2 into category: $FORCE_CAT"
+
+          EXCLUDE_JSON=$(python3 -c "import json; print(json.dumps(['$TITLE1']))" 2>/dev/null || echo '[]')
           RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
             "https://www.aiforesights.com/api/admin/generate-article" \
             -H "Content-Type: application/json" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            -d "{\"featured\": true, \"excludeTitles\": $EXCLUDE_JSON}" \
+            -d "{\"featured\": true, \"forceCategory\": \"$FORCE_CAT\", \"excludeTitles\": $EXCLUDE_JSON}" \
             --max-time 55)
           HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
           BODY=$(echo "$RESPONSE" | head -n-1)
