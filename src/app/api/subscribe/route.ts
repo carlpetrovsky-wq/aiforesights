@@ -83,13 +83,9 @@ export async function POST(req: NextRequest) {
     // Check if already in Supabase
     const { data: existing } = await supabaseAdmin
       .from('subscribers')
-      .select('id, confirmed')
+      .select('id')
       .eq('email', cleanEmail)
       .maybeSingle()
-
-    if (existing?.confirmed) {
-      return NextResponse.json({ success: true, message: "You're already subscribed!" })
-    }
 
     if (!existing) {
       // Save to Supabase as unconfirmed
@@ -100,12 +96,11 @@ export async function POST(req: NextRequest) {
           name: name ?? null,
           source: 'website',
           is_active: false,
-          confirmed: false,
           subscribed_at: new Date().toISOString(),
         })
 
       if (error) {
-        console.error('Subscribe insert error:', error.message)
+        console.error('Subscribe insert error:', error.message, error.code, error.details)
         return NextResponse.json({ error: 'Server error. Please try again.' }, { status: 500 })
       }
     }
