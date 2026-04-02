@@ -15,17 +15,19 @@ import {
   ChevronRight,
   Menu,
   X,
+  Sparkles,
 } from 'lucide-react'
 import { useState } from 'react'
 
 const nav = [
-  { href: '/admin',             label: 'Dashboard',   icon: LayoutDashboard },
-  { href: '/admin/articles',    label: 'Articles',    icon: FileText },
-  { href: '/admin/sources',     label: 'RSS Sources', icon: Rss },
-  { href: '/admin/tools',       label: 'Tools',       icon: Wrench },
-  { href: '/admin/subscribers', label: 'Subscribers', icon: Users },
-  { href: '/admin/ads',         label: 'Ad Slots',    icon: Megaphone },
-  { href: '/admin/settings',    label: 'Settings',    icon: Settings },
+  { href: '/admin',             label: 'Dashboard',      icon: LayoutDashboard },
+  { href: '/admin/generate',    label: 'Generate Article', icon: Sparkles },
+  { href: '/admin/articles',    label: 'Articles',       icon: FileText },
+  { href: '/admin/sources',     label: 'RSS Sources',    icon: Rss },
+  { href: '/admin/tools',       label: 'Tools',          icon: Wrench },
+  { href: '/admin/subscribers', label: 'Subscribers',    icon: Users },
+  { href: '/admin/ads',         label: 'Ad Slots',       icon: Megaphone },
+  { href: '/admin/settings',    label: 'Settings',       icon: Settings },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
