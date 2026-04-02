@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import RatingBadge from '@/components/article/RatingBadge'
-import { ChevronUp, ExternalLink } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
 import { Article } from '@/lib/types'
 import { timeAgo, cn } from '@/lib/utils'
 
@@ -155,10 +155,7 @@ export default function ArticleCard({ article, variant = 'default', ratingAverag
             >
               <ExternalLink size={12} />
             </a>
-            <button className="flex items-center gap-1 text-[11px] text-brand-muted hover:text-brand-sky transition-colors">
-              <ChevronUp size={13} />
-              <span className="font-medium">{article.voteCount}</span>
-            </button>
+
           </div>
         </div>
       </div>
