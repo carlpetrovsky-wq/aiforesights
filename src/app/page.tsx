@@ -18,6 +18,7 @@ export default function HomePage() {
   const [topTools, setTopTools] = useState<Tool[]>([])
   const [loading, setLoading]   = useState(true)
   const [toolCount, setToolCount] = useState('50+')
+  const [newLast24h, setNewLast24h] = useState<number | null>(null)
   const [activeSource, setActiveSource] = useState<string | null>(null)
 
   useEffect(() => {
@@ -38,6 +39,9 @@ export default function HomePage() {
         setTopTools(Array.isArray(toolData) ? toolData as Tool[] : [])
         if (statsData?.toolCount) {
           setToolCount(statsData.toolCount.toLocaleString('en-US') + '+')
+        }
+        if (typeof statsData?.newLast24h === 'number') {
+          setNewLast24h(statsData.newLast24h)
         }
       } catch (e) {
         console.error('Failed to load data:', e)
@@ -80,11 +84,18 @@ export default function HomePage() {
           </p>
           <NewsletterForm variant="hero" />
           <div className="flex flex-wrap gap-4 mt-4">
-            {([['Daily','updates'],[toolCount,'tools reviewed'],['Free','forever']] as [string,string][]).map(([val, lab]) => (
-              <div key={lab} className="text-xs text-brand-muted">
-                <strong className="text-white font-semibold">{val}</strong> {lab}
+            <div className="text-xs text-brand-muted">
+                <strong className="text-white font-semibold">
+                  {newLast24h === null ? '…' : `${newLast24h} new`}
+                </strong>{' '}
+                {newLast24h === 1 ? 'article today' : 'articles today'}
               </div>
-            ))}
+              <div className="text-xs text-brand-muted">
+                <strong className="text-white font-semibold">{toolCount}</strong> tools reviewed
+              </div>
+              <div className="text-xs text-brand-muted">
+                <strong className="text-white font-semibold">Free</strong> forever
+              </div>
           </div>
         </div>
       </section>
