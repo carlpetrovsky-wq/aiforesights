@@ -72,13 +72,47 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-// DELETE /api/admin/subscribers — delete subscriber
+// DELETE /api/admin/subscribers — delete subscriber from Supabase + MailerLite
 export async function DELETE(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const id = searchParams.get('id')
   if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
 
+  // Get email before deleting so we can remove from MailerLite too
+  const { data: subscriber } = await supabaseAdmin
+    .from('subscribers')
+    .select('email')
+    .eq('id', id)
+    .maybeSingle()
+
   const { error } = await supabaseAdmin.from('subscribers').delete().eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+  // Also delete from MailerLite if we have the email
+  if (subscriber?.email) {
+    const apiKey = process.env.MAILERLITE_API_KEY
+    if (apiKey) {
+      try {
+        // First find the subscriber in MailerLite by email
+        const searchRes = await fetch(
+          `https://connect.mailerlite.com/api/subscribers/${encodeURIComponent(subscriber.email)}`,
+          { headers: { 'Authorization': `Bearer ${apiKey}`, 'Accept': 'application/json' } }
+        )
+        if (searchRes.ok) {
+          const mlData = await searchRes.json()
+          const mlId = mlData?.data?.id
+          if (mlId) {
+            await fetch(`https://connect.mailerlite.com/api/subscribers/${mlId}`, {
+              method: 'DELETE',
+              headers: { 'Authorization': `Bearer ${apiKey}`, 'Accept': 'application/json' },
+            })
+          }
+        }
+      } catch (e) {
+        console.error('MailerLite delete error:', e)
+        // Don't fail the whole request if MailerLite delete fails
+      }
+    }
+  }
   return NextResponse.json({ success: true })
 }
