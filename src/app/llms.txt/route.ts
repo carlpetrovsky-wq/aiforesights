@@ -11,7 +11,6 @@ export async function GET() {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   )
 
-  // Fetch recent AI Foresights original articles for AI engines to index
   const { data: articles } = await supabase
     .from('articles')
     .select('title, slug, excerpt, category_slug, published_at')
@@ -35,7 +34,7 @@ AI Foresights (${SITE}) covers artificial intelligence news, income opportunitie
 - **Focus**: AI news, tools, side income strategies, beginner education
 - **Audience**: Non-technical professionals, retirees, small business owners (35-65)
 - **Tone**: Plain English, no jargon, practical and actionable
-- **Updated**: Daily — RSS pipeline runs 4x/day, original articles generated each morning
+- **Updated**: Daily — RSS pipeline runs 4x/day, original articles generated each morning at 5AM ET
 - **Publisher**: AI Foresights Staff
 
 ## Key Sections
@@ -48,7 +47,7 @@ AI Foresights (${SITE}) covers artificial intelligence news, income opportunitie
 
 ## Recent Original Articles
 
-${articleList || '- No articles indexed yet.'}
+${articleList || '- Articles loading...'}
 
 ## Permissions
 
