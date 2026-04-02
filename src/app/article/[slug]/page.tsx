@@ -157,7 +157,37 @@ export default async function ArticlePage({ params }: { params: { slug: string }
           </a>
         )}
 
-        {/* Article footer: star rating, related articles, newsletter CTA, back to top */}
+        {/* Brand footer — own content only */}
+        {isOwnContent && (
+          <div className="border border-brand-sky/20 bg-gradient-to-br from-brand-sky/5 to-brand-navy/5 rounded-2xl p-6 mb-8">
+            <div className="flex items-start gap-4">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logo-icon.png" alt="AI Foresights" className="w-10 h-10 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-bold text-brand-navy mb-1">Want more plain-English AI news?</p>
+                <p className="text-sm text-brand-slate leading-relaxed mb-3">
+                  AI Foresights covers the latest AI developments, side income ideas, and tool reviews — written for everyday professionals, not tech experts.
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <Link
+                    href="/"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-brand-sky hover:bg-brand-skyDark px-3.5 py-2 rounded-lg transition-colors"
+                  >
+                    Explore AI Foresights →
+                  </Link>
+                  <Link
+                    href="/#newsletter"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-sky border border-brand-sky/40 hover:bg-brand-sky/10 px-3.5 py-2 rounded-lg transition-colors"
+                  >
+                    Subscribe free — it&apos;s worth it
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Article footer: share, star rating, related articles, newsletter CTA, back to top */}
         <ArticleFooter
           articleSlug={params.slug}
           category={article.category_slug || 'latest-news'}

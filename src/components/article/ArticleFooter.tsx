@@ -235,6 +235,11 @@ export default function ArticleFooter({ articleSlug, category, relatedArticles, 
     <>
       <div className="border-t border-brand-border my-8" />
 
+      {/* ── SHARE BAR ───────────────────────────────────────── */}
+      {isOwnContent && (
+        <ShareBar />
+      )}
+
       {/* ── STAR RATING ─────────────────────────────────────── */}
       {isOwnContent && (
         <div className="bg-gray-50 rounded-2xl p-6 text-center mb-8">
@@ -291,11 +296,6 @@ export default function ArticleFooter({ articleSlug, category, relatedArticles, 
             </div>
           )}
         </div>
-      )}
-
-      {/* ── SHARE BAR ───────────────────────────────────────── */}
-      {isOwnContent && (
-        <ShareBar />
       )}
 
       {/* ── RELATED ARTICLES ────────────────────────────────── */}
