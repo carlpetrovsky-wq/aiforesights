@@ -60,14 +60,28 @@ export async function POST(req: NextRequest) {
 
   const { data: articles, error } = await supabaseAdmin
     .from('articles')
-    .select('id, thumbnail_url, category_slug')
+    .select('id, thumbnail_url, category_slug, source_name')
     .not('thumbnail_url', 'is', null)
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  const toFix = (articles ?? []).filter(a =>
-    a.thumbnail_url && GENERIC_IMAGE_PATTERNS.some(p => a.thumbnail_url.includes(p))
-  )
+  // Count how many times each image URL appears per source
+  const sourceImageCounts: Record<string, Record<string, number>> = {}
+  for (const a of articles ?? []) {
+    const src = a.source_name || 'unknown'
+    if (!sourceImageCounts[src]) sourceImageCounts[src] = {}
+    sourceImageCounts[src][a.thumbnail_url] = (sourceImageCounts[src][a.thumbnail_url] || 0) + 1
+  }
+
+  // Flag articles where the same image is used 3+ times from same source (generic/shared)
+  // OR where the image URL is from a known generic-image domain
+  const toFix = (articles ?? []).filter(a => {
+    if (!a.thumbnail_url) return false
+    const isGenericDomain = GENERIC_IMAGE_PATTERNS.some(p => a.thumbnail_url.includes(p))
+    const src = a.source_name || 'unknown'
+    const isRepeated = (sourceImageCounts[src]?.[a.thumbnail_url] || 0) >= 3
+    return isGenericDomain || isRepeated
+  })
 
   let updated = 0
   for (const article of toFix) {
@@ -78,7 +92,7 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({
-    message: `Fixed ${updated} of ${toFix.length} articles with generic source images`,
+    message: `Fixed ${updated} of ${toFix.length} articles with repeated/generic images`,
     updated,
     flagged: toFix.length,
     total: articles?.length ?? 0,
