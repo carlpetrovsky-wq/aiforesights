@@ -158,7 +158,7 @@ Return ONLY the JSON object. No preamble, no code fences.`
         summary: excerpt,
         content,
         thumbnail_url: thumbnail,
-        source_url: null,
+        source_url: `https://www.aiforesights.com/article/${slug}`,
         source_id: null,
         source_name: 'AI Foresights',
         category_slug: finalCategory,
