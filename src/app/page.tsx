@@ -20,6 +20,7 @@ export default function HomePage() {
   const [toolCount, setToolCount] = useState('50+')
   const [newLast24h, setNewLast24h] = useState<number | null>(null)
   const [activeSource, setActiveSource] = useState<string | null>(null)
+  const [ratings, setRatings] = useState<Record<string, { average: number; count: number }>>({})
 
   useEffect(() => {
     async function load() {
@@ -34,14 +35,27 @@ export default function HomePage() {
         const [featData, latData, toolData, statsData]: [any[], any[], any[], any] = await Promise.all([
           featRes.json(), latRes.json(), toolRes.json(), statsRes.ok ? statsRes.json() : {},
         ])
-        setFeatured(Array.isArray(featData) ? featData as Article[] : [])
-        setLatest(Array.isArray(latData) ? latData as Article[] : [])
+        const featArticles = Array.isArray(featData) ? featData as Article[] : []
+        const latArticles  = Array.isArray(latData)  ? latData  as Article[] : []
+        setFeatured(featArticles)
+        setLatest(latArticles)
         setTopTools(Array.isArray(toolData) ? toolData as Tool[] : [])
         if (statsData?.toolCount) {
           setToolCount(statsData.toolCount.toLocaleString('en-US') + '+')
         }
         if (typeof statsData?.newLast24h === 'number') {
           setNewLast24h(statsData.newLast24h)
+        }
+
+        // Fetch ratings for own-content articles
+        const ownSlugs = [...featArticles, ...latArticles]
+          .filter((a: Article) => a.sourceName === 'AI Foresights')
+          .map((a: Article) => a.slug)
+        if (ownSlugs.length > 0) {
+          try {
+            const rRes = await fetch(`/api/ratings?slugs=${ownSlugs.join(',')}`)
+            if (rRes.ok) setRatings(await rRes.json())
+          } catch { /* silent */ }
         }
       } catch (e) {
         console.error('Failed to load data:', e)
@@ -153,8 +167,8 @@ export default function HomePage() {
                 ))
               ) : (
                 <>
-                  {displayFeatured[0] && <div className="sm:row-span-2"><ArticleCard article={displayFeatured[0]} variant="featured" showBadge={true} /></div>}
-                  {displayFeatured.slice(1).map(a => <ArticleCard key={a.id} article={a} variant="default" showBadge={true} />)}
+                  {displayFeatured[0] && <div className="sm:row-span-2"><ArticleCard article={displayFeatured[0]} variant="featured" showBadge={true} ratingAverage={ratings[displayFeatured[0].slug]?.average} ratingCount={ratings[displayFeatured[0].slug]?.count} /></div>}
+                  {displayFeatured.slice(1).map(a => <ArticleCard key={a.id} article={a} variant="default" showBadge={true} ratingAverage={ratings[a.slug]?.average} ratingCount={ratings[a.slug]?.count} />)}
                 </>
               )}
             </div>

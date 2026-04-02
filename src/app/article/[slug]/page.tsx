@@ -162,7 +162,7 @@ export default async function ArticlePage({ params }: { params: { slug: string }
           <div className="border border-brand-sky/20 bg-gradient-to-br from-brand-sky/5 to-brand-navy/5 rounded-2xl p-6 mb-8">
             <div className="flex items-start gap-4">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logo-icon.png" alt="AI Foresights" className="w-10 h-10 flex-shrink-0 mt-0.5" />
+              <img src="/logo-transparent.svg" alt="AI Foresights" className="w-10 h-10 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-bold text-brand-navy mb-1">Want more plain-English AI news?</p>
                 <p className="text-sm text-brand-slate leading-relaxed mb-3">

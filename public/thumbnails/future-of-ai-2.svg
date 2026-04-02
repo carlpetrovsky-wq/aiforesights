@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <radialGradient id="bg" cx="30%" cy="40%" r="80%">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </radialGradient>
+    <radialGradient id="glow1" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#8B5CF6" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#8B5CF6" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#8B5CF6" stop-opacity="0.12"/>
+      <stop offset="100%" stop-color="#8B5CF6" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Decorative circles -->
+  <circle cx="1050" cy="150" r="220" fill="url(#glow1)"/>
+  <circle cx="900" cy="520" r="150" fill="url(#glow2)"/>
+  <circle cx="150" cy="480" r="140" fill="url(#glow2)"/>
+
+  <!-- Grid lines -->
+  <g stroke="#8B5CF6" stroke-opacity="0.06" stroke-width="1">
+    <line x1="0" y1="105" x2="1200" y2="105"/>
+    <line x1="0" y1="210" x2="1200" y2="210"/>
+    <line x1="0" y1="315" x2="1200" y2="315"/>
+    <line x1="0" y1="420" x2="1200" y2="420"/>
+    <line x1="0" y1="525" x2="1200" y2="525"/>
+    <line x1="150" y1="0" x2="150" y2="630"/>
+    <line x1="300" y1="0" x2="300" y2="630"/>
+    <line x1="600" y1="0" x2="600" y2="630"/>
+    <line x1="900" y1="0" x2="900" y2="630"/>
+    <line x1="1050" y1="0" x2="1050" y2="630"/>
+  </g>
+
+  <!-- Left accent bar -->
+  <rect x="0" y="0" width="6" height="630" fill="#8B5CF6" opacity="0.8"/>
+
+  <!-- Category pill -->
+  <rect x="60" y="60" width="208" height="40" rx="20" fill="#8B5CF6" fill-opacity="0.15"/>
+  <rect x="60" y="60" width="208" height="40" rx="20" fill="none" stroke="#8B5CF6" stroke-width="1.5" stroke-opacity="0.5"/>
+  <text x="164" y="86" font-family="system-ui,-apple-system,sans-serif" font-size="16" font-weight="600" fill="#8B5CF6" text-anchor="middle" letter-spacing="1">FUTURE OF AI</text>
+
+  <!-- Tagline -->
+  <text x="60" y="155" font-family="system-ui,-apple-system,sans-serif" font-size="22" fill="#94A3B8" font-weight="400">What comes next</text>
+
+  <!-- Horizontal rule -->
+  <line x1="60" y1="180" x2="460" y2="180" stroke="#8B5CF6" stroke-width="1.5" stroke-opacity="0.4"/>
+
+  <!-- AI Foresights wordmark -->
+  <text x="60" y="560" font-family="system-ui,-apple-system,sans-serif" font-size="28" font-weight="700" fill="white" letter-spacing="-0.5">AI Foresights</text>
+  <text x="60" y="595" font-family="system-ui,-apple-system,sans-serif" font-size="16" fill="#64748B">aiforesights.com</text>
+
+  <!-- Bottom accent line -->
+  <rect x="0" y="618" width="1200" height="4" fill="#8B5CF6" opacity="0.6"/>
+
+  <!-- Dot decoration -->
+  <circle cx="288" cy="80" r="4" fill="#8B5CF6" opacity="0.6"/>
+  <circle cx="303" cy="80" r="4" fill="#8B5CF6" opacity="0.3"/>
+  <circle cx="318" cy="80" r="4" fill="#8B5CF6" opacity="0.15"/>
+</svg>
