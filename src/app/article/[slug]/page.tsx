@@ -131,7 +131,7 @@ export default async function ArticlePage({ params }: { params: { slug: string }
             const blocks = body.split('\n').filter(Boolean)
 
             // Renders inline markdown: **bold** and [text](url)
-            function renderInline(text: string, keyPrefix: string) {
+            const renderInline = (text: string, keyPrefix: string) => {
               const parts = text.split(/(\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/)
               return parts.map((part: string, j: number) => {
                 if (part.startsWith('**') && part.endsWith('**')) {
