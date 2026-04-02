@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
           email: cleanEmail,
           name: name ?? null,
           source: 'website',
-          is_active: false,
+          is_active: true,
           subscribed_at: new Date().toISOString(),
         })
 
