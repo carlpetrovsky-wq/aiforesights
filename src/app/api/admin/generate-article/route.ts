@@ -27,11 +27,11 @@ function guessCategory(title: string, description: string): string {
 }
 
 const BRANDED_THUMBNAIL_POOLS: Record<string, string[]> = {
-  'latest-news':   ['/thumbnails/latest-news-1.svg',   '/thumbnails/latest-news-2.svg',   '/thumbnails/latest-news-3.svg'],
-  'future-of-ai':  ['/thumbnails/future-of-ai-1.svg',  '/thumbnails/future-of-ai-2.svg',  '/thumbnails/future-of-ai-3.svg'],
-  'best-ai-tools': ['/thumbnails/best-ai-tools-1.svg', '/thumbnails/best-ai-tools-2.svg', '/thumbnails/best-ai-tools-3.svg'],
-  'make-money':    ['/thumbnails/make-money-1.svg',     '/thumbnails/make-money-2.svg',     '/thumbnails/make-money-3.svg'],
-  'learn-ai':      ['/thumbnails/learn-ai-1.svg',       '/thumbnails/learn-ai-2.svg',       '/thumbnails/learn-ai-3.svg'],
+  'latest-news':   ['/thumbnails/latest-news-1.png',   '/thumbnails/latest-news-2.png',   '/thumbnails/latest-news-3.png'],
+  'future-of-ai':  ['/thumbnails/future-of-ai-1.png',  '/thumbnails/future-of-ai-2.png',  '/thumbnails/future-of-ai-3.png'],
+  'best-ai-tools': ['/thumbnails/best-ai-tools-1.png', '/thumbnails/best-ai-tools-2.png', '/thumbnails/best-ai-tools-3.png'],
+  'make-money':    ['/thumbnails/make-money-1.png',     '/thumbnails/make-money-2.png',     '/thumbnails/make-money-3.png'],
+  'learn-ai':      ['/thumbnails/learn-ai-1.png',       '/thumbnails/learn-ai-2.png',       '/thumbnails/learn-ai-3.png'],
 }
 
 function getRandomThumbnail(category: string): string {
