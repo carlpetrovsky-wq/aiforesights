@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { Star, ArrowUp, BookOpen } from 'lucide-react'
+import { Star, ArrowUp, BookOpen, Linkedin, Facebook, Link2, Check } from 'lucide-react'
 
 interface RelatedArticle {
   slug: string
@@ -73,6 +73,105 @@ function StarDisplay({ average, count, size = 'sm' }: { average: number; count: 
 }
 
 export { StarDisplay }
+
+function ShareBar() {
+  const [copied, setCopied] = useState(false)
+  const [pageUrl, setPageUrl] = useState('')
+  const [pageTitle, setPageTitle] = useState('')
+
+  useEffect(() => {
+    setPageUrl(window.location.href)
+    setPageTitle(document.title)
+  }, [])
+
+  function copyLink() {
+    navigator.clipboard.writeText(pageUrl).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }).catch(() => {
+      // fallback
+      const el = document.createElement('textarea')
+      el.value = pageUrl
+      document.body.appendChild(el)
+      el.select()
+      document.execCommand('copy')
+      document.body.removeChild(el)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
+
+  const encodedUrl = encodeURIComponent(pageUrl)
+  const encodedTitle = encodeURIComponent(pageTitle.replace(' | AI Foresights', ''))
+
+  return (
+    <div className="mb-8">
+      <div className="flex items-center gap-3 flex-wrap">
+        <span className="text-sm font-semibold text-brand-navy flex items-center gap-1.5">
+          <svg className="w-4 h-4 text-brand-sky" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+          </svg>
+          Share this article
+        </span>
+
+        {/* LinkedIn */}
+        <a
+          href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-[#0A66C2] hover:bg-[#004182] text-white text-sm font-medium rounded-lg transition-colors"
+          aria-label="Share on LinkedIn"
+        >
+          <Linkedin className="w-4 h-4" />
+          LinkedIn
+        </a>
+
+        {/* Facebook */}
+        <a
+          href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-[#1877F2] hover:bg-[#0e5fc4] text-white text-sm font-medium rounded-lg transition-colors"
+          aria-label="Share on Facebook"
+        >
+          <Facebook className="w-4 h-4" />
+          Facebook
+        </a>
+
+        {/* X / Twitter */}
+        <a
+          href={`https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-black hover:bg-gray-800 text-white text-sm font-medium rounded-lg transition-colors"
+          aria-label="Share on X"
+        >
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.259 5.63L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+          </svg>
+          X
+        </a>
+
+        {/* Copy Link */}
+        <button
+          onClick={copyLink}
+          className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border transition-colors ${
+            copied
+              ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
+              : 'bg-white border-brand-border text-brand-navy hover:bg-gray-50'
+          }`}
+          aria-label="Copy link"
+        >
+          {copied ? (
+            <><Check className="w-4 h-4" />Copied!</>
+          ) : (
+            <><Link2 className="w-4 h-4" />Copy link</>
+          )}
+        </button>
+      </div>
+    </div>
+  )
+}
 
 export default function ArticleFooter({ articleSlug, category, relatedArticles, isOwnContent }: ArticleFooterProps) {
   const [userRating, setUserRating] = useState(0)
@@ -192,6 +291,11 @@ export default function ArticleFooter({ articleSlug, category, relatedArticles, 
             </div>
           )}
         </div>
+      )}
+
+      {/* ── SHARE BAR ───────────────────────────────────────── */}
+      {isOwnContent && (
+        <ShareBar />
       )}
 
       {/* ── RELATED ARTICLES ────────────────────────────────── */}
