@@ -1,0 +1,61 @@
+name: Daily Article Generation
+
+on:
+  schedule:
+    # 5AM Eastern = 10AM UTC (accounts for ET offset)
+    - cron: '0 10 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Generate Article 1 (featured)
+        id: article1
+        run: |
+          echo "Generating article 1 at $(date)"
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://www.aiforesights.com/api/admin/generate-article" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -d '{"featured": true}' \
+            --max-time 55)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+          echo "Status: $HTTP_CODE"
+          echo "Response: $BODY"
+          # Extract title for article 2 to avoid duplicate topics
+          TITLE=$(echo "$BODY" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('article',{}).get('title','')[:40])" 2>/dev/null || echo "")
+          echo "title=$TITLE" >> $GITHUB_OUTPUT
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "Article 1 failed with status $HTTP_CODE"
+            exit 1
+          fi
+
+      - name: Wait between generations
+        run: sleep 5
+
+      - name: Generate Article 2 (featured, different topic)
+        run: |
+          TITLE1="${{ steps.article1.outputs.title }}"
+          echo "Generating article 2 at $(date) (avoiding topic: $TITLE1)"
+          EXCLUDE_JSON=$(echo "$TITLE1" | python3 -c "import sys,json; t=sys.stdin.read().strip(); print(json.dumps([t]) if t else '[]')")
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://www.aiforesights.com/api/admin/generate-article" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -d "{\"featured\": true, \"excludeTitles\": $EXCLUDE_JSON}" \
+            --max-time 55)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+          echo "Status: $HTTP_CODE"
+          echo "Response: $BODY"
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "Article 2 failed with status $HTTP_CODE"
+            exit 1
+          fi
+
+      - name: Summary
+        run: echo "Daily article generation completed at $(date)"

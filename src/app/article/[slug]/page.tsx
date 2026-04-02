@@ -42,9 +42,45 @@ export default async function ArticlePage({ params }: { params: { slug: string }
     : null
   const categoryLabel = (article.category_slug || 'latest-news').replace(/-/g, ' ')
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': isOwnContent ? 'Article' : 'NewsArticle',
+    headline: article.title,
+    description: article.summary || article.excerpt || '',
+    image: image,
+    datePublished: article.published_at || new Date().toISOString(),
+    dateModified: article.updated_at || article.published_at || new Date().toISOString(),
+    author: {
+      '@type': 'Organization',
+      name: isOwnContent ? 'AI Foresights Staff' : (article.source_name || 'AI Foresights'),
+      url: 'https://www.aiforesights.com',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'AI Foresights',
+      url: 'https://www.aiforesights.com',
+      logo: {
+        '@type': 'ImageObject',
+        url: 'https://www.aiforesights.com/logo.svg',
+      },
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `https://www.aiforesights.com/article/${params.slug}`,
+    },
+    keywords: `AI, artificial intelligence, ${(article.category_slug || '').replace(/-/g, ' ')}, AI news, AI tools`,
+    articleSection: (article.category_slug || '').replace(/-/g, ' '),
+    inLanguage: 'en-US',
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-brand-bg">
       <Navbar />
+      {/* JSON-LD structured data for Google + AI crawlers */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
       <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-6 py-8">
         {/* Back link */}
@@ -93,6 +129,27 @@ export default async function ArticlePage({ params }: { params: { slug: string }
             const body = (article as any).content || article.summary || article.excerpt || ''
             if (!body) return null
             const blocks = body.split('\n').filter(Boolean)
+
+            // Renders inline markdown: **bold** and [text](url)
+            function renderInline(text: string, keyPrefix: string) {
+              const parts = text.split(/(\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/)
+              return parts.map((part: string, j: number) => {
+                if (part.startsWith('**') && part.endsWith('**')) {
+                  return <strong key={`${keyPrefix}-${j}`}>{part.slice(2, -2)}</strong>
+                }
+                const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/)
+                if (linkMatch) {
+                  return (
+                    <a key={`${keyPrefix}-${j}`} href={linkMatch[2]} target="_blank" rel="noopener noreferrer"
+                      className="text-brand-sky hover:text-brand-skyDark underline underline-offset-2 transition-colors">
+                      {linkMatch[1]}
+                    </a>
+                  )
+                }
+                return part
+              })
+            }
+
             return (
               <div className="prose prose-base max-w-none text-brand-slate mb-8 leading-relaxed space-y-4">
                 {blocks.map((block: string, i: number) => {
@@ -103,19 +160,10 @@ export default async function ArticlePage({ params }: { params: { slug: string }
                     return <h3 key={i} className="text-lg font-semibold text-brand-navy mt-6 mb-2">{block.slice(4)}</h3>
                   }
                   if (block.startsWith('- ')) {
-                    return <li key={i} className="ml-4 list-disc leading-relaxed">{block.slice(2)}</li>
+                    return <li key={i} className="ml-4 list-disc leading-relaxed">{renderInline(block.slice(2), `li-${i}`)}</li>
                   }
-                  if (block.includes('**')) {
-                    const parts = block.split(/(\*\*[^*]+\*\*)/)
-                    return (
-                      <p key={i} className="leading-relaxed">
-                        {parts.map((part: string, j: number) =>
-                          part.startsWith('**') && part.endsWith('**')
-                            ? <strong key={j}>{part.slice(2, -2)}</strong>
-                            : part
-                        )}
-                      </p>
-                    )
+                  if (block.includes('**') || block.match(/\[[^\]]+\]\([^)]+\)/)) {
+                    return <p key={i} className="leading-relaxed">{renderInline(block, `p-${i}`)}</p>
                   }
                   return <p key={i} className="leading-relaxed">{block}</p>
                 })}
