@@ -151,7 +151,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       campaignId,
-      sentTo: `Admin group (${adminGroup.name}) — ${TEST_EMAIL}`,
+      sentTo: `Admin group (${adminGroup.name})`,
       adminGroupId: adminGroup.id,
       subject,
       preview: {
