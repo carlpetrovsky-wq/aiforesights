@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Play, RefreshCw, Plus, Star, Trash2, Check, ExternalLink } from 'lucide-react'
+import { Play, RefreshCw, Plus, Star, Trash2, Check, ExternalLink, Sparkles } from 'lucide-react'
 
 interface PlaylistVideo {
   youtube_id: string
@@ -52,10 +52,39 @@ export default function AdminVideosPage() {
   const [intro, setIntro] = useState('')
   const [tags, setTags] = useState('')
   const [saving, setSaving] = useState(false)
+  const [generating, setGenerating] = useState(false)
   const [tab, setTab] = useState<'browse' | 'saved'>('browse')
   const [msg, setMsg] = useState('')
 
   useEffect(() => { loadSaved() }, [])
+
+  async function generateIntro(video: PlaylistVideo) {
+    setGenerating(true)
+    setMsg('')
+    try {
+      const res = await fetch('/api/admin/generate-video-intro', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: video.title,
+          channel: video.channel,
+          description: video.description,
+          youtube_id: video.youtube_id,
+        }),
+      })
+      const data = await res.json()
+      if (data.intro) {
+        setIntro(data.intro)
+        if (data.tags?.length) setTags(data.tags.join(', '))
+        setMsg('✓ AI intro generated — review and edit before publishing')
+      } else {
+        setMsg('Error generating intro: ' + (data.error || 'Unknown error'))
+      }
+    } catch {
+      setMsg('Failed to generate intro')
+    } finally {
+      setGenerating(false) }
+  }
 
   async function loadSaved() {
     setLoading(true)
@@ -193,7 +222,7 @@ export default function AdminVideosPage() {
                 <div className="space-y-2 max-h-[600px] overflow-y-auto pr-1">
                   {playlist.map(v => (
                     <div key={v.youtube_id}
-                      onClick={() => { setSelected(v); setIntro(''); setTags('') }}
+                      onClick={() => { setSelected(v); setIntro(''); setTags(''); generateIntro(v) }}
                       className={`flex gap-3 p-3 rounded-xl cursor-pointer border transition-all ${selected?.youtube_id === v.youtube_id ? 'border-brand-sky bg-brand-sky/5' : 'border-brand-border bg-white hover:border-brand-sky/50'}`}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img src={v.thumbnail} alt={v.title} className="w-28 h-16 object-cover rounded-lg flex-shrink-0" />
@@ -225,13 +254,23 @@ export default function AdminVideosPage() {
                         <p className="text-[11px] text-brand-muted mt-0.5">{selected.channel}</p>
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-brand-navy mb-1.5">
-                          Your editorial intro <span className="text-red-500">*</span>
-                        </label>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <label className="block text-xs font-semibold text-brand-navy">
+                            Editorial intro <span className="text-red-500">*</span>
+                          </label>
+                          <button
+                            onClick={() => selected && generateIntro(selected)}
+                            disabled={generating || !selected}
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-purple-50 text-purple-700 text-xs font-semibold hover:bg-purple-100 disabled:opacity-50 transition-colors"
+                          >
+                            <Sparkles className={`w-3 h-3 ${generating ? 'animate-spin' : ''}`} />
+                            {generating ? 'Writing...' : 'Regenerate with AI'}
+                          </button>
+                        </div>
                         <textarea
                           value={intro}
                           onChange={e => setIntro(e.target.value)}
-                          placeholder="Write 2-3 paragraphs explaining why this video matters and what your audience should watch for. Use blank lines between paragraphs."
+                          placeholder="AI will generate this when you select a video. You can edit or regenerate."
                           rows={6}
                           className="w-full text-sm border border-brand-border rounded-lg p-3 resize-none focus:outline-none focus:border-brand-sky"
                         />
