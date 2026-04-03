@@ -254,7 +254,7 @@ export function buildWeeklyDigest(
           </td></tr>
         </table>
         <p style="margin:0 0 16px;font-size:17px;font-weight:700;color:#0F172A;line-height:1.3;">${podcast.title}</p>
-        ${podcast.episodes.slice(0, 5).map((ep: { title: string; channel?: string; duration?: string }, i: number) => `
+        ${podcast.episodes.slice(0, 5).map((ep, i) => `
         <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:8px;background-color:#f8fafc;border-radius:8px;">
           <tr>
             <td width="36" valign="top" style="padding:12px 0 12px 14px;">
