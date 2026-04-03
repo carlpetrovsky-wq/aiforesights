@@ -56,15 +56,34 @@ export async function POST(req: NextRequest) {
 
     const podcast: PodcastSnap | null = podcastRow ?? null
 
-    // ── 3. Fetch 3 recent AI Foresights articles (no RSS) ────────
-    const { data: articleRows } = await supabaseAdmin
+    // ── 3. Fetch top stories — matches homepage featured section ─
+    // Priority: is_featured=true AI Foresights articles, fallback to most recent
+    let { data: articleRows } = await supabaseAdmin
       .from('articles')
       .select('title, slug, excerpt, thumbnail_url, category_slug, source_name')
       .eq('status', 'published')
       .eq('source_name', 'AI Foresights')
+      .eq('is_featured', true)
       .neq('category_slug', 'make-money')
       .order('published_at', { ascending: false })
       .limit(3)
+
+    // If fewer than 3 featured, top up with most recent non-featured
+    if (!articleRows || articleRows.length < 3) {
+      const existingSlugs = (articleRows ?? []).map(a => a.slug)
+      const needed = 3 - (articleRows?.length ?? 0)
+      let query = supabaseAdmin
+        .from('articles')
+        .select('title, slug, excerpt, thumbnail_url, category_slug, source_name')
+        .eq('status', 'published')
+        .eq('source_name', 'AI Foresights')
+        .neq('category_slug', 'make-money')
+        .order('published_at', { ascending: false })
+        .limit(needed + existingSlugs.length)
+      const { data: extras } = await query
+      const filtered = (extras ?? []).filter(a => !existingSlugs.includes(a.slug)).slice(0, needed)
+      articleRows = [...(articleRows ?? []), ...filtered]
+    }
 
     const articles: ArticleSnap[] = articleRows ?? []
 

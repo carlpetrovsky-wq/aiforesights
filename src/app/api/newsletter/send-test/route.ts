@@ -49,15 +49,31 @@ export async function POST(req: NextRequest) {
       .single()
     const podcast: PodcastSnap | null = podcastRow ?? null
 
-    // ── 3. Fetch 3 recent AI Foresights articles (no RSS) ────────
-    const { data: articleRows } = await supabaseAdmin
+    // ── 3. Fetch top stories — matches homepage featured section ─
+    let { data: articleRows } = await supabaseAdmin
       .from('articles')
       .select('title, slug, excerpt, thumbnail_url, category_slug, source_name')
       .eq('status', 'published')
       .eq('source_name', 'AI Foresights')
+      .eq('is_featured', true)
       .neq('category_slug', 'make-money')
       .order('published_at', { ascending: false })
       .limit(3)
+
+    if (!articleRows || articleRows.length < 3) {
+      const existingSlugs = (articleRows ?? []).map(a => a.slug)
+      const needed = 3 - (articleRows?.length ?? 0)
+      const { data: extras } = await supabaseAdmin
+        .from('articles')
+        .select('title, slug, excerpt, thumbnail_url, category_slug, source_name')
+        .eq('status', 'published')
+        .eq('source_name', 'AI Foresights')
+        .neq('category_slug', 'make-money')
+        .order('published_at', { ascending: false })
+        .limit(needed + existingSlugs.length)
+      const filtered = (extras ?? []).filter(a => !existingSlugs.includes(a.slug)).slice(0, needed)
+      articleRows = [...(articleRows ?? []), ...filtered]
+    }
     const articles: ArticleSnap[] = articleRows ?? []
 
     // ── 4. Featured Make Money article ────────────────────────
