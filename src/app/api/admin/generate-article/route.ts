@@ -27,12 +27,14 @@ function guessCategory(title: string, description: string): string {
 }
 
 const BASE = 'https://www.aiforesights.com'
+// Use the icon logo for all AI Foresights articles — scales cleanly to small email thumbnails
+const AI_FORESIGHTS_THUMBNAIL = `${BASE}/logo-icon.png`
 const BRANDED_THUMBNAIL_POOLS: Record<string, string[]> = {
-  'latest-news':   [`${BASE}/thumbnails/latest-news-1.png`,   `${BASE}/thumbnails/latest-news-2.png`,   `${BASE}/thumbnails/latest-news-3.png`],
-  'future-of-ai':  [`${BASE}/thumbnails/future-of-ai-1.png`,  `${BASE}/thumbnails/future-of-ai-2.png`,  `${BASE}/thumbnails/future-of-ai-3.png`],
-  'best-ai-tools': [`${BASE}/thumbnails/best-ai-tools-1.png`, `${BASE}/thumbnails/best-ai-tools-2.png`, `${BASE}/thumbnails/best-ai-tools-3.png`],
-  'make-money':    [`${BASE}/thumbnails/make-money-1.png`,     `${BASE}/thumbnails/make-money-2.png`,     `${BASE}/thumbnails/make-money-3.png`],
-  'learn-ai':      [`${BASE}/thumbnails/learn-ai-1.png`,       `${BASE}/thumbnails/learn-ai-2.png`,       `${BASE}/thumbnails/learn-ai-3.png`],
+  'latest-news':   [AI_FORESIGHTS_THUMBNAIL],
+  'future-of-ai':  [AI_FORESIGHTS_THUMBNAIL],
+  'best-ai-tools': [AI_FORESIGHTS_THUMBNAIL],
+  'make-money':    [AI_FORESIGHTS_THUMBNAIL],
+  'learn-ai':      [AI_FORESIGHTS_THUMBNAIL],
 }
 
 function getRandomThumbnail(category: string): string {
