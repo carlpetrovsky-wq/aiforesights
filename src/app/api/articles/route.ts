@@ -46,7 +46,65 @@ export async function GET(req: NextRequest) {
   let filters = `status=eq.published`
   if (category) filters += `&category_slug=eq.${encodeURIComponent(category)}`
   if (featured !== undefined) filters += `&is_featured=eq.${featured}`
-  const order = sortBy === 'popular' ? 'vote_count.desc' : 'published_at.desc'
+  // For popular sort: get top-rated article slugs from article_ratings first
+  if (sortBy === 'popular') {
+    // Fetch all rated articles with average rating
+    const { data: ratings } = await supabaseAdmin
+      .from('article_ratings')
+      .select('slug, rating')
+      .order('slug')
+
+    if (ratings && ratings.length > 0) {
+      // Compute average per slug
+      const avgMap: Record<string, { sum: number; count: number }> = {}
+      for (const r of ratings) {
+        if (!avgMap[r.slug]) avgMap[r.slug] = { sum: 0, count: 0 }
+        avgMap[r.slug].sum += r.rating
+        avgMap[r.slug].count += 1
+      }
+      // Sort slugs by average desc, then count desc as tiebreaker
+      const sortedSlugs = Object.entries(avgMap)
+        .sort((a, b) => {
+          const avgA = a[1].sum / a[1].count
+          const avgB = b[1].sum / b[1].count
+          if (avgB !== avgA) return avgB - avgA
+          return b[1].count - a[1].count
+        })
+        .map(([slug]) => slug)
+        .slice(0, 50) // top 50 rated articles
+
+      if (sortedSlugs.length > 0) {
+        // Fetch those articles
+        const { data: ratedArticles } = await supabaseAdmin
+          .from('articles')
+          .select('*')
+          .eq('status', 'published')
+          .in('slug', sortedSlugs)
+          .limit(limit)
+
+        if (ratedArticles && ratedArticles.length > 0) {
+          // Re-sort to match rating order
+          const slugOrder = new Map(sortedSlugs.map((s, i) => [s, i]))
+          const sorted = ratedArticles
+            .sort((a, b) => (slugOrder.get(a.slug) ?? 999) - (slugOrder.get(b.slug) ?? 999))
+            .map(mapRow)
+          return NextResponse.json(sorted, { headers: NO_CACHE })
+        }
+      }
+    }
+
+    // Fallback: no ratings yet, return latest AI Foresights articles
+    const { data: fallback } = await supabaseAdmin
+      .from('articles')
+      .select('*')
+      .eq('status', 'published')
+      .eq('source_name', 'AI Foresights')
+      .order('published_at', { ascending: false })
+      .limit(limit)
+    return NextResponse.json((fallback || []).map(mapRow), { headers: NO_CACHE })
+  }
+
+  const order = 'published_at.desc'
 
   // Direct REST fetch with Cache-Control: no-cache to bypass PostgREST result cache
   const pgUrl = `${supabaseUrl}/rest/v1/articles?select=*&${filters}&order=${order}&limit=${limit}&offset=${offset}`
@@ -62,7 +120,6 @@ export async function GET(req: NextRequest) {
 
   if (!pgRes.ok) return NextResponse.json([], { headers: NO_CACHE })
   const data = await pgRes.json()
-  const error = null
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let articles: any[] = (data ?? []).map(mapRow)
