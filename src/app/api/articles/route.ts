@@ -34,6 +34,7 @@ function mapRow(row: any) {
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const limit    = Number(searchParams.get('limit') ?? 12)
+  const offset   = Number(searchParams.get('offset') ?? 0)
   const sortBy   = (searchParams.get('sortBy') ?? 'latest') as 'latest' | 'popular'
   const category = searchParams.get('category') ?? undefined
   const featured = searchParams.get('featured') === 'true' ? true : undefined
@@ -48,7 +49,7 @@ export async function GET(req: NextRequest) {
   const order = sortBy === 'popular' ? 'vote_count.desc' : 'published_at.desc'
 
   // Direct REST fetch with Cache-Control: no-cache to bypass PostgREST result cache
-  const pgUrl = `${supabaseUrl}/rest/v1/articles?select=*&${filters}&order=${order}&limit=${limit}`
+  const pgUrl = `${supabaseUrl}/rest/v1/articles?select=*&${filters}&order=${order}&limit=${limit}&offset=${offset}`
   const pgRes = await fetch(pgUrl, {
     headers: {
       'apikey': serviceKey,

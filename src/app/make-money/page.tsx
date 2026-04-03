@@ -12,34 +12,61 @@ import { DollarSign, Briefcase, Clock, TrendingUp, BookOpen, Rss } from 'lucide-
 export default function MakeMoneyPage() {
   const [guides, setGuides] = useState<Article[]>([])
   const [news, setNews] = useState<Article[]>([])
+  const [newsPage, setNewsPage] = useState(1)
+  const [hasMoreNews, setHasMoreNews] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [loading, setLoading] = useState(true)
   const [ratings, setRatings] = useState<Record<string, { average: number; count: number }>>({})
+  const NEWS_PER_PAGE = 12
+
+  async function fetchRatings(articles: Article[]) {
+    if (articles.length === 0) return
+    try {
+      const slugs = articles.map(a => a.slug).join(',')
+      const rRes = await fetch(`/api/ratings?slugs=${slugs}`)
+      const rData = await rRes.json()
+      setRatings(prev => ({ ...prev, ...rData }))
+    } catch {}
+  }
 
   useEffect(() => {
     async function load() {
       setLoading(true)
       try {
-        // Fetch all make-money articles
-        const res = await fetch('/api/articles?limit=50&category=make-money&sortBy=latest')
-        const data = await res.json()
-        const all: Article[] = Array.isArray(data) && data.length > 0 ? data : MOCK_ARTICLES.slice(0, 6)
+        // Fetch guides (own content) + first page of news separately
+        const [guidesRes, newsRes] = await Promise.all([
+          fetch('/api/articles?limit=50&category=make-money&sortBy=latest&source=AI+Foresights'),
+          fetch(`/api/articles?limit=${NEWS_PER_PAGE + 1}&category=make-money&sortBy=latest&excludeSource=AI+Foresights`)
+        ])
+        const guidesData = await guidesRes.json()
+        const newsData = await newsRes.json()
 
-        // Split: AI Foresights guides vs RSS news
-        const ownGuides = all.filter(a => a.sourceName === 'AI Foresights')
-        const rssNews = all.filter(a => a.sourceName !== 'AI Foresights')
+        // Fallback: if API doesn't support source filter, fetch all and split
+        let ownGuides: Article[] = []
+        let rssNews: Article[] = []
+
+        if (Array.isArray(guidesData) && guidesData.some((a: Article) => a.sourceName === 'AI Foresights')) {
+          ownGuides = guidesData.filter((a: Article) => a.sourceName === 'AI Foresights')
+        }
+        if (Array.isArray(newsData) && newsData.some((a: Article) => a.sourceName !== 'AI Foresights')) {
+          rssNews = newsData.filter((a: Article) => a.sourceName !== 'AI Foresights')
+        }
+
+        // If source filtering not supported, fall back to fetching all
+        if (ownGuides.length === 0 && rssNews.length === 0) {
+          const allRes = await fetch('/api/articles?limit=100&category=make-money&sortBy=latest')
+          const all: Article[] = await allRes.json()
+          ownGuides = all.filter(a => a.sourceName === 'AI Foresights')
+          rssNews = all.filter(a => a.sourceName !== 'AI Foresights')
+        }
 
         setGuides(ownGuides)
-        setNews(rssNews)
+        const firstPage = rssNews.slice(0, NEWS_PER_PAGE)
+        setNews(firstPage)
+        setHasMoreNews(rssNews.length > NEWS_PER_PAGE)
+        setNewsPage(1)
 
-        // Fetch ratings
-        if (all.length > 0) {
-          const slugs = all.map((a: Article) => a.slug).join(',')
-          try {
-            const rRes = await fetch(`/api/ratings?slugs=${slugs}`)
-            const rData = await rRes.json()
-            setRatings(rData)
-          } catch {}
-        }
+        await fetchRatings([...ownGuides, ...firstPage])
       } catch {
         setGuides([])
         setNews(MOCK_ARTICLES.slice(0, 6))
@@ -49,6 +76,25 @@ export default function MakeMoneyPage() {
     }
     load()
   }, [])
+
+  async function loadMoreNews() {
+    setLoadingMore(true)
+    try {
+      const nextPage = newsPage + 1
+      const offset = nextPage * NEWS_PER_PAGE
+      const res = await fetch(`/api/articles?limit=${NEWS_PER_PAGE + 1}&category=make-money&sortBy=latest&offset=${offset - NEWS_PER_PAGE}`)
+      const data = await res.json()
+      if (!Array.isArray(data)) return
+      const newItems = data.filter((a: Article) => a.sourceName !== 'AI Foresights').slice(0, NEWS_PER_PAGE)
+      const hasMore = data.filter((a: Article) => a.sourceName !== 'AI Foresights').length > NEWS_PER_PAGE
+      setNews(prev => [...prev, ...newItems])
+      setHasMoreNews(hasMore)
+      setNewsPage(nextPage)
+      await fetchRatings(newItems)
+    } catch {} finally {
+      setLoadingMore(false)
+    }
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -121,6 +167,17 @@ export default function MakeMoneyPage() {
                     </div>
                   ))}
                 </div>
+                {hasMoreNews && (
+                  <div className="flex justify-center mt-6">
+                    <button
+                      onClick={loadMoreNews}
+                      disabled={loadingMore}
+                      className="px-6 py-2.5 rounded-lg bg-brand-sky text-white text-sm font-semibold hover:bg-brand-skyDark transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {loadingMore ? 'Loading...' : 'Load More'}
+                    </button>
+                  </div>
+                )}
               </section>
             )}
 
