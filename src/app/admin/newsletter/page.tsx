@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
-import { Send, Star, RefreshCw, CheckCircle, AlertCircle, Wrench, Search } from 'lucide-react'
+import { Send, Star, RefreshCw, CheckCircle, AlertCircle, Wrench, Search, FlaskConical } from 'lucide-react'
 
 interface Article {
   id: string
@@ -35,6 +35,8 @@ const PRICING_COLORS: Record<string, string> = {
 export default function AdminNewsletterPage() {
   const [sendStatus, setSendStatus] = useState<Status>('idle')
   const [sendResult, setSendResult] = useState<string>('')
+  const [testStatus, setTestStatus] = useState<Status>('idle')
+  const [testResult, setTestResult] = useState<string>('')
 
   const [mmArticles, setMmArticles] = useState<Article[]>([])
   const [loadingMM, setLoadingMM] = useState(true)
@@ -128,6 +130,21 @@ export default function AdminNewsletterPage() {
     }
     await fetchAllTools(toolSearch)
     setTogglingTool(null)
+  }
+
+  async function sendTest() {
+    setTestStatus('loading')
+    setTestResult('')
+    try {
+      const res = await fetch('/api/newsletter/send-test', { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Unknown error')
+      setTestStatus('success')
+      setTestResult(`Test sent to carl@aiforesights.com — Articles: ${data.preview.articlesCount}, Tools: ${data.preview.toolsCount}, Video: ${data.preview.hasVideo ? '✓' : '✗'}, Podcast: ${data.preview.hasPodcast ? '✓' : '✗'}, Make Money: ${data.preview.hasMakeMoney ? '✓' : '✗'}`)
+    } catch (err) {
+      setTestStatus('error')
+      setTestResult(err instanceof Error ? err.message : String(err))
+    }
   }
 
   async function sendDigest() {
@@ -313,7 +330,32 @@ export default function AdminNewsletterPage() {
         </div>
         <p className="text-sm text-gray-600">Auto-sends every <strong>Tuesday at 10 AM ET</strong>. Use this for manual or test sends.</p>
 
-        <button
+        {/* Test send */}
+        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <FlaskConical className="w-4 h-4 text-violet-500" />
+            <p className="text-sm font-semibold text-gray-800">Send Test Email</p>
+          </div>
+          <p className="text-xs text-gray-500">Sends the full digest with your current selections to <strong>carl@aiforesights.com</strong> only. Use this to review formatting before sending to subscribers.</p>
+          <button
+            onClick={sendTest}
+            disabled={testStatus === 'loading'}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-violet-500 hover:bg-violet-600 disabled:opacity-60 text-white rounded-lg font-semibold text-sm transition-colors"
+          >
+            {testStatus === 'loading'
+              ? <><RefreshCw className="w-4 h-4 animate-spin" /> Sending test…</>
+              : <><FlaskConical className="w-4 h-4" /> Send Test to carl@aiforesights.com</>}
+          </button>
+          {testResult && (
+            <div className={`flex items-start gap-2 p-3 rounded-lg text-sm ${testStatus === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+              {testStatus === 'success' ? <CheckCircle className="w-4 h-4 mt-0.5 shrink-0" /> : <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />}
+              {testResult}
+            </div>
+          )}
+        </div>
+
+        <div className="border-t border-gray-100 pt-4">
+          <p className="text-xs text-gray-400 mb-3 font-medium uppercase tracking-wide">Send to all subscribers</p>
           onClick={sendDigest}
           disabled={sendStatus === 'loading'}
           className="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-500 hover:bg-sky-600 disabled:opacity-60 text-white rounded-lg font-semibold text-sm transition-colors"
@@ -329,6 +371,7 @@ export default function AdminNewsletterPage() {
             {sendResult}
           </div>
         )}
+        </div>
       </div>
 
       {/* Schedule reference */}
