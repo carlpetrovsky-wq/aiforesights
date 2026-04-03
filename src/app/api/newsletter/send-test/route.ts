@@ -136,16 +136,9 @@ export async function POST(req: NextRequest) {
     const campaignId = campaign?.data?.id
     if (!campaignId) throw new Error('No campaign ID returned')
 
-    // ── 9. Schedule immediately ───────────────────────────────
-    const sendAt = new Date(Date.now() + 60 * 1000)
+    // ── 9. Send immediately ───────────────────────────────────
     await mlFetch(`/campaigns/${campaignId}/schedule`, 'POST', {
-      delivery: 'scheduled',
-      schedule: {
-        date: sendAt.toISOString().slice(0, 10),
-        hours: String(sendAt.getUTCHours()).padStart(2, '0'),
-        minutes: String(sendAt.getUTCMinutes()).padStart(2, '0'),
-        timezone_id: 'UTC',
-      },
+      delivery: 'instant',
     })
 
     return NextResponse.json({
