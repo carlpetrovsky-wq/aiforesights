@@ -19,6 +19,7 @@ export default function HomePage() {
   const [loading, setLoading]   = useState(true)
   const [toolCount, setToolCount] = useState('50+')
   const [activeVideo, setActiveVideo] = useState<{youtube_id: string; title: string; intro: string} | null>(null)
+  const [videoRating, setVideoRating] = useState<{average: number; count: number} | null>(null)
   const [newLast24h, setNewLast24h] = useState<number | null>(null)
   const [activeSource, setActiveSource] = useState<string | null>(null)
   const [ratings, setRatings] = useState<Record<string, { average: number; count: number }>>({})
@@ -37,7 +38,17 @@ export default function HomePage() {
         const [featData, latData, toolData, statsData]: [any[], any[], any[], any] = await Promise.all([
           featRes.json(), latRes.json(), toolRes.json(), statsRes.ok ? statsRes.json() : {},
         ])
-        try { const vd = await videoRes.json(); if (vd?.youtube_id) setActiveVideo(vd) } catch {}
+        try {
+          const vd = await videoRes.json()
+          if (vd?.youtube_id) {
+            setActiveVideo(vd)
+            try {
+              const rRes = await fetch(`/api/ratings?slug=video-${vd.youtube_id}`)
+              const rData = await rRes.json()
+              if (rData?.count > 0) setVideoRating(rData)
+            } catch {}
+          }
+        } catch {}
         const featArticles = Array.isArray(featData) ? featData as Article[] : []
         const latArticles  = Array.isArray(latData)  ? latData  as Article[] : []
         setFeatured(featArticles)
@@ -200,6 +211,14 @@ export default function HomePage() {
                     <h3 className="text-sm font-bold text-brand-navy leading-snug line-clamp-2 group-hover:text-brand-sky transition-colors mb-1.5">
                       {activeVideo.title}
                     </h3>
+                    {videoRating && videoRating.count > 0 && (
+                      <div className="flex items-center gap-1 mb-1.5">
+                        {[1,2,3,4,5].map(s => (
+                          <svg key={s} className={`w-3 h-3 ${videoRating.average >= s ? 'text-amber-400 fill-amber-400' : 'text-gray-300 fill-gray-300'}`} viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                        ))}
+                        <span className="text-[10px] text-brand-muted ml-0.5">{videoRating.average.toFixed(1)} ({videoRating.count})</span>
+                      </div>
+                    )}
                     <p className="text-[11px] text-brand-slate line-clamp-2 leading-relaxed">
                       {activeVideo.intro.split("\n\n")[0]}
                     </p>
