@@ -142,7 +142,7 @@ export default function LearnAIPage() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {pinned.map((a, i) => (
-                <ArticleCard key={a.id} article={a} variant={i === 0 ? 'featured' : 'default'} ratingAverage={ratings[a.slug]?.average} ratingCount={ratings[a.slug]?.count} />
+                <ArticleCard key={a.id} article={a} variant="default" ratingAverage={ratings[a.slug]?.average} ratingCount={ratings[a.slug]?.count} />
               ))}
             </div>
           </section>
