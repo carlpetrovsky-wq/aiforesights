@@ -18,6 +18,7 @@ export default function HomePage() {
   const [topTools, setTopTools] = useState<Tool[]>([])
   const [loading, setLoading]   = useState(true)
   const [toolCount, setToolCount] = useState('50+')
+  const [activeVideo, setActiveVideo] = useState<{youtube_id: string; title: string; intro: string} | null>(null)
   const [newLast24h, setNewLast24h] = useState<number | null>(null)
   const [activeSource, setActiveSource] = useState<string | null>(null)
   const [ratings, setRatings] = useState<Record<string, { average: number; count: number }>>({})
@@ -25,16 +26,18 @@ export default function HomePage() {
   useEffect(() => {
     async function load() {
       try {
-        const [featRes, latRes, toolRes, statsRes] = await Promise.all([
+        const [featRes, latRes, toolRes, videoRes, statsRes] = await Promise.all([
           fetch(`/api/articles?featured=true&limit=3&t=${Date.now()}`, { cache: 'no-store' }),
           fetch(`/api/articles?limit=6&sortBy=latest&t=${Date.now()}`, { cache: 'no-store' }),
           fetch(`/api/tools?limit=5&t=${Date.now()}`, { cache: 'no-store' }),
+          fetch(`/api/videos?mode=active`, { cache: 'no-store' }),
           fetch(`/api/stats?t=${Date.now()}`, { cache: 'no-store' }),
         ])
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const [featData, latData, toolData, statsData]: [any[], any[], any[], any] = await Promise.all([
           featRes.json(), latRes.json(), toolRes.json(), statsRes.ok ? statsRes.json() : {},
         ])
+        try { const vd = await videoRes.json(); if (vd?.youtube_id) setActiveVideo(vd) } catch {}
         const featArticles = Array.isArray(featData) ? featData as Article[] : []
         const latArticles  = Array.isArray(latData)  ? latData  as Article[] : []
         setFeatured(featArticles)
@@ -172,6 +175,41 @@ export default function HomePage() {
                 </>
               )}
             </div>
+
+            {/* Video of the Week teaser */}
+            {activeVideo && (
+              <div className="mb-6 rounded-xl border border-brand-border bg-white overflow-hidden hover:border-brand-sky transition-colors group">
+                <div className="flex gap-4 p-4">
+                  <div className="relative flex-shrink-0 w-40 aspect-video rounded-lg overflow-hidden bg-black">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={`https://img.youtube.com/vi/${activeVideo.youtube_id}/hqdefault.jpg`}
+                      alt={activeVideo.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                      <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+                        <svg className="w-3.5 h-3.5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-red-500 text-white uppercase tracking-wide">Video of the Week</span>
+                    </div>
+                    <h3 className="text-sm font-bold text-brand-navy leading-snug line-clamp-2 group-hover:text-brand-sky transition-colors mb-1.5">
+                      {activeVideo.title}
+                    </h3>
+                    <p className="text-[11px] text-brand-slate line-clamp-2 leading-relaxed">
+                      {activeVideo.intro.split("\n\n")[0]}
+                    </p>
+                    <Link href="/ai-video-of-the-week" className="inline-flex items-center gap-1 mt-2 text-[11px] font-semibold text-brand-sky hover:underline">
+                      Watch now →
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="section-header">
               <h2 className="section-title">Latest news</h2>

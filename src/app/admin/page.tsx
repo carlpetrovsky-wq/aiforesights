@@ -110,6 +110,7 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {[
             { label: 'Generate Article',   href: '/admin/generate',        desc: 'AI writes an original staff article' },
+            { label: 'Video of the Week',     href: '/admin/videos',          desc: 'Browse playlists, publish weekly video pick' },
             { label: 'Add Article',       href: '/admin/articles?new=1',  desc: 'Create a new article manually' },
             { label: 'Add Tool',          href: '/admin/tools?new=1',     desc: 'Add an AI tool to the directory' },
             { label: 'Add RSS Source',    href: '/admin/sources?new=1',   desc: 'Connect a new RSS feed' },
