@@ -144,7 +144,14 @@ export default function ArticleCard({ article, variant = 'default', ratingAverag
 
         {/* Footer */}
         <div className="flex items-center justify-between pt-2 border-t border-brand-border">
-          <span className="cat-pill">{article.category.replace('-', ' ')}</span>
+          <div className="flex items-center gap-1.5">
+            <span className="cat-pill">{article.category.replace('-', ' ')}</span>
+            {isOwnContent && article.publishedAt && (Date.now() - new Date(article.publishedAt).getTime()) < 24 * 60 * 60 * 1000 && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-bold bg-amber-400 text-amber-900 leading-none tracking-wide">
+                NEW
+              </span>
+            )}
+          </div>
           <div className="flex items-center gap-2.5">
             <a
               href={article.sourceUrl}
