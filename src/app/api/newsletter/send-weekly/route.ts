@@ -119,9 +119,19 @@ export async function POST(req: NextRequest) {
     if (!campaignId) throw new Error('No campaign ID returned from MailerLite')
 
     // ── 7. Schedule campaign — send immediately ───────────────
-    await mlFetch(`/campaigns/${campaignId}/schedule`, 'POST', {
-      delivery: 'instant',
+    // 'instant' delivery requires Advanced plan.
+    // Fallback: schedule for 1 minute from now which works on all plans.
+    const sendAt = new Date(Date.now() + 60 * 1000) // 1 min from now
+    const scheduleResult = await mlFetch(`/campaigns/${campaignId}/schedule`, 'POST', {
+      delivery: 'scheduled',
+      schedule: {
+        date: sendAt.toISOString().slice(0, 10),
+        hours: String(sendAt.getUTCHours()).padStart(2, '0'),
+        minutes: String(sendAt.getUTCMinutes()).padStart(2, '0'),
+        timezone_id: 'UTC',
+      },
     })
+    console.log(`[send-weekly] Schedule result:`, JSON.stringify(scheduleResult))
 
     // ── 8. Mark video + podcast as newsletter_included ────────
     if (video) {

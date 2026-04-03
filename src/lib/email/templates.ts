@@ -212,7 +212,7 @@ export interface VideoSnap {
 export interface PodcastSnap {
   title: string
   week_of: string
-  episodes: Array<{ title: string; channel?: string; duration?: string }>
+  episodes: Array<{ episode_title?: string; title?: string; podcast_name?: string; channel?: string; duration?: string }>
 }
 
 export function buildWeeklyDigest(
@@ -261,8 +261,8 @@ export function buildWeeklyDigest(
               <span style="display:inline-block;width:24px;height:24px;background-color:#0F172A;border-radius:50%;text-align:center;font-size:11px;font-weight:700;color:#ffffff;line-height:24px;">${i + 1}</span>
             </td>
             <td style="padding:12px 14px 12px 8px;">
-              <p style="margin:0 0 2px;font-size:14px;font-weight:600;color:#0F172A;line-height:1.4;">${ep.title}</p>
-              ${ep.channel ? `<p style="margin:0;font-size:12px;color:#94a3b8;">${ep.channel}${ep.duration ? `&nbsp;·&nbsp;${ep.duration}` : ''}</p>` : ''}
+              <p style="margin:0 0 2px;font-size:14px;font-weight:600;color:#0F172A;line-height:1.4;">${ep.episode_title || ep.title || ''}</p>
+              ${(ep.podcast_name || ep.channel) ? `<p style="margin:0;font-size:12px;color:#94a3b8;">${ep.podcast_name || ep.channel}${ep.duration ? `&nbsp;·&nbsp;${ep.duration}` : ''}</p>` : ''}
             </td>
           </tr>
         </table>`).join('')}
