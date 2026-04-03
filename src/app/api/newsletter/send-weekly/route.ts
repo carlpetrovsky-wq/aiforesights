@@ -3,7 +3,7 @@ export const maxDuration = 60
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
-import { buildWeeklyDigest, ArticleSnap, VideoSnap, PodcastSnap } from '@/lib/email/templates'
+import { buildWeeklyDigest, ArticleSnap, VideoSnap, PodcastSnap, ToolSnap } from '@/lib/email/templates'
 
 const MAILERLITE_API = 'https://connect.mailerlite.com/api'
 const GROUP_ID = process.env.MAILERLITE_GROUP_ID!
@@ -93,8 +93,28 @@ export async function POST(req: NextRequest) {
 
     const makeMoneyArticle: ArticleSnap | null = mmRow ?? null
 
-    // ── 5. Build HTML ─────────────────────────────────────────
-    const html = buildWeeklyDigest(video, podcast, articles, makeMoneyArticle)
+    // ── 5. Fetch featured tools (is_featured=true) → fallback to 3 most recent ──
+    let { data: toolRows } = await supabaseAdmin
+      .from('tools')
+      .select('name, slug, description, website_url, affiliate_url, pricing, category, logo_url')
+      .eq('is_featured', true)
+      .eq('status', 'published')
+      .limit(3)
+
+    if (!toolRows || toolRows.length === 0) {
+      const { data: fallbackTools } = await supabaseAdmin
+        .from('tools')
+        .select('name, slug, description, website_url, affiliate_url, pricing, category, logo_url')
+        .eq('status', 'published')
+        .order('created_at', { ascending: false })
+        .limit(3)
+      toolRows = fallbackTools
+    }
+
+    const tools: ToolSnap[] = toolRows ?? []
+
+    // ── 6. Build HTML ─────────────────────────────────────────
+    const html = buildWeeklyDigest(video, podcast, articles, makeMoneyArticle, tools)
 
     const now = new Date()
     const weekLabel = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
@@ -148,6 +168,7 @@ export async function POST(req: NextRequest) {
       campaignId,
       subject,
       articlesCount: articles.length,
+      toolsCount: tools.length,
       hasVideo: !!video,
       hasPodcast: !!podcast,
       hasMakeMoney: !!makeMoneyArticle,

@@ -95,3 +95,28 @@ export async function DELETE(req: NextRequest) {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
   return NextResponse.json({ success: true })
 }
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const body = await req.json()
+    if (!body.id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
+
+    const allowed = ['is_featured', 'status']
+    const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
+    for (const key of allowed) {
+      if (key in body) updates[key] = body[key]
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('tools')
+      .update(updates)
+      .eq('id', body.id)
+      .select('id, name, is_featured')
+      .single()
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json(data)
+  } catch {
+    return NextResponse.json({ error: 'Bad request' }, { status: 400 })
+  }
+}

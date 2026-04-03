@@ -215,11 +215,23 @@ export interface PodcastSnap {
   episodes: Array<{ episode_title?: string; title?: string; podcast_name?: string; channel?: string; duration?: string }>
 }
 
+export interface ToolSnap {
+  name: string
+  slug: string
+  description: string
+  website_url: string
+  affiliate_url?: string | null
+  pricing?: string | null
+  category?: string | null
+  logo_url?: string | null
+}
+
 export function buildWeeklyDigest(
   video: VideoSnap | null,
   podcast: PodcastSnap | null,
   articles: ArticleSnap[],
-  makeMoneyArticle: ArticleSnap | null
+  makeMoneyArticle: ArticleSnap | null,
+  tools: ToolSnap[] = []
 ): string {
   const now = new Date()
   const weekLabel = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
@@ -320,6 +332,52 @@ export function buildWeeklyDigest(
     </table>
   ` : ''
 
+  // ── Tools spotlight ───────────────────────────────────────
+  const toolsSection = tools.length > 0 ? `
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:28px;">
+      <tr><td>
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:16px;">
+          <tr><td style="border-left:3px solid #0EA5E9;padding-left:10px;">
+            <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#0EA5E9;">🔧 AI Tools Worth Trying</p>
+          </td></tr>
+        </table>
+        ${tools.slice(0, 3).map((tool, i) => {
+          const toolUrl = tool.affiliate_url || tool.website_url
+          const pricingColor = tool.pricing === 'free' ? '#16a34a' : tool.pricing === 'freemium' ? '#0EA5E9' : '#94a3b8'
+          const pricingLabel = tool.pricing === 'free' ? 'Free' : tool.pricing === 'freemium' ? 'Free plan available' : tool.pricing === 'paid' ? 'Paid' : tool.pricing || ''
+          return `
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:${i < tools.length - 1 ? '10px' : '0'};border:1px solid #e2e8f0;border-radius:8px;">
+          <tr>
+            <td style="padding:14px 16px;">
+              <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td valign="middle">
+                    <table cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td valign="middle">
+                          <p style="margin:0;font-size:15px;font-weight:700;color:#0F172A;display:inline;">${tool.name}</p>
+                          ${pricingLabel ? `<span style="display:inline-block;margin-left:8px;padding:2px 8px;background-color:${pricingColor}18;border-radius:4px;font-size:11px;font-weight:600;color:${pricingColor};">${pricingLabel}</span>` : ''}
+                        </td>
+                      </tr>
+                    </table>
+                    <p style="margin:4px 0 10px;font-size:13px;color:#64748b;line-height:1.6;">${tool.description.split(' ').slice(0, 20).join(' ')}${tool.description.split(' ').length > 20 ? '…' : ''}</p>
+                    <a href="${toolUrl}" style="font-size:13px;font-weight:600;color:#0EA5E9;text-decoration:none;">Try it free →</a>
+                  </td>
+                  ${tool.logo_url ? `<td valign="middle" align="right" style="padding-left:16px;width:48px;">
+                    <img src="${tool.logo_url}" alt="${tool.name}" width="40" height="40" style="display:block;border-radius:8px;width:40px;height:40px;object-fit:contain;" />
+                  </td>` : ''}
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>`
+        }).join('')}
+        <a href="${BASE_URL}/best-ai-tools" style="display:inline-block;margin-top:12px;font-size:13px;font-weight:600;color:#0EA5E9;text-decoration:none;">Browse all AI tools →</a>
+      </td></tr>
+    </table>
+    <hr style="border:none;border-top:1px solid #e2e8f0;margin:0 0 28px;" />
+  ` : ''
+
   // ── Sign-off ──────────────────────────────────────────────
   const signOff = `
     <hr style="border:none;border-top:1px solid #e2e8f0;margin:0 0 24px;" />
@@ -347,6 +405,7 @@ export function buildWeeklyDigest(
     ${videoSection}
     ${podcastSection}
     ${articlesSection}
+    ${toolsSection}
     ${makeMoneySection}
     ${signOff}
   `
