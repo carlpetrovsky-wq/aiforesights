@@ -126,9 +126,9 @@ export default function ArticleCard({ article, variant = 'default', ratingAverag
           )}
         </Link>
 
-        {/* Excerpt — featured only */}
-        {variant === 'featured' && article.excerpt && (
-          <p className="text-[12px] text-brand-slate leading-relaxed line-clamp-2 mb-2">
+        {/* Excerpt — show on all variants for own content, featured gets 3 lines, default gets 2 */}
+        {article.excerpt && (
+          <p className={`text-[12px] text-brand-slate leading-relaxed mb-2 ${variant === 'featured' ? 'line-clamp-3' : 'line-clamp-2'}`}>
             {article.excerpt}
           </p>
         )}
