@@ -43,6 +43,14 @@ function SourcesContent() {
   const [fetching, setFetching] = useState(false)
   const [fetchResult, setFetchResult] = useState<{ success: boolean; message: string } | null>(null)
   const { sorted: sortedSources, sortKey, sortDir, handleSort } = useSortedData(sources)
+  const [search, setSearch] = useState('')
+  const displayedSources = search
+    ? sortedSources.filter(s =>
+        s.name.toLowerCase().includes(search.toLowerCase()) ||
+        s.url.toLowerCase().includes(search.toLowerCase()) ||
+        s.source_type.toLowerCase().includes(search.toLowerCase())
+      )
+    : sortedSources
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -139,6 +147,16 @@ function SourcesContent() {
       />
 
       <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl overflow-hidden">
+        {/* Search bar */}
+        <div className="px-4 py-3 border-b border-white/[0.06]">
+          <input
+            type="text"
+            placeholder="Search sources by name, URL, or type…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full bg-white/[0.04] border border-white/[0.08] rounded-lg px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-brand-sky transition"
+          />
+        </div>
         {loading ? (
           <div className="p-8 text-center text-slate-500 text-sm">Loading…</div>
         ) : sources.length === 0 ? (
@@ -155,7 +173,9 @@ function SourcesContent() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/[0.04]">
-              {sortedSources.map(s => (
+              {displayedSources.length === 0 ? (
+                <tr><td colSpan={5} className="px-4 py-8 text-center text-slate-500 text-sm">No sources match "{search}"</td></tr>
+              ) : displayedSources.map(s => (
                 <tr key={s.id} className="hover:bg-white/[0.02] transition">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
