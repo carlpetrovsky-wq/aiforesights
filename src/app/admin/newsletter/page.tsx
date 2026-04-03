@@ -9,6 +9,7 @@ interface Article {
   published_at: string
   is_featured: boolean
   category_slug: string
+  source_name?: string | null
   thumbnail_url?: string | null
 }
 
@@ -59,7 +60,9 @@ export default function AdminNewsletterPage() {
     setLoadingMM(true)
     const res = await fetch('/api/admin/articles?limit=20&sortBy=published_at&sortDir=desc')
     const data = await res.json()
-    const mm = (data.articles ?? []).filter((a: Article) => a.category_slug === 'make-money')
+    const mm = (data.articles ?? []).filter((a: Article) =>
+      a.category_slug === 'make-money' && a.source_name === 'AI Foresights'
+    )
     setMmArticles(mm)
     setLoadingMM(false)
   }
@@ -104,11 +107,28 @@ export default function AdminNewsletterPage() {
       return
     }
     setTogglingTool(tool.id)
-    await fetch('/api/admin/tools', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: tool.id, newsletter_featured: newVal }),
-    })
+    try {
+      const res = await fetch('/api/admin/tools', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: tool.id, newsletter_featured: newVal }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        const msg = data?.error || 'Update failed'
+        if (msg.includes('newsletter_featured') || msg.includes('column')) {
+          alert('The newsletter_featured column is missing from the tools table.\n\nRun this in Supabase SQL editor:\n\nALTER TABLE tools ADD COLUMN IF NOT EXISTS newsletter_featured boolean DEFAULT false;')
+        } else {
+          alert(`Error: ${msg}`)
+        }
+        setTogglingTool(null)
+        return
+      }
+    } catch (err) {
+      alert(`Network error: ${err instanceof Error ? err.message : String(err)}`)
+      setTogglingTool(null)
+      return
+    }
     await fetchAllTools(toolSearch)
     setTogglingTool(null)
   }
