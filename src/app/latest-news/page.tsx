@@ -27,7 +27,8 @@ export default function LatestNewsPage() {
     try {
       const slugs = articles.map(a => a.slug).join(',')
       const rRes = await fetch(`/api/ratings?slugs=${slugs}`)
-      setRatings(prev => ({ ...prev, ...await rRes.json() }))
+      const rData = await rRes.json()
+      setRatings(prev => ({ ...prev, ...rData }))
     } catch {}
   }
 

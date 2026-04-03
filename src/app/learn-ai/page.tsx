@@ -42,7 +42,8 @@ export default function LearnAIPage() {
     if (!articles.length) return
     try {
       const slugs = articles.map(a => a.slug).join(',')
-      setRatings(prev => ({ ...prev, ...await (await fetch(`/api/ratings?slugs=${slugs}`)).json() }))
+      const rData = await (await fetch(`/api/ratings?slugs=${slugs}`)).json()
+      setRatings(prev => ({ ...prev, ...rData }))
     } catch {}
   }
 
