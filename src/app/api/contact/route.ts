@@ -11,12 +11,16 @@ const supabaseAdmin = createClient(
 // Carl sees new inquiries in the MailerLite "Contact Inquiries" group.
 async function notifyViaMailerLite(name: string, email: string, type: string, message: string) {
   const apiKey = process.env.MAILERLITE_API_KEY
-  if (!apiKey) return
+  if (!apiKey) {
+    console.log('Contact notify: MAILERLITE_API_KEY not set, skipping')
+    return
+  }
+
+  const groupId = process.env.MAILERLITE_INQUIRIES_GROUP_ID
+  const groups = groupId ? [groupId] : []
 
   try {
-    // Add the person to MailerLite with inquiry details in fields
-    // This triggers a notification in your MailerLite dashboard
-    await fetch('https://connect.mailerlite.com/api/subscribers', {
+    const res = await fetch('https://connect.mailerlite.com/api/subscribers', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -29,14 +33,18 @@ async function notifyViaMailerLite(name: string, email: string, type: string, me
           name,
           last_name: `[${type}] ${message.slice(0, 200)}`,
         },
-        groups: process.env.MAILERLITE_INQUIRIES_GROUP_ID
-          ? [process.env.MAILERLITE_INQUIRIES_GROUP_ID]
-          : [],
+        groups,
         status: 'active',
       }),
     })
+    const data = await res.json()
+    if (!res.ok) {
+      console.error('Contact notify: MailerLite error', res.status, JSON.stringify(data))
+    } else {
+      console.log('Contact notify: added to MailerLite', data?.data?.email, 'groups:', groups)
+    }
   } catch (e) {
-    console.error('MailerLite notification error:', e)
+    console.error('Contact notify: MailerLite fetch failed', e)
   }
 }
 
@@ -85,8 +93,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Something went wrong. Please try again.' }, { status: 500 })
     }
 
-    // Send notification (non-blocking — don't fail the form if this errors)
-    notifyViaMailerLite(trimmedName, trimmedEmail, trimmedType, trimmedMessage)
+    // Send notification — must await so Vercel doesn't kill the function before it completes
+    await notifyViaMailerLite(trimmedName, trimmedEmail, trimmedType, trimmedMessage)
 
     return NextResponse.json({ success: true })
   } catch (e) {
