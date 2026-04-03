@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // 2. Fix tools with missing or broken logo URLs
+  // 2. Fix tools with missing or broken logo URLs — update unconditionally
   const toolFixes = [
     { name: 'Midjourney', logo_url: 'https://upload.wikimedia.org/wikipedia/commons/e/e6/Midjourney_Emblem.png' },
   ]
@@ -43,7 +43,6 @@ export async function POST(req: NextRequest) {
       .from('tools')
       .update({ logo_url: fix.logo_url })
       .eq('name', fix.name)
-      .or('logo_url.is.null,logo_url.eq.')
     if (!toolError) toolsFixed++
   }
 
