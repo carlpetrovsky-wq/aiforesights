@@ -16,6 +16,7 @@ import {
   Menu,
   X,
   Sparkles,
+  Mail,
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -26,6 +27,7 @@ const nav = [
   { href: '/admin/sources',     label: 'RSS Sources',    icon: Rss },
   { href: '/admin/tools',       label: 'Tools',          icon: Wrench },
   { href: '/admin/subscribers', label: 'Subscribers',    icon: Users },
+  { href: '/admin/newsletter',  label: 'Newsletter',     icon: Mail },
   { href: '/admin/ads',         label: 'Ad Slots',       icon: Megaphone },
   { href: '/admin/settings',    label: 'Settings',       icon: Settings },
 ]

@@ -1,0 +1,32 @@
+name: Weekly Newsletter Digest
+
+on:
+  schedule:
+    # 10AM Eastern = 15:00 UTC (EST) / 14:00 UTC (EDT)
+    # Using 15:00 UTC to cover EST — MailerLite sends instantly so timing is precise
+    - cron: '0 15 * * 2'  # Every Tuesday at 15:00 UTC
+  workflow_dispatch: # Allow manual trigger from GitHub Actions UI
+
+jobs:
+  send-digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Send Weekly Newsletter Digest
+        run: |
+          echo "Sending weekly digest at $(date)"
+          RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
+            "https://www.aiforesights.com/api/newsletter/send-weekly" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            --max-time 55)
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n-1)
+          echo "Status: $HTTP_CODE"
+          echo "Response: $BODY"
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "Newsletter send failed with status $HTTP_CODE"
+            exit 1
+          fi
+          echo "Weekly digest sent successfully."

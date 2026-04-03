@@ -147,6 +147,33 @@ export async function PUT(req: NextRequest) {
   }
 }
 
+// PATCH /api/admin/articles — partial update (e.g. toggle is_featured)
+export async function PATCH(req: NextRequest) {
+  try {
+    const body = await req.json()
+    if (!body.id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
+
+    // Only allow safe partial fields
+    const allowed = ['is_featured', 'status', 'newsletter_featured']
+    const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
+    for (const key of allowed) {
+      if (key in body) updates[key] = body[key]
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from('articles')
+      .update(updates)
+      .eq('id', body.id)
+      .select('id, title, is_featured, status')
+      .single()
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+    return NextResponse.json(data)
+  } catch {
+    return NextResponse.json({ error: 'Bad request' }, { status: 400 })
+  }
+}
+
 // DELETE /api/admin/articles — delete article
 export async function DELETE(req: NextRequest) {
   const { searchParams } = new URL(req.url)
