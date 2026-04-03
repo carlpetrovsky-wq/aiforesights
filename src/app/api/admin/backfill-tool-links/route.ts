@@ -13,7 +13,6 @@ function injectToolLinks(
     const href = tool.affiliate_url || tool.website_url
     if (!href) continue
     const escaped = tool.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    // Only replace first occurrence, skip if already inside a markdown link
     const regex = new RegExp(`(?<!\\[)(?<!href=")\\b(${escaped})\\b(?![^[]*\\]\\()`, 'i')
     result = result.replace(regex, `[$1](${href})`)
   }
@@ -28,7 +27,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // Fetch all tools
+  // 1. Fetch tools
   const { data: toolsData } = await supabaseAdmin
     .from('tools')
     .select('name, website_url, affiliate_url')
@@ -37,47 +36,47 @@ export async function GET(req: NextRequest) {
     .limit(200)
   const tools = toolsData || []
 
-  // Fetch all AI Foresights articles with content
+  // 2. Fetch all AI Foresights articles with content in one shot
   const { data: articles, error } = await supabaseAdmin
     .from('articles')
-    .select('id, slug, title, content, category_slug')
+    .select('id, slug, title, content')
     .eq('source_name', 'AI Foresights')
-    .neq('content', '')
+    .eq('status', 'published')
     .not('content', 'is', null)
 
-  if (error || !articles?.length) {
-    return NextResponse.json({ error: error?.message || 'No articles found' }, { status: 500 })
-  }
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  if (!articles?.length) return NextResponse.json({ success: true, total: 0, updated: 0, unchanged: 0 })
 
-  const results = []
+  // 3. Process all in memory, build batch updates
+  const updates: Array<{ id: string; content: string; slug: string; title: string }> = []
+  const unchanged: string[] = []
+
   for (const article of articles) {
-    const originalContent = article.content as string
-    const updatedContent = injectToolLinks(originalContent, tools)
-
-    if (updatedContent === originalContent) {
-      results.push({ slug: article.slug, title: article.title, changed: false })
-      continue
+    const original = article.content as string
+    if (!original?.trim()) { unchanged.push(article.slug); continue }
+    const updated = injectToolLinks(original, tools)
+    if (updated !== original) {
+      updates.push({ id: article.id, content: updated, slug: article.slug, title: article.title })
+    } else {
+      unchanged.push(article.slug)
     }
-
-    const { error: updateError } = await supabaseAdmin
-      .from('articles')
-      .update({ content: updatedContent })
-      .eq('id', article.id)
-
-    results.push({
-      slug: article.slug,
-      title: article.title,
-      changed: true,
-      error: updateError?.message || null,
-    })
   }
 
-  const changed = results.filter(r => r.changed).length
+  // 4. Apply updates one at a time but quickly (no Claude calls, just DB writes)
+  const results: Array<{ slug: string; title: string; status: string }> = []
+  for (const u of updates) {
+    const { error: upErr } = await supabaseAdmin
+      .from('articles')
+      .update({ content: u.content })
+      .eq('id', u.id)
+    results.push({ slug: u.slug, title: u.title, status: upErr ? `error: ${upErr.message}` : 'updated' })
+  }
+
   return NextResponse.json({
     success: true,
     total: articles.length,
-    updated: changed,
-    unchanged: articles.length - changed,
+    updated: updates.length,
+    unchanged: unchanged.length,
     results,
   })
 }
