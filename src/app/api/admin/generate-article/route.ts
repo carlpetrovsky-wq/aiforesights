@@ -48,8 +48,8 @@ function injectToolLinks(
     const href = tool.affiliate_url || tool.website_url
     if (!href) continue
     const escaped = tool.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    // Only replace first occurrence, skip if already inside a markdown link
-    const regex = new RegExp(`(?<!\\[)(?<!href=")\\b(${escaped})\\b(?![^[]*\\]\\()`, 'i')
+    // Replace all occurrences, skip if already inside a markdown link
+    const regex = new RegExp(`(?<!\\[)(?<!href=")\\b(${escaped})\\b(?![^[]*\\]\\()`, 'gi')
     result = result.replace(regex, `[$1](${href})`)
   }
   return result

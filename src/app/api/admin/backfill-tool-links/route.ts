@@ -13,7 +13,7 @@ function injectToolLinks(
     const href = tool.affiliate_url || tool.website_url
     if (!href) continue
     const escaped = tool.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    const regex = new RegExp(`(?<!\\[)(?<!href=")\\b(${escaped})\\b(?![^[]*\\]\\()`, 'i')
+    const regex = new RegExp(`(?<!\\[)(?<!href=")\\b(${escaped})\\b(?![^[]*\\]\\()`, 'gi')
     result = result.replace(regex, `[$1](${href})`)
   }
   return result
