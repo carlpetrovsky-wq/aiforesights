@@ -4,6 +4,7 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import Link from 'next/link'
 import { Headphones, Play, Calendar, Star, Linkedin, Facebook, Link2, Check } from 'lucide-react'
+import AdSlot from '@/components/ads/AdSlot'
 
 interface Episode {
   youtube_id: string
@@ -204,7 +205,9 @@ export default function PodcastRoundupPage() {
 
               <div className="space-y-6">
                 {active.episodes.map((ep, i) => (
-                  <div key={ep.youtube_id} className="border border-brand-border rounded-2xl overflow-hidden bg-white hover:border-brand-sky transition-colors">
+                  <div key={ep.youtube_id}>
+                    {i === 2 && <AdSlot slot="in-feed" size="banner" className="mb-4" />}
+                    <div className="border border-brand-border rounded-2xl overflow-hidden bg-white hover:border-brand-sky transition-colors">
                     <div className="flex gap-4 p-4">
                       {/* Episode number */}
                       <div className="flex-shrink-0 w-8 h-8 rounded-full bg-brand-sky/10 flex items-center justify-center">
@@ -237,6 +240,7 @@ export default function PodcastRoundupPage() {
                         className="inline-flex items-center gap-1.5 text-xs text-brand-muted hover:text-brand-sky transition-colors">
                         <Play className="w-3 h-3" /> Watch on YouTube
                       </a>
+                    </div>
                     </div>
                   </div>
                 ))}
@@ -282,6 +286,9 @@ export default function PodcastRoundupPage() {
             )}
           </>
         )}
+
+        {/* Bottom ad slot */}
+        <AdSlot slot="top-leaderboard" size="leaderboard" />
 
         {/* Newsletter CTA */}
         <div className="bg-brand-navy rounded-2xl p-6 text-center">
