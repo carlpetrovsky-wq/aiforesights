@@ -130,13 +130,26 @@ export default async function ArticlePage({ params }: { params: { slug: string }
             if (!body) return null
             const blocks = body.split('\n').filter(Boolean)
 
-            // Renders inline markdown: **bold** and [text](url)
+            // Renders inline markdown: **bold**, [text](url), and **[text](url)**
             const renderInline = (text: string, keyPrefix: string) => {
-              const parts = text.split(/(\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/)
+              // Order matters: bold-link combo must be matched before plain bold or plain link
+              const parts = text.split(/(\*\*\[[^\]]+\]\([^)]+\)\*\*|\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/)
               return parts.map((part: string, j: number) => {
+                // **[text](url)** — bold link
+                const boldLinkMatch = part.match(/^\*\*\[([^\]]+)\]\(([^)]+)\)\*\*$/)
+                if (boldLinkMatch) {
+                  return (
+                    <a key={`${keyPrefix}-${j}`} href={boldLinkMatch[2]} target="_blank" rel="noopener noreferrer"
+                      className="font-bold text-brand-sky hover:text-brand-skyDark underline underline-offset-2 transition-colors">
+                      {boldLinkMatch[1]}
+                    </a>
+                  )
+                }
+                // **bold**
                 if (part.startsWith('**') && part.endsWith('**')) {
                   return <strong key={`${keyPrefix}-${j}`}>{part.slice(2, -2)}</strong>
                 }
+                // [text](url)
                 const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/)
                 if (linkMatch) {
                   return (

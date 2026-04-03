@@ -141,7 +141,7 @@ Rules:
 - Format your response as JSON with these exact keys: title, category, content
   - title: compelling headline (under 80 chars)
   - category: one of [latest-news, future-of-ai, best-ai-tools, make-money, learn-ai]
-  - content: the full article text using ## for subheadings and **bold** for emphasis
+  - content: the full article text using ## for subheadings and **bold** for emphasis. IMPORTANT: never combine bold and links — do not write **[text](url)**, only write [text](url) for links
 
 Return ONLY the JSON object. No preamble, no code fences.`
 
