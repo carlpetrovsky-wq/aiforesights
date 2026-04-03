@@ -26,12 +26,13 @@ function guessCategory(title: string, description: string): string {
   return 'latest-news'
 }
 
+const BASE = 'https://www.aiforesights.com'
 const BRANDED_THUMBNAIL_POOLS: Record<string, string[]> = {
-  'latest-news':   ['/thumbnails/latest-news-1.png',   '/thumbnails/latest-news-2.png',   '/thumbnails/latest-news-3.png'],
-  'future-of-ai':  ['/thumbnails/future-of-ai-1.png',  '/thumbnails/future-of-ai-2.png',  '/thumbnails/future-of-ai-3.png'],
-  'best-ai-tools': ['/thumbnails/best-ai-tools-1.png', '/thumbnails/best-ai-tools-2.png', '/thumbnails/best-ai-tools-3.png'],
-  'make-money':    ['/thumbnails/make-money-1.png',     '/thumbnails/make-money-2.png',     '/thumbnails/make-money-3.png'],
-  'learn-ai':      ['/thumbnails/learn-ai-1.png',       '/thumbnails/learn-ai-2.png',       '/thumbnails/learn-ai-3.png'],
+  'latest-news':   [`${BASE}/thumbnails/latest-news-1.png`,   `${BASE}/thumbnails/latest-news-2.png`,   `${BASE}/thumbnails/latest-news-3.png`],
+  'future-of-ai':  [`${BASE}/thumbnails/future-of-ai-1.png`,  `${BASE}/thumbnails/future-of-ai-2.png`,  `${BASE}/thumbnails/future-of-ai-3.png`],
+  'best-ai-tools': [`${BASE}/thumbnails/best-ai-tools-1.png`, `${BASE}/thumbnails/best-ai-tools-2.png`, `${BASE}/thumbnails/best-ai-tools-3.png`],
+  'make-money':    [`${BASE}/thumbnails/make-money-1.png`,     `${BASE}/thumbnails/make-money-2.png`,     `${BASE}/thumbnails/make-money-3.png`],
+  'learn-ai':      [`${BASE}/thumbnails/learn-ai-1.png`,       `${BASE}/thumbnails/learn-ai-2.png`,       `${BASE}/thumbnails/learn-ai-3.png`],
 }
 
 function getRandomThumbnail(category: string): string {
