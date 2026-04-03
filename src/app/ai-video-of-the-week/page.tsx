@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import Link from 'next/link'
-import { Play, Calendar, Tv, Linkedin, Facebook, Link2, Check } from 'lucide-react'
+import { Play, Calendar, Tv, Linkedin, Facebook, Link2, Check, Star } from 'lucide-react'
 
 interface Video {
   id: string
@@ -73,6 +73,11 @@ export default function VideoOfTheWeekPage() {
   const [active, setActive] = useState<Video | null>(null)
   const [recent, setRecent] = useState<Video[]>([])
   const [loading, setLoading] = useState(true)
+  const [userRating, setUserRating] = useState(0)
+  const [hovered, setHovered] = useState(0)
+  const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [aggregate, setAggregate] = useState<{ average: number; count: number } | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -84,6 +89,19 @@ export default function VideoOfTheWeekPage() {
         const activeData = await activeRes.json()
         const recentData = await recentRes.json()
         setActive(activeData)
+        // Fetch rating for this video pick
+        if (activeData?.youtube_id) {
+          const rSlug = `video-${activeData.youtube_id}`
+          try {
+            const rRes = await fetch(`/api/ratings?slug=${rSlug}`)
+            const rData = await rRes.json()
+            if (rData.count > 0) setAggregate(rData)
+          } catch {}
+          try {
+            const saved = localStorage.getItem(`rating_video-${activeData.youtube_id}`)
+            if (saved) { setUserRating(parseInt(saved)); setSubmitted(true) }
+          } catch {}
+        }
         // Recent = all except the active one, up to 6
         setRecent(
           Array.isArray(recentData)
@@ -98,6 +116,29 @@ export default function VideoOfTheWeekPage() {
     }
     load()
   }, [])
+
+  async function submitRating(stars: number, youtubeId: string) {
+    setSubmitting(true)
+    setUserRating(stars)
+    const rSlug = `video-${youtubeId}`
+    try { localStorage.setItem(`rating_${rSlug}`, String(stars)) } catch {}
+    try {
+      const sessionId = localStorage.getItem('aif_session_id') || (() => {
+        const id = Math.random().toString(36).slice(2)
+        localStorage.setItem('aif_session_id', id)
+        return id
+      })()
+      const res = await fetch('/api/ratings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug: rSlug, sessionId, rating: stars })
+      })
+      const data = await res.json()
+      if (data.average !== undefined) setAggregate({ average: data.average, count: data.count })
+    } catch {}
+    setSubmitted(true)
+    setSubmitting(false)
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -209,6 +250,48 @@ export default function VideoOfTheWeekPage() {
 
               {/* Share bar */}
               <ShareBar title={active.title} />
+
+              {/* Star rating */}
+              <div className="bg-gray-50 rounded-2xl p-6 text-center mt-6">
+                {!submitted ? (
+                  <>
+                    <p className="text-sm font-bold text-brand-navy mb-1">Rate this week&apos;s pick</p>
+                    {aggregate && aggregate.count > 0 && (
+                      <div className="flex items-center justify-center gap-1.5 mb-3">
+                        {[1,2,3,4,5].map(s => (
+                          <Star key={s} className={`w-4 h-4 ${aggregate.average >= s ? 'fill-amber-400 text-amber-400' : 'text-gray-300'}`} />
+                        ))}
+                        <span className="text-xs text-brand-slate ml-1">({aggregate.count} {aggregate.count === 1 ? 'rating' : 'ratings'})</span>
+                      </div>
+                    )}
+                    <p className="text-xs text-brand-slate mb-4">Was this a good pick for you?</p>
+                    <div className="flex items-center justify-center gap-2">
+                      {[1,2,3,4,5].map(star => (
+                        <button key={star}
+                          onMouseEnter={() => setHovered(star)}
+                          onMouseLeave={() => setHovered(0)}
+                          onClick={() => submitRating(star, active.youtube_id)}
+                          disabled={submitting}
+                          className="transition-transform hover:scale-110 focus:outline-none disabled:opacity-50"
+                          aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
+                        >
+                          <Star className={`w-8 h-8 transition-colors ${(hovered || userRating) >= star ? 'fill-amber-400 text-amber-400' : 'text-gray-300'}`} />
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      {[1,2,3,4,5].map(s => (
+                        <Star key={s} className={`w-5 h-5 ${userRating >= s ? 'fill-amber-400 text-amber-400' : 'text-gray-200'}`} />
+                      ))}
+                    </div>
+                    <p className="text-sm font-semibold text-brand-navy">Thanks for rating!</p>
+                    {aggregate && <p className="text-xs text-brand-slate">{aggregate.average.toFixed(1)} average from {aggregate.count} {aggregate.count === 1 ? 'rating' : 'ratings'}</p>}
+                  </div>
+                )}
+              </div>
 
             </section>
 
