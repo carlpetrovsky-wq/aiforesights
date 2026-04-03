@@ -22,7 +22,9 @@ function injectToolLinks(
 
 export async function GET(req: NextRequest) {
   const adminCookie = req.cookies.get('admin_token')?.value
-  if (adminCookie !== process.env.ADMIN_TOKEN) {
+  const tokenParam = new URL(req.url).searchParams.get('token')
+  const adminToken = process.env.ADMIN_TOKEN
+  if (adminCookie !== adminToken && tokenParam !== adminToken) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
