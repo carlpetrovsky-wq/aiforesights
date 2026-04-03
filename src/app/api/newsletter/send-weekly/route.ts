@@ -93,11 +93,11 @@ export async function POST(req: NextRequest) {
 
     const makeMoneyArticle: ArticleSnap | null = mmRow ?? null
 
-    // ── 5. Fetch featured tools (is_featured=true) → fallback to 3 most recent ──
+    // ── 5. Fetch newsletter-featured tools → fallback to 3 most recently added ──
     let { data: toolRows } = await supabaseAdmin
       .from('tools')
       .select('name, slug, description, website_url, affiliate_url, pricing, category, logo_url')
-      .eq('is_featured', true)
+      .eq('newsletter_featured', true)
       .eq('status', 'published')
       .limit(3)
 
