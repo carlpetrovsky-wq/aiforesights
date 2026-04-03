@@ -14,6 +14,7 @@ const NAV_LINKS = [
   { href: '/learn-ai',      label: 'Learn AI' },
   { href: '/make-money',    label: 'Make money' },
   { href: '/ai-video-of-the-week', label: '▶ Video' },
+  { href: '/ai-podcast-roundup', label: '🎧 Podcasts' },
 ]
 
 export default function Navbar() {

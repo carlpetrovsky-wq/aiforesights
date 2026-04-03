@@ -111,6 +111,7 @@ export default function AdminDashboard() {
           {[
             { label: 'Generate Article',   href: '/admin/generate',        desc: 'AI writes an original staff article' },
             { label: 'Video of the Week',     href: '/admin/videos',          desc: 'Browse playlists, publish weekly video pick' },
+            { label: 'Podcast Roundup',         href: '/admin/podcasts',         desc: 'Review and publish weekly podcast draft' },
             { label: 'Add Article',       href: '/admin/articles?new=1',  desc: 'Create a new article manually' },
             { label: 'Add Tool',          href: '/admin/tools?new=1',     desc: 'Add an AI tool to the directory' },
             { label: 'Add RSS Source',    href: '/admin/sources?new=1',   desc: 'Connect a new RSS feed' },

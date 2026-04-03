@@ -49,11 +49,26 @@ export async function GET(req: NextRequest) {
 
   const data = await res.json()
 
+  // On Mondays, also generate the weekly podcast roundup draft
+  const dayOfWeek = new Date().getUTCDay() // 0=Sun, 1=Mon
+  let podcastResult = null
+  if (dayOfWeek === 1) {
+    try {
+      const podRes = await fetch(`${base}/api/admin/generate-podcast-roundup`, {
+        headers: { 'Authorization': `Bearer ${cronSecret}` },
+      })
+      podcastResult = await podRes.json()
+    } catch (err) {
+      console.error('Podcast roundup generation failed:', err)
+    }
+  }
+
   return NextResponse.json({
     success: res.ok,
     timestamp: new Date().toISOString(),
     category: forceCategory,
     article: data.article || null,
     error: data.error || null,
+    podcast_roundup: podcastResult,
   })
 }

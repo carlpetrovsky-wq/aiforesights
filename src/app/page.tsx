@@ -20,6 +20,7 @@ export default function HomePage() {
   const [toolCount, setToolCount] = useState('50+')
   const [activeVideo, setActiveVideo] = useState<{youtube_id: string; title: string; intro: string} | null>(null)
   const [videoRating, setVideoRating] = useState<{average: number; count: number} | null>(null)
+  const [activePodcast, setActivePodcast] = useState<{id: string; title: string; episodes: {episode_title: string; podcast_name: string}[]} | null>(null)
   const [newLast24h, setNewLast24h] = useState<number | null>(null)
   const [activeSource, setActiveSource] = useState<string | null>(null)
   const [ratings, setRatings] = useState<Record<string, { average: number; count: number }>>({})
@@ -27,11 +28,12 @@ export default function HomePage() {
   useEffect(() => {
     async function load() {
       try {
-        const [featRes, latRes, toolRes, videoRes, statsRes] = await Promise.all([
+        const [featRes, latRes, toolRes, videoRes, podcastRes, statsRes] = await Promise.all([
           fetch(`/api/articles?featured=true&limit=3&t=${Date.now()}`, { cache: 'no-store' }),
           fetch(`/api/articles?limit=6&sortBy=latest&t=${Date.now()}`, { cache: 'no-store' }),
           fetch(`/api/tools?limit=5&t=${Date.now()}`, { cache: 'no-store' }),
           fetch(`/api/videos?mode=active`, { cache: 'no-store' }),
+          fetch(`/api/podcasts?mode=active`, { cache: 'no-store' }),
           fetch(`/api/stats?t=${Date.now()}`, { cache: 'no-store' }),
         ])
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -47,6 +49,7 @@ export default function HomePage() {
               const rData = await rRes.json()
               if (rData?.count > 0) setVideoRating(rData)
             } catch {}
+        try { const pd = await podcastRes.json(); if (pd?.id) setActivePodcast(pd) } catch {}
           }
         } catch {}
         const featArticles = Array.isArray(featData) ? featData as Article[] : []
@@ -228,6 +231,24 @@ export default function HomePage() {
                   </div>
                 </div>
               </div>
+            )}
+
+            {/* Podcast Roundup teaser */}
+            {activePodcast && (
+              <Link href="/ai-podcast-roundup" className="mb-6 rounded-xl border border-brand-border bg-white hover:border-brand-sky transition-colors group flex items-center gap-4 p-4 block">
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center">
+                  <span className="text-lg">🎧</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500 text-white uppercase tracking-wide">Podcast Roundup</span>
+                  </div>
+                  <h3 className="text-sm font-bold text-brand-navy leading-snug line-clamp-1 group-hover:text-brand-sky transition-colors">
+                    {activePodcast.title}
+                  </h3>
+                  <p className="text-[11px] text-brand-muted mt-0.5">{activePodcast.episodes?.length || 0} episodes this week · Listen now →</p>
+                </div>
+              </Link>
             )}
 
             <div className="section-header">
