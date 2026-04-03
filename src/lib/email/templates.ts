@@ -297,9 +297,9 @@ export function buildWeeklyDigest(
         <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:${i < 2 ? '14px' : '0'};padding-bottom:${i < 2 ? '14px' : '0'};border-bottom:${i < 2 ? '1px solid #f1f5f9' : 'none'};">
           <tr>
             <td valign="top" width="64">
-              ${a.thumbnail_url
+              ${a.thumbnail_url && a.thumbnail_url.startsWith('http')
                 ? `<img src="${a.thumbnail_url}" alt="" width="56" height="56" style="display:block;border-radius:6px;width:56px;height:56px;object-fit:cover;" />`
-                : `<div style="width:56px;height:56px;background-color:#f1f5f9;border-radius:6px;"></div>`}
+                : `<div style="width:56px;height:56px;background-color:#e2e8f0;border-radius:6px;display:flex;align-items:center;justify-content:center;"><div style="width:20px;height:20px;border-radius:50%;background:#94a3b8;"></div></div>`}
             </td>
             <td valign="top" style="padding-left:12px;">
               <p style="margin:0 0 4px;font-size:15px;font-weight:700;color:#0F172A;line-height:1.4;">${a.title}</p>
@@ -322,7 +322,7 @@ export function buildWeeklyDigest(
             <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#0EA5E9;">💰 Make Money With AI</p>
           </td></tr>
         </table>
-        ${makeMoneyArticle.thumbnail_url
+        ${makeMoneyArticle.thumbnail_url && makeMoneyArticle.thumbnail_url.startsWith('http')
           ? `<img src="${makeMoneyArticle.thumbnail_url}" alt="" width="100%" style="display:block;border-radius:8px;margin-bottom:16px;height:auto;" />`
           : ''}
         <p style="margin:0 0 10px;font-size:19px;font-weight:800;color:#ffffff;line-height:1.3;">${makeMoneyArticle.title}</p>
@@ -363,7 +363,7 @@ export function buildWeeklyDigest(
                     <p style="margin:4px 0 10px;font-size:13px;color:#64748b;line-height:1.6;">${tool.description.split(' ').slice(0, 20).join(' ')}${tool.description.split(' ').length > 20 ? '…' : ''}</p>
                     <a href="${toolUrl}" style="font-size:13px;font-weight:600;color:#0EA5E9;text-decoration:none;">Try it free →</a>
                   </td>
-                  ${tool.logo_url ? `<td valign="middle" align="right" style="padding-left:16px;width:48px;">
+                  ${tool.logo_url && tool.logo_url.startsWith('http') ? `<td valign="middle" align="right" style="padding-left:16px;width:48px;">
                     <img src="${tool.logo_url}" alt="${tool.name}" width="40" height="40" style="display:block;border-radius:8px;width:40px;height:40px;object-fit:contain;" />
                   </td>` : ''}
                 </tr>
