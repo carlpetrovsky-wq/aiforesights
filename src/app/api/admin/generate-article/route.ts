@@ -73,6 +73,25 @@ export async function POST(req: NextRequest) {
     const excludeTitles: string[] = body.excludeTitles || []
     const forceCategory: string | null = body.forceCategory || null
 
+    // 0. Daily cap — max 3 AI Foresights articles per UTC day
+    const todayStart = new Date()
+    todayStart.setUTCHours(0, 0, 0, 0)
+    const { data: todaysArticles } = await supabaseAdmin
+      .from('articles')
+      .select('title, category_slug')
+      .eq('source_name', 'AI Foresights')
+      .gte('published_at', todayStart.toISOString())
+
+    if ((todaysArticles?.length ?? 0) >= 3) {
+      return NextResponse.json({ error: 'Daily limit reached: 3 AI Foresights articles already published today.' }, { status: 429 })
+    }
+
+    // Merge caller excludes + all of today's existing titles so Claude never repeats a topic
+    const allExcludes = [
+      ...excludeTitles,
+      ...(todaysArticles?.map((a: { title: string }) => a.title).filter(Boolean) ?? [])
+    ]
+
     // 1. Pull last 48h RSS articles
     const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()
     const { data: recentArticles, error: fetchErr } = await supabaseAdmin
@@ -100,7 +119,7 @@ export async function POST(req: NextRequest) {
 
     // 3. Build digest
     const digest = recentArticles
-      .filter(a => !excludeTitles.some(t => 
+      .filter(a => !allExcludes.some(t => 
         a.title?.toLowerCase().includes(t.toLowerCase().slice(0, 40))
       ))
       .map((a, i) => `${i + 1}. [${a.category_slug}] ${a.title}\n   ${a.excerpt || a.summary || ''}`)
@@ -128,7 +147,7 @@ Return ONLY the JSON object. No preamble, no code fences.`
 
     const userPrompt = topicOverride
       ? `Write an original 650-800 word article about this topic for AIForesights.com readers:\n\n"${topicOverride}"\n\nMake it practical and relatable for non-technical professionals.`
-      : `Here are the last 48 hours of AI news headlines. ${forceCategory ? `You MUST write an article in the "${forceCategory}" category — pick the most relevant story for that category.` : 'Pick the most significant trend or story.'} ${excludeTitles.length > 0 ? 'Do NOT write about: ' + excludeTitles.join('; ') + '.' : ''} Write an original 650-800 word article explaining what it means for everyday people.\n\nRecent headlines:\n${digest}`
+      : `Here are the last 48 hours of AI news headlines. ${forceCategory ? `You MUST write an article in the "${forceCategory}" category — pick the most relevant story for that category.` : 'Pick the most significant trend or story.'} ${allExcludes.length > 0 ? 'Do NOT write about any of these topics (already covered today): ' + allExcludes.join('; ') + '. Pick something completely different.' : ''} Write an original 650-800 word article explaining what it means for everyday people.\n\nRecent headlines:\n${digest}`
 
     const completion = await anthropic.messages.create({
       model: 'claude-sonnet-4-5',
