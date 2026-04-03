@@ -22,8 +22,10 @@ export interface Tool {
   name: string
   slug: string
   description: string
+  longDescription?: string
   websiteUrl: string
   logoUrl?: string
+  thumbnailUrl?: string
   pricing: 'free' | 'freemium' | 'paid' | 'enterprise'
   category: string
   tags: string[]

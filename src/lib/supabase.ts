@@ -140,6 +140,72 @@ export async function getTools({
   })
 }
 
+export async function getToolBySlug(slug: string) {
+  const { data, error } = await supabase
+    .from('tools')
+    .select('*')
+    .eq('slug', slug)
+    .eq('status', 'published')
+    .single()
+  if (error || !data) return null
+  const row = data as Record<string, unknown>
+  let tags: string[] = []
+  if (Array.isArray(row.tags)) tags = row.tags as string[]
+  else if (typeof row.tags === 'string') {
+    try { tags = JSON.parse(row.tags as string) } catch { tags = [] }
+  }
+  return {
+    id:              row.id as string,
+    name:            row.name as string,
+    slug:            row.slug as string,
+    description:     (row.description ?? '') as string,
+    longDescription: (row.long_description ?? '') as string,
+    websiteUrl:      row.website_url as string,
+    logoUrl:         (row.logo_url ?? undefined) as string | undefined,
+    thumbnailUrl:    (row.thumbnail_url ?? undefined) as string | undefined,
+    pricing:         (row.pricing ?? 'free') as string,
+    category:        (row.category ?? '') as string,
+    tags,
+    experienceLevel: (row.experience_level ?? 'beginner') as string,
+    saveCount:       (row.save_count ?? 0) as number,
+    isFeatured:      (row.is_featured ?? false) as boolean,
+    affiliateUrl:    (row.affiliate_url ?? undefined) as string | undefined,
+  }
+}
+
+export async function getRelatedTools(slug: string, category: string, limit = 3) {
+  const { data } = await supabase
+    .from('tools')
+    .select('id, name, slug, description, logo_url, pricing, category, tags, website_url, affiliate_url')
+    .eq('status', 'published')
+    .eq('category', category)
+    .neq('slug', slug)
+    .order('save_count', { ascending: false })
+    .limit(limit)
+  if (!data) return []
+  return data.map((row: Record<string, unknown>) => {
+    let tags: string[] = []
+    if (Array.isArray(row.tags)) tags = row.tags as string[]
+    else if (typeof row.tags === 'string') {
+      try { tags = JSON.parse(row.tags as string) } catch { tags = [] }
+    }
+    return {
+      id: row.id as string,
+      name: row.name as string,
+      slug: row.slug as string,
+      description: (row.description ?? '') as string,
+      logoUrl: (row.logo_url ?? undefined) as string | undefined,
+      pricing: (row.pricing ?? 'free') as string,
+      category: (row.category ?? '') as string,
+      tags,
+      websiteUrl: row.website_url as string,
+      affiliateUrl: (row.affiliate_url ?? undefined) as string | undefined,
+      saveCount: 0,
+      isFeatured: false,
+    }
+  })
+}
+
 // ── Subscribers ─────────────────────────────────────────────
 export async function subscribeEmail(email: string, name?: string, source = 'website') {
   const { error } = await supabase

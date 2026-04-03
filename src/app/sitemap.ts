@@ -19,6 +19,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .order('published_at', { ascending: false })
     .limit(500)
 
+  const { data: tools } = await supabase
+    .from('tools')
+    .select('slug, updated_at')
+    .eq('status', 'published')
+    .order('save_count', { ascending: false })
+    .limit(500)
+
   const staticPages: MetadataRoute.Sitemap = [
     { url: `${SITE}/`,              lastModified: new Date(), changeFrequency: 'hourly',  priority: 1.0 },
     { url: `${SITE}/latest-news`,   lastModified: new Date(), changeFrequency: 'hourly',  priority: 0.9 },
@@ -41,5 +48,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: a.source_name === 'AI Foresights' ? 0.8 : 0.6,
     }))
 
-  return [...staticPages, ...articlePages]
+  const toolPages: MetadataRoute.Sitemap = (tools || [])
+    .filter(t => t.slug)
+    .map(t => ({
+      url: `${SITE}/tool/${t.slug}`,
+      lastModified: new Date(t.updated_at || Date.now()),
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    }))
+
+  return [...staticPages, ...articlePages, ...toolPages]
 }

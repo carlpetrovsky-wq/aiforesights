@@ -1,89 +1,177 @@
 'use client'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
-import { Mail, Clock, MessageSquare, Briefcase, Shield, Copy, Check } from 'lucide-react'
+import { Mail, Clock, MessageSquare, Briefcase, Shield, Copy, Check, Send, CheckCircle } from 'lucide-react'
 import { useState } from 'react'
+
+const INQUIRY_TYPES = [
+  { value: 'general', label: 'General Inquiry' },
+  { value: 'advertising', label: 'Advertising & Partnerships' },
+  { value: 'tool-suggestion', label: 'Suggest a Tool' },
+  { value: 'feedback', label: 'Feedback' },
+  { value: 'privacy', label: 'Privacy & Data Request' },
+]
 
 const contacts = [
   {
     icon: MessageSquare,
     title: 'General Inquiries',
-    desc: 'Questions about the site, feedback, or anything else.',
     email: 'help@aiforesights.com',
-    subject: 'General Inquiry',
   },
   {
     icon: Briefcase,
     title: 'Advertising & Partnerships',
-    desc: 'Sponsorships, ad placements, and partnership opportunities.',
     email: 'help@aiforesights.com',
-    subject: 'Advertising Inquiry',
   },
   {
     icon: Shield,
     title: 'Privacy & Data Requests',
-    desc: 'To request data deletion, access, or report a privacy concern.',
     email: 'privacy@aiforesights.com',
-    subject: 'Privacy Request',
   },
 ]
 
-function ContactCard({ icon: Icon, title, desc, email, subject }: typeof contacts[0] & { icon: React.ElementType }) {
-  const [copied, setCopied] = useState(false)
+function ContactForm() {
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [type, setType] = useState('general')
+  const [message, setMessage] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState('')
 
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!name.trim() || !email.trim() || !message.trim()) return
+    setLoading(true)
+    setError('')
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name.trim(), email: email.trim(), type, message: message.trim() }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        setSubmitted(true)
+      } else {
+        setError(data.error || 'Something went wrong. Please try again.')
+      }
+    } catch {
+      setError('Network error. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (submitted) {
+    return (
+      <div className="border border-emerald-200 bg-emerald-50 rounded-2xl p-8 text-center">
+        <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <CheckCircle className="w-6 h-6 text-emerald-600" />
+        </div>
+        <h3 className="text-lg font-bold text-brand-navy mb-2">Message sent!</h3>
+        <p className="text-sm text-brand-slate leading-relaxed">
+          Thanks for reaching out, we will get back to you within 1 business day. Check your inbox at <strong>{email}</strong>.
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="border border-brand-border bg-white rounded-2xl p-6 sm:p-8 space-y-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-xs font-semibold text-brand-navy mb-1.5">Your name *</label>
+          <input
+            type="text"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            required
+            maxLength={200}
+            placeholder="Jane Smith"
+            className="w-full px-4 py-2.5 border border-brand-border rounded-xl text-sm text-brand-navy outline-none focus:border-brand-sky transition-colors placeholder:text-brand-muted"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-brand-navy mb-1.5">Email address *</label>
+          <input
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            required
+            maxLength={320}
+            placeholder="jane@example.com"
+            className="w-full px-4 py-2.5 border border-brand-border rounded-xl text-sm text-brand-navy outline-none focus:border-brand-sky transition-colors placeholder:text-brand-muted"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-xs font-semibold text-brand-navy mb-1.5">What is this about?</label>
+        <select
+          value={type}
+          onChange={e => setType(e.target.value)}
+          className="w-full px-4 py-2.5 border border-brand-border rounded-xl text-sm text-brand-navy outline-none focus:border-brand-sky transition-colors cursor-pointer bg-white"
+        >
+          {INQUIRY_TYPES.map(t => (
+            <option key={t.value} value={t.value}>{t.label}</option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label className="block text-xs font-semibold text-brand-navy mb-1.5">Message *</label>
+        <textarea
+          value={message}
+          onChange={e => setMessage(e.target.value)}
+          required
+          maxLength={5000}
+          rows={5}
+          placeholder="Tell us how we can help..."
+          className="w-full px-4 py-2.5 border border-brand-border rounded-xl text-sm text-brand-navy outline-none focus:border-brand-sky transition-colors resize-y placeholder:text-brand-muted"
+        />
+      </div>
+
+      {error && (
+        <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-3 py-2">{error}</p>
+      )}
+
+      <button
+        type="submit"
+        disabled={loading}
+        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-brand-sky hover:bg-brand-skyDark text-white font-semibold text-sm rounded-xl transition-colors disabled:opacity-60"
+      >
+        {loading ? 'Sending...' : (
+          <><Send className="w-4 h-4" /> Send message</>
+        )}
+      </button>
+    </form>
+  )
+}
+
+function EmailCard({ icon: Icon, title, email }: { icon: React.ElementType; title: string; email: string }) {
+  const [copied, setCopied] = useState(false)
   function copyEmail() {
     navigator.clipboard.writeText(email).then(() => {
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     })
   }
-
   return (
-    <div className="border border-brand-border rounded-xl p-5 bg-white">
-      <div className="flex items-start gap-4">
-        <div className="w-9 h-9 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
-          <Icon className="w-4 h-4 text-brand-sky" />
-        </div>
-        <div className="flex-1">
-          <h3 className="text-sm font-semibold text-brand-navy mb-1">{title}</h3>
-          <p className="text-xs text-brand-slate mb-4">{desc}</p>
-
-          {/* Email address — prominently displayed */}
-          <div className="bg-gray-50 border border-brand-border rounded-lg px-3 py-2.5 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 min-w-0">
-              <Mail className="w-3.5 h-3.5 text-brand-sky shrink-0" />
-              <span className="text-sm font-medium text-brand-navy truncate">{email}</span>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              {/* Copy button */}
-              <button
-                onClick={copyEmail}
-                className="flex items-center gap-1 text-xs text-brand-slate hover:text-brand-navy transition-colors px-2 py-1 rounded hover:bg-gray-200"
-                title="Copy email address"
-              >
-                {copied ? (
-                  <><Check className="w-3 h-3 text-emerald-600" /><span className="text-emerald-600">Copied!</span></>
-                ) : (
-                  <><Copy className="w-3 h-3" /><span>Copy</span></>
-                )}
-              </button>
-              {/* Open in Gmail - works on any browser/device */}
-              <a
-                href={`https://mail.google.com/mail/?view=cm&to=${email}&su=${encodeURIComponent(subject)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-1 text-xs bg-brand-sky text-white px-2.5 py-1 rounded hover:bg-brand-skyDark transition-colors font-medium"
-              >
-                <Mail className="w-3 h-3" />
-                Open in Gmail
-              </a>
-            </div>
-          </div>
-          <p className="text-[11px] text-brand-muted mt-1.5">
-            Click "Copy" to copy the address, or "Open in Gmail" to compose an email directly.
-          </p>
-        </div>
+    <div className="flex items-center gap-3 border border-brand-border rounded-xl px-4 py-3 bg-white">
+      <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center shrink-0">
+        <Icon className="w-4 h-4 text-brand-sky" />
       </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-semibold text-brand-navy">{title}</p>
+        <p className="text-xs text-brand-slate truncate">{email}</p>
+      </div>
+      <button
+        onClick={copyEmail}
+        className="flex items-center gap-1 text-xs text-brand-slate hover:text-brand-navy px-2 py-1 rounded hover:bg-gray-100 transition-colors shrink-0"
+      >
+        {copied ? <><Check className="w-3 h-3 text-emerald-600" /><span className="text-emerald-600">Copied</span></> : <><Copy className="w-3 h-3" /><span>Copy</span></>}
+      </button>
     </div>
   )
 }
@@ -96,9 +184,9 @@ export default function ContactPage() {
       <div className="bg-brand-navy py-12 px-4 sm:px-6">
         <div className="max-w-3xl mx-auto">
           <div className="w-2 h-2 bg-brand-sky rounded-full mb-3" />
-          <h1 className="text-3xl font-bold text-white mb-3">Contact Us</h1>
+          <h1 className="text-3xl font-bold text-white mb-3">Get in Touch</h1>
           <p className="text-brand-muted text-base leading-relaxed">
-            We'd love to hear from you. Copy our email address below or click "Email us" to open in your mail app.
+            Have a question, feedback, or partnership inquiry? Fill out the form below and we will get back to you within one business day.
           </p>
         </div>
       </div>
@@ -109,18 +197,24 @@ export default function ContactPage() {
         <div className="flex items-center gap-3 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
           <Clock className="w-4 h-4 text-brand-sky shrink-0" />
           <p className="text-sm text-brand-navy">
-            <strong>Response time:</strong> We typically respond within 1 business day, Monday through Friday. Texas, USA.
+            <strong>Response time:</strong> We typically respond within 1 business day, Monday through Friday. Based in Texas, USA.
           </p>
         </div>
 
-        {/* Contact cards */}
-        <div className="space-y-4">
-          {contacts.map(contact => (
-            <ContactCard key={contact.title} {...contact} icon={contact.icon} />
-          ))}
-        </div>
+        {/* Contact form */}
+        <ContactForm />
 
-        {/* About the team */}
+        {/* Email alternatives */}
+        <section>
+          <h2 className="text-sm font-semibold text-brand-navy mb-3">Or email us directly</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {contacts.map(c => (
+              <EmailCard key={c.title} icon={c.icon} title={c.title} email={c.email} />
+            ))}
+          </div>
+        </section>
+
+        {/* About */}
         <section className="border border-brand-border rounded-xl p-6 bg-white">
           <h2 className="text-base font-semibold text-brand-navy mb-3">About AI Foresights</h2>
           <p className="text-sm text-brand-slate leading-relaxed mb-2">
