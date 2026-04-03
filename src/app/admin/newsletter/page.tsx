@@ -58,12 +58,9 @@ export default function AdminNewsletterPage() {
 
   async function fetchMakeMoneyArticles() {
     setLoadingMM(true)
-    const res = await fetch('/api/admin/articles?limit=20&sortBy=published_at&sortDir=desc')
+    const res = await fetch('/api/admin/articles?limit=50&category=make-money&source=AI+Foresights&sortBy=published_at&sortDir=desc')
     const data = await res.json()
-    const mm = (data.articles ?? []).filter((a: Article) =>
-      a.category_slug === 'make-money' && a.source_name === 'AI Foresights'
-    )
-    setMmArticles(mm)
+    setMmArticles(data.articles ?? [])
     setLoadingMM(false)
   }
 

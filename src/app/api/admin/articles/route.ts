@@ -7,6 +7,8 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const status = searchParams.get('status')
   const search = searchParams.get('search')
+  const category = searchParams.get('category')
+  const source = searchParams.get('source')
   const limit = Number(searchParams.get('limit') ?? 100)
   const offset = Number(searchParams.get('offset') ?? 0)
 
@@ -22,6 +24,8 @@ export async function GET(req: NextRequest) {
     .range(offset, offset + limit - 1)
 
   if (status && status !== 'all') query = query.eq('status', status)
+  if (category) query = query.eq('category_slug', category)
+  if (source) query = query.eq('source_name', source)
   if (search) {
     // Search across title, category, and source name
     query = query.or(
