@@ -6,7 +6,6 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 import { buildWeeklyDigest, ArticleSnap, VideoSnap, PodcastSnap, ToolSnap } from '@/lib/email/templates'
 
 const MAILERLITE_API = 'https://connect.mailerlite.com/api'
-const TEST_EMAIL = 'carl@aiforesights.com'
 
 async function mlFetch(path: string, method = 'GET', body?: unknown) {
   const res = await fetch(`${MAILERLITE_API}${path}`, {
@@ -109,17 +108,18 @@ export async function POST(req: NextRequest) {
     const weekLabel = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
     const subject = `[TEST] Your Weekly AI Briefing — ${weekLabel}`
 
-    // ── 7. Ensure test email is a subscriber ──────────────────
-    // Add/update carl@aiforesights.com as active subscriber so we can target them
-    await mlFetch('/subscribers', 'POST', {
-      email: TEST_EMAIL,
-      status: 'active',
-    })
+    // ── 7. Find the Admin group ───────────────────────────────
+    const groupsRes = await mlFetch('/groups?limit=50')
+    const groups: Array<{ id: string; name: string }> = groupsRes?.data ?? []
+    const adminGroup = groups.find(g =>
+      g.name.toLowerCase() === 'admin' ||
+      g.name.toLowerCase().includes('admin')
+    )
+    if (!adminGroup) {
+      throw new Error(`Admin group not found. Groups available: ${groups.map(g => g.name).join(', ')}`)
+    }
 
-    // ── 8. Create a segment for just the test email ───────────
-    // Use a campaign targeted to a specific subscriber by creating
-    // a single-recipient campaign via a temporary segment
-    // Strategy: create campaign with no group, then use subscriber filter
+    // ── 8. Create campaign targeting Admin group only ─────────
     const campaign = await mlFetch('/campaigns', 'POST', {
       name: `[TEST] Weekly Digest — ${weekLabel}`,
       type: 'regular',
@@ -130,11 +130,7 @@ export async function POST(req: NextRequest) {
         reply_to: 'help@aiforesights.com',
         content: html,
       }],
-      // Filter to only subscribers matching the test email
-      filter: [[{
-        operator: 'in_any',
-        args: ['email', [TEST_EMAIL]],
-      }]],
+      groups: [adminGroup.id],
     })
 
     const campaignId = campaign?.data?.id
@@ -155,7 +151,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       campaignId,
-      sentTo: TEST_EMAIL,
+      sentTo: `Admin group (${adminGroup.name}) — ${TEST_EMAIL}`,
+      adminGroupId: adminGroup.id,
       subject,
       preview: {
         hasVideo: !!video,
