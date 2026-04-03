@@ -56,11 +56,12 @@ export async function POST(req: NextRequest) {
 
     const podcast: PodcastSnap | null = podcastRow ?? null
 
-    // ── 3. Fetch 3 recent non-make-money articles ─────────────
+    // ── 3. Fetch 3 recent AI Foresights articles (no RSS) ────────
     const { data: articleRows } = await supabaseAdmin
       .from('articles')
       .select('title, slug, excerpt, thumbnail_url, category_slug, source_name')
       .eq('status', 'published')
+      .eq('source_name', 'AI Foresights')
       .neq('category_slug', 'make-money')
       .order('published_at', { ascending: false })
       .limit(3)
