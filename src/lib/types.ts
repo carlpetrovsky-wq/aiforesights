@@ -30,6 +30,7 @@ export interface Tool {
   saveCount: number
   isFeatured: boolean
   experienceLevel?: 'beginner' | 'intermediate' | 'advanced' | 'all'
+  affiliateUrl?: string
 }
 
 export interface LearningResource {

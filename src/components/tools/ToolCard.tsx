@@ -24,7 +24,7 @@ export default function ToolCard({ tool, variant = 'sidebar' }: ToolCardProps) {
             <Link href={`/tool/${tool.slug}`} className="text-[12px] font-medium text-brand-navy hover:text-brand-sky transition-colors line-clamp-1">
               {tool.name}
             </Link>
-            <a href={tool.websiteUrl} target="_blank" rel="noopener noreferrer" className="shrink-0 text-brand-muted hover:text-brand-sky transition-colors">
+            <a href={tool.affiliateUrl || tool.websiteUrl} target="_blank" rel={`noopener noreferrer${tool.affiliateUrl ? ' sponsored' : ''}`} className="shrink-0 text-brand-muted hover:text-brand-sky transition-colors">
               <ExternalLink size={10} />
             </a>
           </div>
@@ -63,7 +63,7 @@ export default function ToolCard({ tool, variant = 'sidebar' }: ToolCardProps) {
                 )}
               </div>
             </div>
-            <a href={tool.websiteUrl} target="_blank" rel="noopener noreferrer"
+            <a href={tool.affiliateUrl || tool.websiteUrl} target="_blank" rel={`noopener noreferrer${tool.affiliateUrl ? ' sponsored' : ''}`}
                className="text-brand-muted hover:text-brand-sky transition-colors shrink-0 text-xs flex items-center gap-1">
               Visit <ExternalLink size={11} />
             </a>

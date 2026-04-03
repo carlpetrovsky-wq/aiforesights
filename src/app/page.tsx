@@ -9,7 +9,7 @@ import NewsletterForm from '@/components/ui/NewsletterForm'
 import ToolSearch from '@/components/search/ToolSearch'
 import LearningHub from '@/components/learning/LearningHub'
 import Link from 'next/link'
-import { MOCK_ARTICLES, MOCK_TOOLS, MOCK_LEARNING, CATEGORIES, RSS_SOURCES } from '@/lib/data'
+import { MOCK_LEARNING, CATEGORIES, RSS_SOURCES } from '@/lib/data'
 import { Article, Tool } from '@/lib/types'
 
 export default function HomePage() {
@@ -89,11 +89,10 @@ export default function HomePage() {
   // Exclude featured articles from latest news to prevent duplicates
   const featuredIds = new Set(displayFeatured.map((a: Article) => a.id))
   const latestDeduped = latest.filter((a: Article) => !featuredIds.has(a.id))
-  const mockLatest = MOCK_ARTICLES.filter((a: Article) => !a.isFeatured).slice(0, 6)
   const displayLatest = activeSource
-    ? (latestDeduped.length > 0 ? latestDeduped : mockLatest).filter((a: Article) => a.sourceName === activeSource)
-    : latestDeduped.length > 0 ? latestDeduped : mockLatest
-  const displayTools    = topTools.length > 0  ? topTools : MOCK_TOOLS.slice(0, 5)
+    ? latestDeduped.filter((a: Article) => a.sourceName === activeSource)
+    : latestDeduped
+  const displayTools    = topTools
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -262,16 +261,7 @@ export default function HomePage() {
               }
             </div>
 
-            <div className="bg-amber-50 border border-dashed border-amber-200 rounded-xl p-3 mb-4 flex items-center justify-between gap-3">
-              <div>
-                <div className="text-[9px] font-semibold text-amber-600 uppercase tracking-widest mb-0.5">Sponsored · Ad Slot 3</div>
-                <p className="text-[12px] text-amber-800">Jasper AI — Write marketing copy 10× faster. Trusted by 100,000+ professionals.</p>
-              </div>
-              <a href="https://jasper.ai" target="_blank" rel="noopener noreferrer sponsored"
-                className="shrink-0 bg-amber-400 text-white text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-amber-500 transition-colors whitespace-nowrap">
-                Try free →
-              </a>
-            </div>
+            <AdSlot slot="in-feed" size="banner" className="mb-4" />
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {loading

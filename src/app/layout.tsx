@@ -20,7 +20,7 @@ const dmMono = DM_Mono({
 export const metadata: Metadata = {
   title: 'AI Foresights — A New Dawn Is Here',
   description: 'The world of AI explained in plain English. Daily news, tool reviews, and guides for professionals navigating the AI revolution. No jargon. No coding required.',
-  keywords: ['AI news', 'artificial intelligence', 'AI tools', 'AI for beginners', 'machine learning news'],
+  keywords: ['AI news', 'artificial intelligence', 'AI tools', 'AI for beginners', 'machine learning news', 'AI for professionals', 'AI explained'],
   authors: [{ name: 'AI Foresights' }],
   icons: {
     icon: '/favicon.png',
@@ -29,18 +29,21 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'AI Foresights — A New Dawn Is Here',
     description: 'The world of AI explained in plain English. Daily news, tools, and guides.',
-    url: 'https://aiforesights.com',
+    url: 'https://www.aiforesights.com',
     siteName: 'AI Foresights',
     type: 'website',
-    images: [{ url: 'https://aiforesights.com/logo-full.png', width: 1280, height: 1024, alt: 'AI Foresights' }],
+    images: [{ url: 'https://www.aiforesights.com/logo-full.png', width: 1280, height: 1024, alt: 'AI Foresights' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'AI Foresights',
     description: 'The world of AI explained in plain English.',
-    images: ['https://aiforesights.com/logo-full.png'],
+    images: ['https://www.aiforesights.com/logo-full.png'],
   },
   robots: { index: true, follow: true },
+  alternates: {
+    canonical: 'https://www.aiforesights.com',
+  },
 }
 
 async function getSiteSettings() {

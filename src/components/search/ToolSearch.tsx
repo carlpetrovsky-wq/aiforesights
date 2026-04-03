@@ -135,7 +135,7 @@ export default function ToolSearch() {
                     {pricingLabel(tool.pricing)}
                   </span>
                 </div>
-                <a href={tool.websiteUrl} target="_blank" rel="noopener noreferrer"
+                <a href={tool.affiliateUrl || tool.websiteUrl} target="_blank" rel={`noopener noreferrer${tool.affiliateUrl ? ' sponsored' : ''}`}
                   className="text-brand-muted hover:text-brand-sky shrink-0">
                   <ExternalLink size={10} />
                 </a>

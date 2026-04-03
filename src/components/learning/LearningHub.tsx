@@ -65,7 +65,7 @@ export default function LearningHub({ resources }: LearningHubProps) {
                   <a
                     href={r.affiliateUrl ?? r.url}
                     target={r.url.startsWith('http') ? '_blank' : undefined}
-                    rel="noopener noreferrer"
+                    rel={`noopener noreferrer${r.isAffiliate ? ' sponsored' : ''}`}
                     className="flex items-center gap-1 text-[10px] text-brand-sky hover:underline font-medium"
                   >
                     {r.isFree ? 'Free' : r.isAffiliate ? 'Affiliate link' : 'Visit'}

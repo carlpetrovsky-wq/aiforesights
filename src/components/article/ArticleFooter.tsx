@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { Star, ArrowUp, BookOpen, Linkedin, Facebook, Link2, Check } from 'lucide-react'
+import NewsletterForm from '@/components/ui/NewsletterForm'
 
 interface RelatedArticle {
   slug: string
@@ -334,14 +335,14 @@ export default function ArticleFooter({ articleSlug, category, relatedArticles, 
       )}
 
       {/* ── NEWSLETTER CTA ──────────────────────────────────── */}
-      <div className="bg-brand-navy rounded-2xl p-6 text-center mb-4">
-        <p className="text-white font-bold text-base mb-1">Get new guides every week</p>
-        <p className="text-brand-muted text-sm mb-4">
-          Real AI income strategies, tool reviews, and plain-English news — free in your inbox.
-        </p>
-        <Link href="/#newsletter" className="inline-block bg-brand-sky hover:bg-brand-skyDark text-white font-semibold text-sm px-6 py-2.5 rounded-lg transition-colors">
-          Subscribe free →
-        </Link>
+      <div className="bg-brand-navy rounded-2xl p-6 mb-4">
+        <div className="text-center mb-4">
+          <p className="text-white font-bold text-base mb-1">Get new guides every week</p>
+          <p className="text-brand-muted text-sm">
+            Real AI income strategies, tool reviews, and plain-English news — free in your inbox.
+          </p>
+        </div>
+        <NewsletterForm variant="hero" />
       </div>
 
       {/* ── BACK TO TOP ─────────────────────────────────────── */}

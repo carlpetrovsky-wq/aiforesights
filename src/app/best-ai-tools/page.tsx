@@ -4,7 +4,6 @@ import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import ToolCard from '@/components/tools/ToolCard'
 import AdSlot from '@/components/ads/AdSlot'
-import { MOCK_TOOLS } from '@/lib/data'
 import { Tool } from '@/lib/types'
 
 const PRICING_FILTERS  = ['All', 'Free', 'Freemium', 'Paid']
@@ -47,9 +46,9 @@ export default function BestAIToolsPage() {
         if (search) params.set('search', search)
         const res = await fetch(`/api/tools?${params}`)
         const data = await res.json()
-        setTools(Array.isArray(data) && data.length > 0 ? data : MOCK_TOOLS)
+        setTools(Array.isArray(data) ? data : [])
       } catch {
-        setTools(MOCK_TOOLS)
+        setTools([])
       } finally {
         setLoading(false)
       }
