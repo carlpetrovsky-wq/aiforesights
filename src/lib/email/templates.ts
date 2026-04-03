@@ -224,76 +224,132 @@ export function buildWeeklyDigest(
   const now = new Date()
   const weekLabel = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
 
-  // Video section
+  // ── Video section ─────────────────────────────────────────
   const videoSection = video ? `
-    ${sectionLabel('🎬 AI Video of the Week')}
-    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:8px;">
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:28px;">
       <tr><td>
-        <a href="https://www.youtube.com/watch?v=${video.youtube_id}" target="_blank" style="display:block;position:relative;">
-          <img src="https://img.youtube.com/vi/${video.youtube_id}/maxresdefault.jpg" alt="${video.title}" width="100%" style="display:block;border-radius:8px;height:auto;" />
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:12px;">
+          <tr><td style="border-left:3px solid #0EA5E9;padding-left:10px;">
+            <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#0EA5E9;">🎬 AI Video of the Week</p>
+          </td></tr>
+        </table>
+        <a href="${BASE_URL}/ai-video-of-the-week" style="display:block;text-decoration:none;">
+          <img src="https://img.youtube.com/vi/${video.youtube_id}/maxresdefault.jpg" alt="${video.title}" width="100%" style="display:block;border-radius:10px;height:auto;width:100%;" />
         </a>
+        <p style="margin:14px 0 6px;font-size:18px;font-weight:700;color:#0F172A;line-height:1.4;">${video.title}</p>
+        <p style="margin:0 0 14px;font-size:14px;color:#64748b;line-height:1.7;">${video.intro.split(' ').slice(0, 35).join(' ')}${video.intro.split(' ').length > 35 ? '…' : ''}</p>
+        <a href="${BASE_URL}/ai-video-of-the-week" style="display:inline-block;padding:9px 20px;background-color:#0EA5E9;border-radius:6px;color:#ffffff;font-size:13px;font-weight:600;text-decoration:none;">▶&nbsp; Watch now</a>
       </td></tr>
     </table>
-    <p style="margin:12px 0 6px;font-size:17px;font-weight:700;color:#0F172A;">${video.title}</p>
-    <p style="margin:0 0 12px;font-size:14px;color:#64748b;line-height:1.6;">${video.intro.split(' ').slice(0, 30).join(' ')}${video.intro.split(' ').length > 30 ? '…' : ''}</p>
-    <a href="${BASE_URL}/ai-video-of-the-week" style="font-size:13px;font-weight:600;color:#0EA5E9;text-decoration:none;">Watch now →</a>
-    ${divider()}
+    <hr style="border:none;border-top:1px solid #e2e8f0;margin:0 0 28px;" />
   ` : ''
 
-  // Podcast section
+  // ── Podcast section ───────────────────────────────────────
   const podcastSection = podcast ? `
-    ${sectionLabel('🎙️ AI Podcast Roundup')}
-    <p style="margin:0 0 12px;font-size:17px;font-weight:700;color:#0F172A;">${podcast.title}</p>
-    ${podcast.episodes.slice(0, 5).map((ep, i) => `
-      <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:8px;">
-        <tr>
-          <td width="28" valign="top" style="padding-top:2px;"><span style="display:inline-block;width:22px;height:22px;background-color:#0EA5E9;border-radius:50%;text-align:center;font-size:12px;font-weight:700;color:#fff;line-height:22px;">${i + 1}</span></td>
-          <td style="padding-left:10px;">
-            <p style="margin:0;font-size:14px;font-weight:600;color:#0F172A;">${ep.title}</p>
-            ${ep.channel ? `<p style="margin:2px 0 0;font-size:12px;color:#94a3b8;">${ep.channel}${ep.duration ? ` · ${ep.duration}` : ''}</p>` : ''}
-          </td>
-        </tr>
-      </table>
-    `).join('')}
-    <a href="${BASE_URL}/ai-podcast-roundup" style="display:inline-block;margin-top:8px;font-size:13px;font-weight:600;color:#0EA5E9;text-decoration:none;">Listen to all 5 episodes →</a>
-    ${divider()}
-  ` : ''
-
-  // Top articles
-  const articlesSection = articles.length > 0 ? `
-    ${sectionLabel('📰 Top Stories This Week')}
-    ${articles.slice(0, 3).map(a => articleCard(a.title, a.excerpt || '', `${BASE_URL}/article/${a.slug}`, a.thumbnail_url)).join('')}
-    ${divider()}
-  ` : ''
-
-  // Make money guide
-  const makeMoneySection = makeMoneyArticle ? `
-    ${sectionLabel('💰 Make Money With AI This Week')}
-    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background:linear-gradient(135deg,#0F172A,#1e3a5f);border-radius:10px;overflow:hidden;">
-      <tr><td style="padding:24px;">
-        ${makeMoneyArticle.thumbnail_url ? `<img src="${makeMoneyArticle.thumbnail_url}" alt="" width="100%" style="display:block;border-radius:6px;margin-bottom:16px;height:auto;" />` : ''}
-        <p style="margin:0 0 8px;font-size:18px;font-weight:700;color:#ffffff;line-height:1.4;">${makeMoneyArticle.title}</p>
-        <p style="margin:0 0 16px;font-size:14px;color:#94a3b8;line-height:1.6;">${(makeMoneyArticle.excerpt || '').split(' ').slice(0, 20).join(' ')}…</p>
-        <a href="${BASE_URL}/article/${makeMoneyArticle.slug}" style="display:inline-block;padding:10px 24px;background-color:#0EA5E9;border-radius:6px;color:#fff;font-size:14px;font-weight:600;text-decoration:none;">Read the guide →</a>
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:28px;">
+      <tr><td>
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:16px;">
+          <tr><td style="border-left:3px solid #0EA5E9;padding-left:10px;">
+            <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#0EA5E9;">🎙️ AI Podcast Roundup</p>
+          </td></tr>
+        </table>
+        <p style="margin:0 0 16px;font-size:17px;font-weight:700;color:#0F172A;line-height:1.3;">${podcast.title}</p>
+        ${podcast.episodes.slice(0, 5).map((ep: { title: string; channel?: string; duration?: string }, i: number) => `
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:8px;background-color:#f8fafc;border-radius:8px;">
+          <tr>
+            <td width="36" valign="top" style="padding:12px 0 12px 14px;">
+              <span style="display:inline-block;width:24px;height:24px;background-color:#0F172A;border-radius:50%;text-align:center;font-size:11px;font-weight:700;color:#ffffff;line-height:24px;">${i + 1}</span>
+            </td>
+            <td style="padding:12px 14px 12px 8px;">
+              <p style="margin:0 0 2px;font-size:14px;font-weight:600;color:#0F172A;line-height:1.4;">${ep.title}</p>
+              ${ep.channel ? `<p style="margin:0;font-size:12px;color:#94a3b8;">${ep.channel}${ep.duration ? `&nbsp;·&nbsp;${ep.duration}` : ''}</p>` : ''}
+            </td>
+          </tr>
+        </table>`).join('')}
+        <a href="${BASE_URL}/ai-podcast-roundup" style="display:inline-block;margin-top:8px;padding:9px 20px;border:1.5px solid #0EA5E9;border-radius:6px;color:#0EA5E9;font-size:13px;font-weight:600;text-decoration:none;">Listen to all 5 episodes →</a>
       </td></tr>
     </table>
-    ${divider()}
+    <hr style="border:none;border-top:1px solid #e2e8f0;margin:0 0 28px;" />
   ` : ''
+
+  // ── Top articles ──────────────────────────────────────────
+  const articlesSection = articles.length > 0 ? `
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:28px;">
+      <tr><td>
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:16px;">
+          <tr><td style="border-left:3px solid #0EA5E9;padding-left:10px;">
+            <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#0EA5E9;">📰 Top Stories This Week</p>
+          </td></tr>
+        </table>
+        ${articles.slice(0, 3).map((a: ArticleSnap, i: number) => `
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:${i < 2 ? '14px' : '0'};padding-bottom:${i < 2 ? '14px' : '0'};border-bottom:${i < 2 ? '1px solid #f1f5f9' : 'none'};">
+          <tr>
+            <td valign="top" width="64">
+              ${a.thumbnail_url
+                ? `<img src="${a.thumbnail_url}" alt="" width="56" height="56" style="display:block;border-radius:6px;width:56px;height:56px;object-fit:cover;" />`
+                : `<div style="width:56px;height:56px;background-color:#f1f5f9;border-radius:6px;"></div>`}
+            </td>
+            <td valign="top" style="padding-left:12px;">
+              <p style="margin:0 0 4px;font-size:15px;font-weight:700;color:#0F172A;line-height:1.4;">${a.title}</p>
+              <p style="margin:0 0 6px;font-size:13px;color:#64748b;line-height:1.5;">${(a.excerpt || '').split(' ').slice(0, 18).join(' ')}${(a.excerpt || '').split(' ').length > 18 ? '…' : ''}</p>
+              <a href="${BASE_URL}/article/${a.slug}" style="font-size:12px;font-weight:600;color:#0EA5E9;text-decoration:none;">Read more →</a>
+            </td>
+          </tr>
+        </table>`).join('')}
+      </td></tr>
+    </table>
+    <hr style="border:none;border-top:1px solid #e2e8f0;margin:0 0 28px;" />
+  ` : ''
+
+  // ── Make money guide ──────────────────────────────────────
+  const makeMoneySection = makeMoneyArticle ? `
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:28px;">
+      <tr><td style="background-color:#0F172A;border-radius:12px;padding:24px;">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:14px;">
+          <tr><td style="border-left:3px solid #0EA5E9;padding-left:10px;">
+            <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#0EA5E9;">💰 Make Money With AI</p>
+          </td></tr>
+        </table>
+        ${makeMoneyArticle.thumbnail_url
+          ? `<img src="${makeMoneyArticle.thumbnail_url}" alt="" width="100%" style="display:block;border-radius:8px;margin-bottom:16px;height:auto;" />`
+          : ''}
+        <p style="margin:0 0 10px;font-size:19px;font-weight:800;color:#ffffff;line-height:1.3;">${makeMoneyArticle.title}</p>
+        <p style="margin:0 0 18px;font-size:14px;color:#94a3b8;line-height:1.7;">${(makeMoneyArticle.excerpt || '').split(' ').slice(0, 22).join(' ')}…</p>
+        <a href="${BASE_URL}/article/${makeMoneyArticle.slug}" style="display:inline-block;padding:11px 26px;background-color:#0EA5E9;border-radius:7px;color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;">Read the full guide →</a>
+      </td></tr>
+    </table>
+  ` : ''
+
+  // ── Sign-off ──────────────────────────────────────────────
+  const signOff = `
+    <hr style="border:none;border-top:1px solid #e2e8f0;margin:0 0 24px;" />
+    <table cellpadding="0" cellspacing="0" border="0" width="100%">
+      <tr>
+        <td valign="top" style="padding-right:16px;">
+          <p style="margin:0 0 6px;font-size:14px;color:#334155;line-height:1.7;">That's your weekly AI briefing. See you next Tuesday.</p>
+          <p style="margin:0;font-size:14px;color:#64748b;">Questions or suggestions? Just reply — we read every email.</p>
+          <p style="margin:12px 0 0;font-size:14px;color:#64748b;">— <strong style="color:#0F172A;">Your team at AI Foresights</strong></p>
+        </td>
+        <td valign="top" align="right" style="white-space:nowrap;">
+          <a href="${BASE_URL}" style="display:inline-block;padding:10px 20px;background-color:#f1f5f9;border-radius:7px;color:#334155;font-size:13px;font-weight:600;text-decoration:none;">Visit the site →</a>
+        </td>
+      </tr>
+    </table>
+  `
 
   const content = `
-    <p style="margin:0 0 4px;font-size:13px;color:#94a3b8;text-align:center;">Week of ${weekLabel}</p>
-    <p style="margin:0 0 32px;font-size:26px;font-weight:800;color:#0F172A;text-align:center;line-height:1.3;">Your Weekly AI Briefing</p>
-
+    <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:28px;">
+      <tr><td style="background-color:#f8fafc;border-radius:10px;padding:20px 24px;border-left:4px solid #0EA5E9;">
+        <p style="margin:0 0 2px;font-size:12px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;font-weight:600;">Week of ${weekLabel}</p>
+        <p style="margin:0;font-size:22px;font-weight:800;color:#0F172A;line-height:1.3;">Your Weekly AI Briefing</p>
+      </td></tr>
+    </table>
     ${videoSection}
     ${podcastSection}
     ${articlesSection}
     ${makeMoneySection}
-
-    <p style="margin:0 0 8px;font-size:14px;color:#64748b;line-height:1.7;text-align:center;">
-      Questions? Just reply to this email — we read every one.
-    </p>
-    ${blueButton('Explore everything on AI Foresights →', BASE_URL)}
+    ${signOff}
   `
 
-  return emailWrapper(content, `Your weekly AI briefing is here — video, podcasts, top stories, and a make money guide.`)
+  return emailWrapper(content, `This week: AI video pick, 5 podcast episodes, top stories, and a make money guide — your Tuesday briefing.`)
 }
