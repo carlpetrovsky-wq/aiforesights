@@ -4,7 +4,7 @@
 // ─────────────────────────────────────────────────────────────
 
 const BASE_URL = 'https://www.aiforesights.com'
-const LOGO_URL = 'https://www.aiforesights.com/images/logo-white.png'
+const LOGO_URL = 'https://www.aiforesights.com/logo-white.png'
 
 function emailWrapper(content: string, preheader = ''): string {
   return `<!DOCTYPE html>
