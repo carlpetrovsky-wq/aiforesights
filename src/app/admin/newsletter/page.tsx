@@ -356,21 +356,22 @@ export default function AdminNewsletterPage() {
 
         <div className="border-t border-gray-100 pt-4">
           <p className="text-xs text-gray-400 mb-3 font-medium uppercase tracking-wide">Send to all subscribers</p>
-          onClick={sendDigest}
-          disabled={sendStatus === 'loading'}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-500 hover:bg-sky-600 disabled:opacity-60 text-white rounded-lg font-semibold text-sm transition-colors"
-        >
-          {sendStatus === 'loading'
-            ? <><RefreshCw className="w-4 h-4 animate-spin" /> Sending…</>
-            : <><Send className="w-4 h-4" /> Send Digest Now</>}
-        </button>
+          <button
+            onClick={sendDigest}
+            disabled={sendStatus === 'loading'}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-500 hover:bg-sky-600 disabled:opacity-60 text-white rounded-lg font-semibold text-sm transition-colors"
+          >
+            {sendStatus === 'loading'
+              ? <><RefreshCw className="w-4 h-4 animate-spin" /> Sending…</>
+              : <><Send className="w-4 h-4" /> Send Digest Now</>}
+          </button>
 
-        {sendResult && (
-          <div className={`flex items-start gap-2 p-3 rounded-lg text-sm ${sendStatus === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
-            {sendStatus === 'success' ? <CheckCircle className="w-4 h-4 mt-0.5 shrink-0" /> : <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />}
-            {sendResult}
-          </div>
-        )}
+          {sendResult && (
+            <div className={`flex items-start gap-2 p-3 mt-3 rounded-lg text-sm ${sendStatus === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+              {sendStatus === 'success' ? <CheckCircle className="w-4 h-4 mt-0.5 shrink-0" /> : <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />}
+              {sendResult}
+            </div>
+          )}
         </div>
       </div>
 
