@@ -47,28 +47,48 @@ function injectToolLinks(
   tools: Array<{ name: string; website_url: string; affiliate_url?: string | null }>
 ): string {
   // Step 1: Strip ALL markdown links that Claude may have generated despite instructions.
-  // This ensures we have clean plain text before we inject our own controlled links.
-  let result = content.replace(/\[([^\]]+)\]\(https?:\/\/[^)]+\)/g, '$1')
+  // Also handle nested broken links like [Gamma](https://[gamma](https://gamma.app))
+  let result = content.replace(/\[([^\]]*)\]\(https?:\/\/\[[^\]]*\]\([^)]*\)[^)]*\)/g, '$1')
+  result = result.replace(/\[([^\]]+)\]\(https?:\/\/[^)]+\)/g, '$1')
 
-  // Step 2: Inject first-occurrence links for each tool
-  for (const tool of tools) {
-    const href = tool.affiliate_url || tool.website_url
-    if (!href) continue
-    const escaped = tool.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    const regex = new RegExp(`(?<!\\[)(?<!href=")\\b(${escaped})\\b(?![^[]*\\]\\()`, 'gi')
-    let replaced = false
-    result = result.replace(regex, (match) => {
-      if (replaced) return match
-      replaced = true
-      return `[${match}](${href})`
-    })
+  // Step 2: Split into lines, inject first-occurrence links only in non-heading lines
+  const lines = result.split('\n')
+  const linkedTools = new Set<string>()
+
+  for (let i = 0; i < lines.length; i++) {
+    // Skip heading lines entirely — tool names in headings should stay plain text
+    if (/^#{1,6}\s/.test(lines[i])) continue
+
+    for (const tool of tools) {
+      const toolKey = tool.name.toLowerCase()
+      if (linkedTools.has(toolKey)) continue // already linked this tool
+
+      const href = tool.affiliate_url || tool.website_url
+      if (!href) continue
+
+      const escaped = tool.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      // Match tool name, even inside **bold** markers
+      const regex = new RegExp(`(\\*\\*)?\\b(${escaped})\\b(\\*\\*)?`, 'gi')
+
+      if (regex.test(lines[i])) {
+        // Reset lastIndex after test
+        regex.lastIndex = 0
+        let matched = false
+        lines[i] = lines[i].replace(regex, (full, boldOpen, name, boldClose) => {
+          if (matched) return full // only replace first match on this line
+          matched = true
+          linkedTools.add(toolKey)
+          // If it was bold, keep the bold outside the link
+          if (boldOpen && boldClose) {
+            return `**[${name}](${href})**`
+          }
+          return `[${name}](${href})`
+        })
+      }
+    }
   }
 
-  // Step 3: Remove any markdown links from heading lines
-  result = result.replace(/^(#{1,6}\s.*)$/gm, (line) => {
-    return line.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-  })
-  return result
+  return lines.join('\n')
 }
 
 export async function POST(req: NextRequest) {

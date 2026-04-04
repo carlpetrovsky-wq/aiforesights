@@ -45,24 +45,38 @@ export async function POST(req: NextRequest) {
     // Step 2: Strip ALL remaining markdown links to get clean plain text
     content = content.replace(/\[([^\]]+)\]\(https?:\/\/[^)]+\)/g, '$1')
 
-    // Step 3: Re-inject first-occurrence links using current tool data
-    for (const tool of toolList) {
-      const href = tool.affiliate_url || tool.website_url
-      if (!href) continue
-      const escaped = tool.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-      const regex = new RegExp(`(?<!\\[)(?<!href=")\\b(${escaped})\\b(?![^[]*\\]\\()`, 'gi')
-      let replaced = false
-      content = content.replace(regex, (match: string) => {
-        if (replaced) return match
-        replaced = true
-        return `[${match}](${href})`
-      })
+    // Step 3: Re-inject first-occurrence links — skip heading lines so headings don't consume the slot
+    const lines = content.split('\n')
+    const linkedTools = new Set<string>()
+
+    for (let i = 0; i < lines.length; i++) {
+      if (/^#{1,6}\s/.test(lines[i])) continue
+
+      for (const tool of toolList) {
+        const toolKey = tool.name.toLowerCase()
+        if (linkedTools.has(toolKey)) continue
+
+        const href = tool.affiliate_url || tool.website_url
+        if (!href) continue
+
+        const escaped = tool.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        const regex = new RegExp(`(\\*\\*)?\\b(${escaped})\\b(\\*\\*)?`, 'gi')
+
+        if (regex.test(lines[i])) {
+          regex.lastIndex = 0
+          let matched = false
+          lines[i] = lines[i].replace(regex, (full: string, boldOpen: string, name: string, boldClose: string) => {
+            if (matched) return full
+            matched = true
+            linkedTools.add(toolKey)
+            if (boldOpen && boldClose) return `**[${name}](${href})**`
+            return `[${name}](${href})`
+          })
+        }
+      }
     }
 
-    // Step 4: Strip links from headings
-    content = content.replace(/^(#{1,6}\s.*)$/gm, (line: string) => {
-      return line.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-    })
+    content = lines.join('\n')
 
     // Only update if content actually changed
     if (content !== article.content) {
