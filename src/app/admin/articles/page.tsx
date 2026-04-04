@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Plus, Search, Star, ExternalLink, Pencil, Trash2, FileText, ImageIcon, CheckCircle, AlertCircle } from 'lucide-react'
+import { Plus, Search, Star, ExternalLink, Pencil, Trash2, FileText, ImageIcon, CheckCircle, AlertCircle, Twitter, Copy, Loader2 } from 'lucide-react'
 import {
   PageHeader, AdminModal, Field, Input, Textarea, Select,
   StatusBadge, Toggle, SaveButton, DeleteButton, EmptyState,
@@ -82,6 +82,45 @@ function ArticlesContent() {
   const [deleting, setDeleting] = useState(false)
   const [backfilling, setBackfilling] = useState(false)
   const [backfillResult, setBackfillResult] = useState<{ success: boolean; message: string } | null>(null)
+
+  // X Post Generator
+  const [xModalOpen, setXModalOpen] = useState(false)
+  const [xPosts, setXPosts] = useState<string[]>([])
+  const [xArticleTitle, setXArticleTitle] = useState('')
+  const [xArticleSlug, setXArticleSlug] = useState('')
+  const [xGenerating, setXGenerating] = useState(false)
+  const [xCopied, setXCopied] = useState<number | null>(null)
+
+  async function generateXPosts(slug: string, title: string) {
+    setXArticleTitle(title)
+    setXArticleSlug(slug)
+    setXPosts([])
+    setXCopied(null)
+    setXModalOpen(true)
+    setXGenerating(true)
+    try {
+      const res = await fetch('/api/admin/generate-xpost', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug }),
+      })
+      const data = await res.json()
+      if (data.success && data.posts) {
+        setXPosts(data.posts)
+      } else {
+        setXPosts([`Error: ${data.error || 'Failed to generate posts'}`])
+      }
+    } catch (err) {
+      setXPosts([`Error: ${String(err)}`])
+    }
+    setXGenerating(false)
+  }
+
+  function copyXPost(text: string, index: number) {
+    navigator.clipboard.writeText(text)
+    setXCopied(index)
+    setTimeout(() => setXCopied(null), 2000)
+  }
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -306,6 +345,13 @@ function ArticlesContent() {
                     </td>
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => generateXPosts(a.slug, a.title)}
+                          className="p-1.5 text-slate-500 hover:text-sky-400 hover:bg-sky-400/10 rounded-md transition"
+                          title="Generate X post"
+                        >
+                          <Twitter className="w-3.5 h-3.5" />
+                        </button>
                         <button onClick={() => openEdit(a)} className="p-1.5 text-slate-500 hover:text-white hover:bg-white/[0.06] rounded-md transition">
                           <Pencil className="w-3.5 h-3.5" />
                         </button>
@@ -410,6 +456,80 @@ function ArticlesContent() {
               </button>
               <SaveButton onClick={handleSave} loading={saving} label={editing.id ? 'Update' : 'Create'} />
             </div>
+          </div>
+        </div>
+      </AdminModal>
+
+      {/* X Post Generator Modal */}
+      <AdminModal
+        open={xModalOpen}
+        onClose={() => setXModalOpen(false)}
+        title="Generate X Post"
+        wide
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-slate-400 truncate">
+            <span className="text-slate-500">Article:</span> {xArticleTitle}
+          </p>
+
+          {xGenerating ? (
+            <div className="flex items-center justify-center py-8 gap-3">
+              <Loader2 className="w-5 h-5 text-sky-400 animate-spin" />
+              <span className="text-sm text-slate-400">Generating post options…</span>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {xPosts.map((post, i) => (
+                <div key={i} className="relative bg-white/[0.03] border border-white/[0.08] rounded-xl p-4">
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <span className="text-xs font-medium text-sky-400">
+                      {i === 0 ? 'Curiosity hook' : i === 1 ? 'Key insight' : 'Practical angle'}
+                    </span>
+                    <span className="text-xs text-slate-600">
+                      {post.split('\n\n')[0].length} chars
+                    </span>
+                  </div>
+                  <p className="text-sm text-slate-200 whitespace-pre-wrap leading-relaxed">{post}</p>
+                  <div className="flex items-center gap-2 mt-3 pt-3 border-t border-white/[0.06]">
+                    <button
+                      onClick={() => copyXPost(post, i)}
+                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg transition ${
+                        xCopied === i
+                          ? 'bg-green-500/20 text-green-400'
+                          : 'bg-white/[0.06] text-slate-300 hover:bg-white/[0.10] hover:text-white'
+                      }`}
+                    >
+                      {xCopied === i ? (
+                        <><CheckCircle className="w-3.5 h-3.5" /> Copied!</>
+                      ) : (
+                        <><Copy className="w-3.5 h-3.5" /> Copy</>
+                      )}
+                    </button>
+                    <a
+                      href={`https://x.com/intent/tweet?text=${encodeURIComponent(post)}`}
+                      target="_blank"
+                      rel="noopener"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-black text-white rounded-lg hover:bg-gray-800 transition"
+                    >
+                      <Twitter className="w-3.5 h-3.5" /> Post on X
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="flex items-center justify-between pt-3 border-t border-white/[0.06]">
+            <button
+              onClick={() => generateXPosts(xArticleSlug, xArticleTitle)}
+              disabled={xGenerating}
+              className="text-xs text-sky-400 hover:text-sky-300 transition disabled:opacity-40"
+            >
+              ↻ Regenerate
+            </button>
+            <button onClick={() => setXModalOpen(false)} className="px-4 py-2 text-sm text-slate-400 hover:text-white transition">
+              Close
+            </button>
           </div>
         </div>
       </AdminModal>
