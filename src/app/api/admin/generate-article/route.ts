@@ -51,10 +51,20 @@ function injectToolLinks(
     const href = tool.affiliate_url || tool.website_url
     if (!href) continue
     const escaped = tool.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    // Replace all occurrences, skip if already inside a markdown link
+    // Only replace the FIRST occurrence of each tool name
+    // Skip if already inside a markdown link, and skip heading lines (## ...)
     const regex = new RegExp(`(?<!\\[)(?<!href=")\\b(${escaped})\\b(?![^[]*\\]\\()`, 'gi')
-    result = result.replace(regex, `[$1](${href})`)
+    let replaced = false
+    result = result.replace(regex, (match) => {
+      if (replaced) return match // only link first occurrence
+      replaced = true
+      return `[${match}](${href})`
+    })
   }
+  // Remove any markdown links from heading lines — headings should be plain text
+  result = result.replace(/^(#{1,6}\s.*)$/gm, (line) => {
+    return line.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+  })
   return result
 }
 
@@ -140,11 +150,11 @@ Rules:
 - Include at least one concrete, relatable example (a small business owner, a retiree, a nurse, a teacher).
 - Tone: warm, clear, slightly optimistic but honest. Never hype.
 - Length: 650-800 words.
-- When any of these AI tools are naturally relevant to mention, use their exact name: ${toolNames}
+- When any of these AI tools are naturally relevant to mention, use their exact name (links are added automatically, do NOT include any markdown links in your output): ${toolNames}
 - Format your response as JSON with these exact keys: title, category, content
   - title: compelling headline (under 80 chars)
   - category: one of [latest-news, future-of-ai, best-ai-tools, make-money, learn-ai]
-  - content: the full article text using ## for subheadings and **bold** for emphasis. IMPORTANT: never combine bold and links — do not write **[text](url)**, only write [text](url) for links
+  - content: the full article text using ## for subheadings and **bold** for emphasis. NEVER include markdown links like [text](url) — tool links are injected automatically after generation.
 
 Return ONLY the JSON object. No preamble, no code fences.`
 
