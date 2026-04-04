@@ -46,22 +46,25 @@ function injectToolLinks(
   content: string,
   tools: Array<{ name: string; website_url: string; affiliate_url?: string | null }>
 ): string {
-  let result = content
+  // Step 1: Strip ALL markdown links that Claude may have generated despite instructions.
+  // This ensures we have clean plain text before we inject our own controlled links.
+  let result = content.replace(/\[([^\]]+)\]\(https?:\/\/[^)]+\)/g, '$1')
+
+  // Step 2: Inject first-occurrence links for each tool
   for (const tool of tools) {
     const href = tool.affiliate_url || tool.website_url
     if (!href) continue
     const escaped = tool.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    // Only replace the FIRST occurrence of each tool name
-    // Skip if already inside a markdown link, and skip heading lines (## ...)
     const regex = new RegExp(`(?<!\\[)(?<!href=")\\b(${escaped})\\b(?![^[]*\\]\\()`, 'gi')
     let replaced = false
     result = result.replace(regex, (match) => {
-      if (replaced) return match // only link first occurrence
+      if (replaced) return match
       replaced = true
       return `[${match}](${href})`
     })
   }
-  // Remove any markdown links from heading lines — headings should be plain text
+
+  // Step 3: Remove any markdown links from heading lines
   result = result.replace(/^(#{1,6}\s.*)$/gm, (line) => {
     return line.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
   })
