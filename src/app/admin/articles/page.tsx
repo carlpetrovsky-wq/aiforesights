@@ -310,12 +310,12 @@ function ArticlesContent() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-white/[0.06]">
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Title</th>
+                  <SortableHeader label="Title" sortKey="title" activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} />
                   <SortableHeader label="Category" sortKey="category_slug" activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} className="hidden sm:table-cell" />
                   <SortableHeader label="Source" sortKey="source_name" activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} className="hidden md:table-cell" />
                   <SortableHeader label="Published" sortKey="published_at" activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} className="hidden lg:table-cell" />
                   <SortableHeader label="Status" sortKey="status" activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} />
-                  <th className="text-center px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider hidden sm:table-cell">Featured</th>
+                  <SortableHeader label="Featured" sortKey="is_featured" activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} className="hidden sm:table-cell" />
                   <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>

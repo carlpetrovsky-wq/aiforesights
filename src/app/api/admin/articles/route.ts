@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
 
   const sortBy = searchParams.get('sortBy') ?? 'published_at'
   const sortDir = searchParams.get('sortDir') ?? 'desc'
-  const validSortKeys = ['published_at', 'created_at', 'title', 'source_name', 'category_slug', 'status', 'vote_count']
+  const validSortKeys = ['published_at', 'created_at', 'title', 'source_name', 'category_slug', 'status', 'vote_count', 'is_featured']
   const safeSort = validSortKeys.includes(sortBy) ? sortBy : 'published_at'
 
   let query = supabaseAdmin
