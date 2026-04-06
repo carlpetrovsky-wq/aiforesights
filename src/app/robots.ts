@@ -5,7 +5,10 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: '*',
-        allow: '/',
+        allow: [
+          '/',
+          '/api/og-image/',   // OG images must be fetchable by social crawlers (Twitterbot, etc.)
+        ],
         disallow: [
           '/admin/',
           '/admin',
