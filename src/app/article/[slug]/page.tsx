@@ -283,8 +283,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   if (!article) return {}
 
   const description = article.summary || article.excerpt || 'AI news explained in plain English.'
-  // Single param only — no & needed, avoids Next.js &amp; encoding issue
-  const ogImageUrl = `https://www.aiforesights.com/api/og?title=${encodeURIComponent(article.title)}`
+  // Use static OG image — X's crawler won't reliably fetch dynamic API route images
+  const ogImageUrl = 'https://www.aiforesights.com/og-default.png'
 
   return {
     title: `${article.title} — AI Foresights`,

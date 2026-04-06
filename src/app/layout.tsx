@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     url: 'https://www.aiforesights.com',
     siteName: 'AI Foresights',
     type: 'website',
-    images: [{ url: 'https://www.aiforesights.com/api/og?title=AI%20Foresights%20%E2%80%94%20A%20New%20Dawn%20Is%20Here', width: 1200, height: 630, alt: 'AI Foresights' }],
+    images: [{ url: 'https://www.aiforesights.com/og-default.png', width: 1200, height: 630, alt: 'AI Foresights' }],
   },
   twitter: {
     card: 'summary_large_image',
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     creator: '@AIForesights',
     title: 'AI Foresights — A New Dawn Is Here',
     description: 'The world of AI explained in plain English.',
-    images: ['https://www.aiforesights.com/api/og?title=AI%20Foresights%20%E2%80%94%20A%20New%20Dawn%20Is%20Here'],
+    images: ['https://www.aiforesights.com/og-default.png'],
   },
   robots: { index: true, follow: true },
   alternates: {
