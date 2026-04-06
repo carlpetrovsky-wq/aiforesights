@@ -36,6 +36,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
+    site: '@AIForesights',
+    creator: '@AIForesights',
     title: 'AI Foresights — A New Dawn Is Here',
     description: 'The world of AI explained in plain English.',
     images: ['https://www.aiforesights.com/api/og?title=AI%20Foresights%20%E2%80%94%20A%20New%20Dawn%20Is%20Here'],

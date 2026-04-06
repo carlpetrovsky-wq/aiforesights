@@ -306,6 +306,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
     },
     twitter: {
       card: 'summary_large_image',
+      site: '@AIForesights',
+      creator: '@AIForesights',
       title: article.title,
       description,
       images: [ogImageUrl],
