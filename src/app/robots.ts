@@ -18,6 +18,7 @@ export default function robots(): MetadataRoute.Robots {
           '/tag/',
           '/page/',
           '/confirm',       // Email confirmation page — no SEO value
+          '/comments/',      // WordPress comment feeds
         ],
       },
       // Explicitly welcome AI crawlers

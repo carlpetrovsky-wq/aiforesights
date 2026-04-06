@@ -86,6 +86,24 @@ const nextConfig = {
       },
       // Non-www to www (belt and suspenders — Vercel handles this but good to be explicit)
       // Note: Vercel handles the domain redirect, this is for any edge cases
+
+      // WordPress comments feeds → homepage
+      {
+        source: '/comments/feed/:slug*',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/comments/feed',
+        destination: '/',
+        permanent: true,
+      },
+      // WordPress article comment feeds
+      {
+        source: '/:slug/feed/:rest*',
+        destination: '/',
+        permanent: true,
+      },
     ]
   },
 }
