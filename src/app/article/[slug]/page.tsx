@@ -283,11 +283,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   if (!article) return {}
 
   const description = article.summary || article.excerpt || 'AI news explained in plain English.'
-  // Use per-article OG image via Vercel rewrite (looks like a static .png to crawlers)
-  const hasOgImage = !!(article as any).og_image_url
-  const ogImageUrl = hasOgImage
-    ? `https://www.aiforesights.com/og/${params.slug}.png`
-    : 'https://www.aiforesights.com/og-default.png'
+  // Use the article's thumbnail_url for OG image — same field RSS articles use.
+  // For AI Foresights originals, the X post generator sets this to a Vercel Blob URL.
+  const ogImageUrl = article.thumbnail_url || 'https://www.aiforesights.com/og-default.png'
 
   return {
     title: `${article.title} — AI Foresights`,

@@ -3,6 +3,7 @@ export const maxDuration = 30
 
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { put } from '@vercel/blob'
 import Anthropic from '@anthropic-ai/sdk'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
@@ -92,41 +93,30 @@ ${contentPreview}`
     // Append the article URL to each post
     const postsWithUrl = posts.map(p => `${p}\n\n${articleUrl}`)
 
-    // Generate and store a static OG image for this article in Supabase Storage
-    // (X's crawler can't reliably fetch dynamic API route images)
+    // Generate and store a branded OG image for this article via Vercel Blob
+    // Vercel Blob serves from Vercel's own CDN — no Cloudflare interference
+    // Setting it as thumbnail_url makes it work exactly like RSS article images
     let ogImageUrl = 'https://www.aiforesights.com/og-default.png'
     try {
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.aiforesights.com'
-      // Add timestamp to bust Vercel's CDN cache and always get a fresh render
       const ogApiUrl = `${siteUrl}/api/og?title=${encodeURIComponent(article.title)}&_t=${Date.now()}`
       const imgResponse = await fetch(ogApiUrl, { cache: 'no-store' })
       if (imgResponse.ok) {
         const imageBuffer = Buffer.from(await imgResponse.arrayBuffer())
-        const fileName = `og/${article.slug}.png`
 
-        // Ensure bucket exists
-        const { data: buckets } = await supabaseAdmin.storage.listBuckets()
-        if (!buckets?.some(b => b.name === 'og-images')) {
-          await supabaseAdmin.storage.createBucket('og-images', { public: true })
-        }
+        // Upload to Vercel Blob (public access, served from Vercel CDN)
+        const blob = await put(`og/${article.slug}.png`, imageBuffer, {
+          access: 'public',
+          contentType: 'image/png',
+          addRandomSuffix: false,
+        })
+        ogImageUrl = blob.url
 
-        // Upload (overwrite if exists)
-        const { error: uploadError } = await supabaseAdmin.storage
-          .from('og-images')
-          .upload(fileName, imageBuffer, { contentType: 'image/png', upsert: true })
-
-        if (!uploadError) {
-          const { data: urlData } = supabaseAdmin.storage
-            .from('og-images')
-            .getPublicUrl(fileName)
-          ogImageUrl = urlData.publicUrl
-
-          // Save to article record for meta tags
-          await supabaseAdmin
-            .from('articles')
-            .update({ og_image_url: ogImageUrl })
-            .eq('slug', slug)
-        }
+        // Set as the article's thumbnail_url so it works like any RSS article image
+        await supabaseAdmin
+          .from('articles')
+          .update({ thumbnail_url: ogImageUrl, og_image_url: ogImageUrl })
+          .eq('slug', slug)
       }
     } catch {
       // Non-fatal — falls back to default OG image
