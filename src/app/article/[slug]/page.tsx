@@ -281,13 +281,37 @@ async function getRelatedArticles(slug: string, category: string) {
 export async function generateMetadata({ params }: { params: { slug: string } }) {
   const article = await getArticle(params.slug)
   if (!article) return {}
+
+  const description = article.summary || article.excerpt || 'AI news explained in plain English.'
+  const ogImageUrl = `https://www.aiforesights.com/api/og?${new URLSearchParams({
+    title: article.title,
+    category: article.category_slug || '',
+    source: article.source_name || '',
+  }).toString()}`
+
   return {
     title: `${article.title} — AI Foresights`,
-    description: article.summary || article.excerpt || '',
+    description,
     openGraph: {
       title: article.title,
-      description: article.summary || article.excerpt || '',
-      images: article.thumbnail_url ? [article.thumbnail_url] : [],
+      description,
+      url: `https://www.aiforesights.com/article/${params.slug}`,
+      siteName: 'AI Foresights',
+      type: 'article',
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: article.title,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: article.title,
+      description,
+      images: [ogImageUrl],
     },
   }
 }

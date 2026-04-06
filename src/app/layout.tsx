@@ -32,13 +32,13 @@ export const metadata: Metadata = {
     url: 'https://www.aiforesights.com',
     siteName: 'AI Foresights',
     type: 'website',
-    images: [{ url: 'https://www.aiforesights.com/logo-full.png', width: 1280, height: 1024, alt: 'AI Foresights' }],
+    images: [{ url: 'https://www.aiforesights.com/api/og?title=AI+Foresights+%E2%80%94+A+New+Dawn+Is+Here&category=&source=AI+Foresights', width: 1200, height: 630, alt: 'AI Foresights' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'AI Foresights',
+    title: 'AI Foresights — A New Dawn Is Here',
     description: 'The world of AI explained in plain English.',
-    images: ['https://www.aiforesights.com/logo-full.png'],
+    images: ['https://www.aiforesights.com/api/og?title=AI+Foresights+%E2%80%94+A+New+Dawn+Is+Here&category=&source=AI+Foresights'],
   },
   robots: { index: true, follow: true },
   alternates: {
