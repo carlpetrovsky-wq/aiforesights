@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Article not found' }, { status: 404 })
     }
 
-    const articleUrl = `https://www.aiforesights.com/article/${article.slug}?ref=x8`
+    const articleUrl = `https://www.aiforesights.com/article/${article.slug}`
     const isOwnContent = article.source_name === 'AI Foresights'
 
     // Build a content summary for Claude (trim to keep tokens low)
@@ -92,13 +92,43 @@ ${contentPreview}`
     // Append the article URL to each post
     const postsWithUrl = posts.map(p => `${p}\n\n${articleUrl}`)
 
-    // Pre-warm the OG image cache so Twitterbot gets a fast cached response
-    // (Edge function cold starts can be 3+ seconds, Twitterbot times out at ~2-4s)
-    const ogImageUrl = `https://www.aiforesights.com/api/og?title=${encodeURIComponent(article.title)}`
+    // Generate and store a static OG image for this article in Supabase Storage
+    // (X's crawler can't reliably fetch dynamic API route images)
+    let ogImageUrl = 'https://www.aiforesights.com/og-default.png'
     try {
-      await fetch(ogImageUrl, { method: 'GET' })
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.aiforesights.com'
+      const ogApiUrl = `${siteUrl}/api/og?title=${encodeURIComponent(article.title)}`
+      const imgResponse = await fetch(ogApiUrl)
+      if (imgResponse.ok) {
+        const imageBuffer = Buffer.from(await imgResponse.arrayBuffer())
+        const fileName = `og/${article.slug}.png`
+
+        // Ensure bucket exists
+        const { data: buckets } = await supabaseAdmin.storage.listBuckets()
+        if (!buckets?.some(b => b.name === 'og-images')) {
+          await supabaseAdmin.storage.createBucket('og-images', { public: true })
+        }
+
+        // Upload (overwrite if exists)
+        const { error: uploadError } = await supabaseAdmin.storage
+          .from('og-images')
+          .upload(fileName, imageBuffer, { contentType: 'image/png', upsert: true })
+
+        if (!uploadError) {
+          const { data: urlData } = supabaseAdmin.storage
+            .from('og-images')
+            .getPublicUrl(fileName)
+          ogImageUrl = urlData.publicUrl
+
+          // Save to article record for meta tags
+          await supabaseAdmin
+            .from('articles')
+            .update({ og_image_url: ogImageUrl })
+            .eq('slug', slug)
+        }
+      }
     } catch {
-      // Non-blocking — don't fail if pre-warm fails
+      // Non-fatal — falls back to default OG image
     }
 
     return NextResponse.json({

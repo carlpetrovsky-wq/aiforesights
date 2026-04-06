@@ -283,8 +283,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   if (!article) return {}
 
   const description = article.summary || article.excerpt || 'AI news explained in plain English.'
-  // Use static OG image — X's crawler won't reliably fetch dynamic API route images
-  const ogImageUrl = 'https://www.aiforesights.com/og-default.png'
+  // Use per-article OG image (generated and stored in Supabase) or fall back to default
+  const ogImageUrl = (article as any).og_image_url || 'https://www.aiforesights.com/og-default.png'
 
   return {
     title: `${article.title} — AI Foresights`,
