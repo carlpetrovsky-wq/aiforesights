@@ -283,11 +283,10 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   if (!article) return {}
 
   const description = article.summary || article.excerpt || 'AI news explained in plain English.'
-  const ogImageUrl = `https://www.aiforesights.com/api/og?${new URLSearchParams({
-    title: article.title,
-    category: article.category_slug || '',
-    source: article.source_name || '',
-  }).toString()}`
+  const encodedTitle = encodeURIComponent(article.title)
+  const encodedCategory = encodeURIComponent(article.category_slug || '')
+  const encodedSource = encodeURIComponent(article.source_name || '')
+  const ogImageUrl = `https://www.aiforesights.com/api/og?title=${encodedTitle}&category=${encodedCategory}&source=${encodedSource}`
 
   return {
     title: `${article.title} — AI Foresights`,
