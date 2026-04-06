@@ -283,8 +283,12 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   if (!article) return {}
 
   const description = article.summary || article.excerpt || 'AI news explained in plain English.'
-  // Use per-article OG image (generated and stored in Supabase) or fall back to default
-  const ogImageUrl = (article as any).og_image_url || 'https://www.aiforesights.com/og-default.png'
+  // Use per-article OG image proxied through our domain (Supabase Cloudflare blocks Twitterbot)
+  // If og_image_url is set, the image exists in Supabase — serve via our proxy
+  const hasOgImage = !!(article as any).og_image_url
+  const ogImageUrl = hasOgImage
+    ? `https://www.aiforesights.com/api/og-image/${params.slug}`
+    : 'https://www.aiforesights.com/og-default.png'
 
   return {
     title: `${article.title} — AI Foresights`,
