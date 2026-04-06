@@ -28,8 +28,8 @@ export async function POST(req: NextRequest) {
     }
 
     // Generate OG image by calling our own edge function
-    const ogUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.aiforesights.com'}/api/og?title=${encodeURIComponent(article.title)}`
-    const imgResponse = await fetch(ogUrl)
+    const ogUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://www.aiforesights.com'}/api/og?title=${encodeURIComponent(article.title)}&_t=${Date.now()}`
+    const imgResponse = await fetch(ogUrl, { cache: 'no-store' })
     if (!imgResponse.ok) {
       return NextResponse.json({ error: 'Failed to generate OG image' }, { status: 500 })
     }

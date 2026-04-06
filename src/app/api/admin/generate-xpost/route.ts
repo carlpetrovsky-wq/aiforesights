@@ -97,8 +97,9 @@ ${contentPreview}`
     let ogImageUrl = 'https://www.aiforesights.com/og-default.png'
     try {
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.aiforesights.com'
-      const ogApiUrl = `${siteUrl}/api/og?title=${encodeURIComponent(article.title)}`
-      const imgResponse = await fetch(ogApiUrl)
+      // Add timestamp to bust Vercel's CDN cache and always get a fresh render
+      const ogApiUrl = `${siteUrl}/api/og?title=${encodeURIComponent(article.title)}&_t=${Date.now()}`
+      const imgResponse = await fetch(ogApiUrl, { cache: 'no-store' })
       if (imgResponse.ok) {
         const imageBuffer = Buffer.from(await imgResponse.arrayBuffer())
         const fileName = `og/${article.slug}.png`
