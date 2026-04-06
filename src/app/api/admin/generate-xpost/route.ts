@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Article not found' }, { status: 404 })
     }
 
-    const articleUrl = `https://www.aiforesights.com/article/${article.slug}?ref=x6`
+    const articleUrl = `https://www.aiforesights.com/article/${article.slug}?ref=x7`
     const isOwnContent = article.source_name === 'AI Foresights'
 
     // Build a content summary for Claude (trim to keep tokens low)
@@ -92,11 +92,21 @@ ${contentPreview}`
     // Append the article URL to each post
     const postsWithUrl = posts.map(p => `${p}\n\n${articleUrl}`)
 
+    // Pre-warm the OG image cache so Twitterbot gets a fast cached response
+    // (Edge function cold starts can be 3+ seconds, Twitterbot times out at ~2-4s)
+    const ogImageUrl = `https://www.aiforesights.com/api/og?title=${encodeURIComponent(article.title)}`
+    try {
+      await fetch(ogImageUrl, { method: 'GET' })
+    } catch {
+      // Non-blocking — don't fail if pre-warm fails
+    }
+
     return NextResponse.json({
       success: true,
       posts: postsWithUrl,
       articleTitle: article.title,
       articleUrl,
+      ogImageUrl,
     })
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 })
