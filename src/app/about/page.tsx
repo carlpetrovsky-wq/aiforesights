@@ -124,6 +124,10 @@ export default function AboutPage() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/#newsletter" className="btn-primary inline-block">Subscribe free</Link>
             <Link href="/best-ai-tools" className="inline-block border border-white/20 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-white/10 transition-colors">Browse AI tools →</Link>
+            <a href="https://x.com/AIForesights" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 border border-white/20 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-white/10 transition-colors">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.259 5.63L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
+              Follow on X
+            </a>
           </div>
         </section>
 
