@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Article not found' }, { status: 404 })
     }
 
-    const articleUrl = `https://www.aiforesights.com/article/${article.slug}?ref=x2`
+    const articleUrl = `https://www.aiforesights.com/article/${article.slug}?ref=x3`
     const isOwnContent = article.source_name === 'AI Foresights'
 
     // Build a content summary for Claude (trim to keep tokens low)

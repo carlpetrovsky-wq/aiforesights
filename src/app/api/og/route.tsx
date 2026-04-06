@@ -5,9 +5,31 @@ export const runtime = 'edge'
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
-  const title = searchParams.get('title') || 'AI Foresights'
-  const category = searchParams.get('category') || ''
-  const source = searchParams.get('source') || ''
+
+  // Support base64url-encoded JSON data param (avoids &amp; encoding issues)
+  let title = 'AI Foresights'
+  let category = ''
+  let source = ''
+
+  const dataParam = searchParams.get('data')
+  if (dataParam) {
+    try {
+      // base64url decode
+      const json = JSON.parse(atob(dataParam.replace(/-/g, '+').replace(/_/g, '/')))
+      title = json.title || title
+      category = json.category || category
+      source = json.source || source
+    } catch {
+      // fallback to individual params
+    }
+  }
+
+  // Fallback: support legacy individual params
+  if (!dataParam) {
+    title = searchParams.get('title') || title
+    category = searchParams.get('category') || category
+    source = searchParams.get('source') || source
+  }
 
   const categoryLabel = category
     ? category.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())

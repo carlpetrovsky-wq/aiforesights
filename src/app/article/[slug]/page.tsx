@@ -283,10 +283,13 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   if (!article) return {}
 
   const description = article.summary || article.excerpt || 'AI news explained in plain English.'
-  const encodedTitle = encodeURIComponent(article.title)
-  const encodedCategory = encodeURIComponent(article.category_slug || '')
-  const encodedSource = encodeURIComponent(article.source_name || '')
-  const ogImageUrl = `https://www.aiforesights.com/api/og?title=${encodedTitle}&category=${encodedCategory}&source=${encodedSource}`
+  // Encode all OG params into a single base64 value to avoid Next.js HTML-encoding & to &amp;
+  const ogData = Buffer.from(JSON.stringify({
+    title: article.title,
+    category: article.category_slug || '',
+    source: article.source_name || '',
+  })).toString('base64url')
+  const ogImageUrl = `https://www.aiforesights.com/api/og?data=${ogData}`
 
   return {
     title: `${article.title} — AI Foresights`,
