@@ -283,11 +283,10 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   if (!article) return {}
 
   const description = article.summary || article.excerpt || 'AI news explained in plain English.'
-  // Use per-article OG image proxied through our domain (Supabase Cloudflare blocks Twitterbot)
-  // If og_image_url is set, the image exists in Supabase — serve via our proxy
+  // Use per-article OG image via Vercel rewrite (looks like a static .png to crawlers)
   const hasOgImage = !!(article as any).og_image_url
   const ogImageUrl = hasOgImage
-    ? `https://www.aiforesights.com/api/og-image/${params.slug}`
+    ? `https://www.aiforesights.com/og/${params.slug}.png`
     : 'https://www.aiforesights.com/og-default.png'
 
   return {

@@ -106,6 +106,17 @@ const nextConfig = {
       },
     ]
   },
+  async rewrites() {
+    return [
+      // Proxy Supabase-stored OG images as static-looking .png URLs on our domain.
+      // X's Twitterbot won't fetch images from dynamic API routes or Supabase (Cloudflare blocks it).
+      // Vercel rewrites proxy at the infrastructure level — fast, static-looking, no Node.js involved.
+      {
+        source: '/og/:slug.png',
+        destination: 'https://vlavisroxzwifprjzcar.supabase.co/storage/v1/object/public/og-images/og/:slug.png',
+      },
+    ]
+  },
 }
 
 module.exports = nextConfig
