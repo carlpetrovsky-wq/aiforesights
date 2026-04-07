@@ -53,7 +53,7 @@ function ConfirmContent() {
       <div className="max-w-md w-full text-center">
         {/* Logo */}
         <Link href="/" className="inline-block mb-10">
-          <img src="/logo-horizontal-white.png" alt="AI Foresights" className="h-10 mx-auto" />
+          <img src="/logo-white.png" alt="AI Foresights" className="h-12 mx-auto" />
         </Link>
 
         {/* Card */}
