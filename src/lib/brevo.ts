@@ -108,3 +108,21 @@ export async function sendCampaignTest(campaignId: number, emails: string[]) {
 export async function getLists() {
   return brevoFetch('/contacts/lists?limit=50')
 }
+
+// ── Transactional Email ──────────────────────────────────────
+
+/** Send a single transactional email (confirmation, notifications, etc.) */
+export async function sendTransactionalEmail(opts: {
+  to: { email: string; name?: string }
+  subject: string
+  htmlContent: string
+  replyTo?: string
+}) {
+  return brevoFetch('/smtp/email', 'POST', {
+    sender: { name: 'AI Foresights', email: 'hello@aiforesights.com' },
+    to: [opts.to],
+    replyTo: { email: opts.replyTo ?? 'help@aiforesights.com' },
+    subject: opts.subject,
+    htmlContent: opts.htmlContent,
+  })
+}
