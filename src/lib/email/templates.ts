@@ -37,7 +37,7 @@ function emailWrapper(content: string, preheader = ''): string {
           <img src="${LOGO_URL}" alt="AI Foresights" width="120" style="display:inline-block;height:auto;margin-bottom:12px;" />
           <p style="margin:0 0 8px;color:#94a3b8;font-size:12px;">Texas, USA &nbsp;·&nbsp; <a href="${BASE_URL}" style="color:#94a3b8;text-decoration:none;">aiforesights.com</a> &nbsp;·&nbsp; <a href="mailto:help@aiforesights.com" style="color:#94a3b8;text-decoration:none;">help@aiforesights.com</a></p>
           <p style="margin:0;color:#64748b;font-size:11px;">You're receiving this because you subscribed at aiforesights.com.<br/>
-          <a href="{$unsubscribe}" style="color:#64748b;">Unsubscribe</a> &nbsp;·&nbsp; <a href="{$manage_preferences}" style="color:#64748b;">Manage preferences</a></p>
+          <a href="{{ unsubscribe }}" style="color:#64748b;">Unsubscribe</a></p>
         </td></tr>
 
       </table>

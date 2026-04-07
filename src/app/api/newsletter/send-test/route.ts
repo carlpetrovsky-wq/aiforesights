@@ -4,23 +4,7 @@ export const maxDuration = 60
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { buildWeeklyDigest, ArticleSnap, VideoSnap, PodcastSnap, ToolSnap } from '@/lib/email/templates'
-
-const MAILERLITE_API = 'https://connect.mailerlite.com/api'
-
-async function mlFetch(path: string, method = 'GET', body?: unknown) {
-  const res = await fetch(`${MAILERLITE_API}${path}`, {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Authorization': `Bearer ${process.env.MAILERLITE_API_KEY}`,
-    },
-    ...(body ? { body: JSON.stringify(body) } : {}),
-  })
-  const data = await res.json()
-  if (!res.ok) throw new Error(`MailerLite ${method} ${path} → ${res.status}: ${JSON.stringify(data)}`)
-  return data
-}
+import { createCampaign, sendCampaignTest } from '@/lib/brevo'
 
 export async function POST(req: NextRequest) {
   const adminCookie = req.cookies.get('admin_token')?.value
@@ -49,7 +33,7 @@ export async function POST(req: NextRequest) {
       .single()
     const podcast: PodcastSnap | null = podcastRow ?? null
 
-    // ── 3. Fetch top stories — matches homepage featured section ─
+    // ── 3. Fetch top stories ──────────────────────────────────
     let { data: articleRows } = await supabaseAdmin
       .from('articles')
       .select('title, slug, excerpt, thumbnail_url, category_slug, source_name')
@@ -125,44 +109,21 @@ export async function POST(req: NextRequest) {
     const weekLabel = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
     const subject = `[TEST] Your Weekly AI Briefing — ${weekLabel}`
 
-    // ── 7. Find the Admin group ───────────────────────────────
-    const groupsRes = await mlFetch('/groups?limit=50')
-    const groups: Array<{ id: string; name: string }> = groupsRes?.data ?? []
-    const adminGroup = groups.find(g =>
-      g.name.toLowerCase() === 'admin' ||
-      g.name.toLowerCase().includes('admin')
-    )
-    if (!adminGroup) {
-      throw new Error(`Admin group not found. Groups available: ${groups.map(g => g.name).join(', ')}`)
-    }
-
-    // ── 8. Create campaign targeting Admin group only ─────────
-    const campaign = await mlFetch('/campaigns', 'POST', {
+    // ── 7. Create campaign in Brevo & send test ───────────────
+    const campaignId = await createCampaign({
       name: `[TEST] Weekly Digest — ${weekLabel}`,
-      type: 'regular',
-      emails: [{
-        subject,
-        from_name: 'AI Foresights',
-        from: 'hello@aiforesights.com',
-        reply_to: 'help@aiforesights.com',
-        content: html,
-      }],
-      groups: [adminGroup.id],
+      subject,
+      htmlContent: html,
+      tag: 'weekly-digest-test',
     })
 
-    const campaignId = campaign?.data?.id
-    if (!campaignId) throw new Error('No campaign ID returned')
-
-    // ── 9. Send immediately ───────────────────────────────────
-    await mlFetch(`/campaigns/${campaignId}/schedule`, 'POST', {
-      delivery: 'instant',
-    })
+    // Send test to Carl only
+    await sendCampaignTest(campaignId, ['carlpetrovsky@gmail.com'])
 
     return NextResponse.json({
       success: true,
       campaignId,
-      sentTo: `Admin group (${adminGroup.name})`,
-      adminGroupId: adminGroup.id,
+      sentTo: 'carlpetrovsky@gmail.com (test)',
       subject,
       preview: {
         hasVideo: !!video,

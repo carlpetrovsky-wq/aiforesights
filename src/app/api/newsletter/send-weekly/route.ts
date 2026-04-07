@@ -4,24 +4,7 @@ export const maxDuration = 60
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 import { buildWeeklyDigest, ArticleSnap, VideoSnap, PodcastSnap, ToolSnap } from '@/lib/email/templates'
-
-const MAILERLITE_API = 'https://connect.mailerlite.com/api'
-const GROUP_ID = process.env.MAILERLITE_GROUP_ID!
-
-async function mlFetch(path: string, method = 'GET', body?: unknown) {
-  const res = await fetch(`${MAILERLITE_API}${path}`, {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Authorization': `Bearer ${process.env.MAILERLITE_API_KEY}`,
-    },
-    ...(body ? { body: JSON.stringify(body) } : {}),
-  })
-  const data = await res.json()
-  if (!res.ok) throw new Error(`MailerLite ${method} ${path} → ${res.status}: ${JSON.stringify(data)}`)
-  return data
-}
+import { createCampaign, sendCampaignNow } from '@/lib/brevo'
 
 export async function POST(req: NextRequest) {
   // Auth — cron secret or admin cookie
@@ -56,8 +39,7 @@ export async function POST(req: NextRequest) {
 
     const podcast: PodcastSnap | null = podcastRow ?? null
 
-    // ── 3. Fetch top stories — matches homepage featured section ─
-    // Priority: is_featured=true AI Foresights articles, fallback to most recent
+    // ── 3. Fetch top stories ──────────────────────────────────
     let { data: articleRows } = await supabaseAdmin
       .from('articles')
       .select('title, slug, excerpt, thumbnail_url, category_slug, source_name')
@@ -68,7 +50,6 @@ export async function POST(req: NextRequest) {
       .order('published_at', { ascending: false })
       .limit(3)
 
-    // If fewer than 3 featured, top up with most recent non-featured
     if (!articleRows || articleRows.length < 3) {
       const existingSlugs = (articleRows ?? []).map(a => a.slug)
       const needed = 3 - (articleRows?.length ?? 0)
@@ -88,7 +69,6 @@ export async function POST(req: NextRequest) {
     const articles: ArticleSnap[] = articleRows ?? []
 
     // ── 4. Fetch featured Make Money article ──────────────────
-    // Priority: is_featured=true in make-money → fallback to most recent
     let { data: mmRow } = await supabaseAdmin
       .from('articles')
       .select('title, slug, excerpt, thumbnail_url, category_slug')
@@ -115,7 +95,7 @@ export async function POST(req: NextRequest) {
 
     const makeMoneyArticle: ArticleSnap | null = mmRow ?? null
 
-    // ── 5. Fetch newsletter-featured tools → fallback to 3 most recently added ──
+    // ── 5. Fetch featured tools ───────────────────────────────
     let { data: toolRows } = await supabaseAdmin
       .from('tools')
       .select('name, slug, description, website_url, affiliate_url, pricing, category, logo_url')
@@ -142,29 +122,15 @@ export async function POST(req: NextRequest) {
     const weekLabel = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
     const subject = `Your Weekly AI Briefing — ${weekLabel}`
 
-    // ── 6. Create MailerLite campaign ─────────────────────────
-    const campaign = await mlFetch('/campaigns', 'POST', {
+    // ── 7. Create Brevo campaign & send immediately ───────────
+    const campaignId = await createCampaign({
       name: `Weekly Digest — ${weekLabel}`,
-      type: 'regular',
-      status: 'draft',
-      emails: [{
-        subject,
-        from_name: 'AI Foresights',
-        from: 'hello@aiforesights.com',
-        reply_to: 'help@aiforesights.com',
-        content: html,
-      }],
-      groups: [GROUP_ID],
+      subject,
+      htmlContent: html,
+      tag: 'weekly-digest',
     })
 
-    const campaignId = campaign?.data?.id
-    if (!campaignId) throw new Error('No campaign ID returned from MailerLite')
-
-    // ── 7. Schedule campaign — send immediately ───────────────
-    const scheduleResult = await mlFetch(`/campaigns/${campaignId}/schedule`, 'POST', {
-      delivery: 'instant',
-    })
-    console.log(`[send-weekly] Schedule result:`, JSON.stringify(scheduleResult))
+    await sendCampaignNow(campaignId)
 
     // ── 8. Mark video + podcast as newsletter_included ────────
     if (video) {
@@ -174,7 +140,7 @@ export async function POST(req: NextRequest) {
       await supabaseAdmin.from('podcast_roundups').update({ newsletter_included: true }).eq('is_active', true)
     }
 
-    console.log(`[send-weekly] Campaign ${campaignId} scheduled for ${weekLabel}`)
+    console.log(`[send-weekly] Brevo campaign ${campaignId} sent for ${weekLabel}`)
 
     return NextResponse.json({
       success: true,
@@ -200,6 +166,5 @@ export async function GET(req: NextRequest) {
   if (adminCookie !== process.env.ADMIN_TOKEN) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-  // Delegate to POST handler
   return POST(req)
 }

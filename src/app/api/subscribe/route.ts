@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { addContact } from '@/lib/brevo'
 
 const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/
 
@@ -26,33 +27,6 @@ async function isValidEmailDomain(domain: string): Promise<boolean> {
   } catch {
     return false
   }
-}
-
-// Add subscriber to MailerLite as unconfirmed — MailerLite sends its own confirmation email
-async function addToMailerLite(email: string, name?: string | null): Promise<void> {
-  const apiKey = process.env.MAILERLITE_API_KEY
-  const groupId = process.env.MAILERLITE_GROUP_ID
-  if (!apiKey) return
-
-  const fields: Record<string, string> = {}
-  if (name) fields.name = name
-
-  const body: Record<string, unknown> = {
-    email,
-    status: 'unconfirmed',
-    fields,
-  }
-  if (groupId) body.groups = [groupId]
-
-  await fetch('https://connect.mailerlite.com/api/subscribers', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify(body),
-  })
 }
 
 export async function POST(req: NextRequest) {
@@ -88,7 +62,6 @@ export async function POST(req: NextRequest) {
       .maybeSingle()
 
     if (!existing) {
-      // Save to Supabase as unconfirmed
       const { error } = await supabaseAdmin
         .from('subscribers')
         .insert({
@@ -105,13 +78,17 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Add to MailerLite as unconfirmed — they send the confirmation email automatically
-    await addToMailerLite(cleanEmail, name)
+    // Add to Brevo contact list
+    try {
+      await addContact(cleanEmail, name)
+    } catch (e) {
+      console.error('Brevo addContact error:', e)
+      // Don't fail — Supabase is the source of truth
+    }
 
     return NextResponse.json({
       success: true,
-      message: "Almost there! Check your inbox for a confirmation email and click the link to complete your subscription.",
-      pending: true,
+      message: "You're subscribed! Welcome to AI Foresights — check your inbox for a welcome email soon.",
     })
 
   } catch (err) {

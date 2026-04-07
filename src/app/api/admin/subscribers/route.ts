@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
+import { deleteContact } from '@/lib/brevo'
 
 // GET /api/admin/subscribers — list all or export CSV
 export async function GET(req: NextRequest) {
@@ -72,13 +73,13 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-// DELETE /api/admin/subscribers — delete subscriber from Supabase + MailerLite
+// DELETE /api/admin/subscribers — delete subscriber from Supabase + Brevo
 export async function DELETE(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const id = searchParams.get('id')
   if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
 
-  // Get email before deleting so we can remove from MailerLite too
+  // Get email before deleting so we can remove from Brevo too
   const { data: subscriber } = await supabaseAdmin
     .from('subscribers')
     .select('email')
@@ -88,31 +89,10 @@ export async function DELETE(req: NextRequest) {
   const { error } = await supabaseAdmin.from('subscribers').delete().eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
-  // Also delete from MailerLite if we have the email
+  // Also delete from Brevo
   if (subscriber?.email) {
-    const apiKey = process.env.MAILERLITE_API_KEY
-    if (apiKey) {
-      try {
-        // First find the subscriber in MailerLite by email
-        const searchRes = await fetch(
-          `https://connect.mailerlite.com/api/subscribers/${encodeURIComponent(subscriber.email)}`,
-          { headers: { 'Authorization': `Bearer ${apiKey}`, 'Accept': 'application/json' } }
-        )
-        if (searchRes.ok) {
-          const mlData = await searchRes.json()
-          const mlId = mlData?.data?.id
-          if (mlId) {
-            await fetch(`https://connect.mailerlite.com/api/subscribers/${mlId}`, {
-              method: 'DELETE',
-              headers: { 'Authorization': `Bearer ${apiKey}`, 'Accept': 'application/json' },
-            })
-          }
-        }
-      } catch (e) {
-        console.error('MailerLite delete error:', e)
-        // Don't fail the whole request if MailerLite delete fails
-      }
-    }
+    await deleteContact(subscriber.email)
   }
+
   return NextResponse.json({ success: true })
 }

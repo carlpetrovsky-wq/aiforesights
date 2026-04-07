@@ -140,7 +140,7 @@ export default function AdminNewsletterPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Unknown error')
       setTestStatus('success')
-      setTestResult(`Test sent to carl@aiforesights.com — Articles: ${data.preview.articlesCount}, Tools: ${data.preview.toolsCount}, Video: ${data.preview.hasVideo ? '✓' : '✗'}, Podcast: ${data.preview.hasPodcast ? '✓' : '✗'}, Make Money: ${data.preview.hasMakeMoney ? '✓' : '✗'}`)
+      setTestResult(`Test sent to carlpetrovsky@gmail.com — Articles: ${data.preview.articlesCount}, Tools: ${data.preview.toolsCount}, Video: ${data.preview.hasVideo ? '✓' : '✗'}, Podcast: ${data.preview.hasPodcast ? '✓' : '✗'}, Make Money: ${data.preview.hasMakeMoney ? '✓' : '✗'}`)
     } catch (err) {
       setTestStatus('error')
       setTestResult(err instanceof Error ? err.message : String(err))
@@ -336,7 +336,7 @@ export default function AdminNewsletterPage() {
             <FlaskConical className="w-4 h-4 text-violet-500" />
             <p className="text-sm font-semibold text-gray-800">Send Test Email</p>
           </div>
-          <p className="text-xs text-gray-500">Sends the full digest with your current selections to <strong>carl@aiforesights.com</strong> only. Use this to review formatting before sending to subscribers.</p>
+          <p className="text-xs text-gray-500">Sends the full digest with your current selections to <strong>carlpetrovsky@gmail.com</strong> only. Use this to review formatting before sending to subscribers.</p>
           <button
             onClick={sendTest}
             disabled={testStatus === 'loading'}
@@ -344,7 +344,7 @@ export default function AdminNewsletterPage() {
           >
             {testStatus === 'loading'
               ? <><RefreshCw className="w-4 h-4 animate-spin" /> Sending test…</>
-              : <><FlaskConical className="w-4 h-4" /> Send Test to carl@aiforesights.com</>}
+              : <><FlaskConical className="w-4 h-4" /> Send Test to carlpetrovsky@gmail.com</>}
           </button>
           {testResult && (
             <div className={`flex items-start gap-2 p-3 rounded-lg text-sm ${testStatus === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
@@ -384,7 +384,7 @@ export default function AdminNewsletterPage() {
           <div className="flex justify-between"><span>Weekly digest</span><span className="font-mono text-xs text-gray-400">Tuesday 10AM ET</span></div>
         </div>
         <p className="mt-3 pt-3 border-t border-gray-200 text-xs text-gray-500">
-          <strong>Welcome sequence:</strong> Email 2 → Day 1 · Email 3 → Day 3 · Managed in MailerLite → Automations
+          <strong>Welcome sequence:</strong> Email 2 → Day 1 · Email 3 → Day 3 · Managed in Brevo → Automations
         </p>
       </div>
     </div>

@@ -1,38 +1,7 @@
 export const dynamic = 'force-dynamic'
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
-
-async function addToMailerLiteActive(email: string, name?: string) {
-  const apiKey = process.env.MAILERLITE_API_KEY
-  const groupId = process.env.MAILERLITE_GROUP_ID
-  if (!apiKey) return
-
-  const nameParts = (name || '').trim().split(' ')
-  const firstName = nameParts[0] || ''
-  const lastName = nameParts.slice(1).join(' ') || ''
-
-  try {
-    await fetch('https://connect.mailerlite.com/api/subscribers', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        email,
-        status: 'active',
-        fields: {
-          ...(firstName && { name: firstName }),
-          ...(lastName && { last_name: lastName }),
-        },
-        groups: groupId ? [groupId] : [],
-      }),
-    })
-  } catch (err) {
-    console.error('MailerLite activate error:', err)
-  }
-}
+import { addContact } from '@/lib/brevo'
 
 export async function GET(req: NextRequest) {
   const token = req.nextUrl.searchParams.get('token')
@@ -73,8 +42,12 @@ export async function GET(req: NextRequest) {
     })
     .eq('id', subscriber.id)
 
-  // Now add to MailerLite active group
-  await addToMailerLiteActive(subscriber.email, subscriber.name ?? undefined)
+  // Add to Brevo as active contact
+  try {
+    await addContact(subscriber.email, subscriber.name ?? undefined)
+  } catch (e) {
+    console.error('Brevo activate error:', e)
+  }
 
   return NextResponse.redirect(`${siteUrl}/confirm?status=success`)
 }

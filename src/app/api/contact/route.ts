@@ -6,45 +6,48 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-// Send notification to Carl via MailerLite by adding the inquiry sender
-// as a subscriber with inquiry details in custom fields.
-// Carl sees new inquiries in the MailerLite "Contact Inquiries" group.
-async function notifyViaMailerLite(name: string, email: string, type: string, message: string) {
-  const apiKey = process.env.MAILERLITE_API_KEY
+// Send notification to Carl via Brevo transactional email
+async function notifyViaBrevo(name: string, email: string, type: string, message: string) {
+  const apiKey = process.env.BREVO_API_KEY
   if (!apiKey) {
-    console.log('Contact notify: MAILERLITE_API_KEY not set, skipping')
+    console.log('Contact notify: BREVO_API_KEY not set, skipping')
     return
   }
 
-  const groupId = process.env.MAILERLITE_INQUIRIES_GROUP_ID
-  const groups = groupId ? [groupId] : []
-
   try {
-    const res = await fetch('https://connect.mailerlite.com/api/subscribers', {
+    // Send a transactional email to Carl with the inquiry details
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+        'api-key': apiKey,
       },
       body: JSON.stringify({
-        email,
-        fields: {
-          name,
-          last_name: `[${type}] ${message.slice(0, 200)}`,
-        },
-        groups,
-        status: 'active',
+        sender: { name: 'AI Foresights', email: 'hello@aiforesights.com' },
+        to: [{ email: 'carlpetrovsky@gmail.com', name: 'Carl' }],
+        replyTo: { email, name },
+        subject: `[AIForesights] New ${type} inquiry from ${name}`,
+        htmlContent: `
+          <h2>New Contact Form Submission</h2>
+          <p><strong>Name:</strong> ${name}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Type:</strong> ${type}</p>
+          <p><strong>Message:</strong></p>
+          <p>${message.replace(/\n/g, '<br/>')}</p>
+          <hr/>
+          <p style="color:#999;font-size:12px;">Sent from aiforesights.com contact form</p>
+        `,
       }),
     })
     const data = await res.json()
     if (!res.ok) {
-      console.error('Contact notify: MailerLite error', res.status, JSON.stringify(data))
+      console.error('Contact notify: Brevo error', res.status, JSON.stringify(data))
     } else {
-      console.log('Contact notify: added to MailerLite', data?.data?.email, 'groups:', groups)
+      console.log('Contact notify: sent via Brevo transactional email')
     }
   } catch (e) {
-    console.error('Contact notify: MailerLite fetch failed', e)
+    console.error('Contact notify: Brevo fetch failed', e)
   }
 }
 
@@ -93,8 +96,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Something went wrong. Please try again.' }, { status: 500 })
     }
 
-    // Send notification — must await so Vercel doesn't kill the function before it completes
-    await notifyViaMailerLite(trimmedName, trimmedEmail, trimmedType, trimmedMessage)
+    // Send notification via Brevo transactional email
+    await notifyViaBrevo(trimmedName, trimmedEmail, trimmedType, trimmedMessage)
 
     return NextResponse.json({ success: true })
   } catch (e) {
