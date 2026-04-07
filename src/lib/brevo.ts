@@ -75,7 +75,6 @@ export async function createCampaign(opts: {
   subject: string
   htmlContent: string
   listId?: number
-  tag?: string
 }): Promise<number> {
   const data = await brevoFetch('/emailCampaigns', 'POST', {
     name: opts.name,
@@ -84,7 +83,6 @@ export async function createCampaign(opts: {
     replyTo: 'help@aiforesights.com',
     htmlContent: opts.htmlContent,
     recipients: { listIds: [opts.listId ?? getListId()] },
-    ...(opts.tag ? { tag: opts.tag } : {}),
   })
 
   const id = data?.id

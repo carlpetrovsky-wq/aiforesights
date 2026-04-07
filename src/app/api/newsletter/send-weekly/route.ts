@@ -127,7 +127,6 @@ export async function POST(req: NextRequest) {
       name: `Weekly Digest — ${weekLabel}`,
       subject,
       htmlContent: html,
-      tag: 'weekly-digest',
     })
 
     await sendCampaignNow(campaignId)

@@ -114,7 +114,6 @@ export async function POST(req: NextRequest) {
       name: `[TEST] Weekly Digest — ${weekLabel}`,
       subject,
       htmlContent: html,
-      tag: 'weekly-digest-test',
     })
 
     // Send test to Carl only
