@@ -101,7 +101,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           crossOrigin="anonymous"
         />
       </head>
-      <body className="min-h-screen bg-brand-bg">{children}</body>
+      <body className="min-h-screen bg-brand-bg">
+        {children}
+        {/* Awin Publisher Master Tag — required for affiliate tracking */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+        <script defer src="https://www.dwin2.com/pub.2840796.min.js" />
+      </body>
     </html>
   )
 }
