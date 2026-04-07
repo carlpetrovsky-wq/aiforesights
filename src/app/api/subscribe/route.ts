@@ -30,8 +30,8 @@ async function isValidEmailDomain(domain: string): Promise<boolean> {
   }
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.aiforesights.com'
-const LOGO_URL = 'https://www.aiforesights.com/logo-horizontal-white.png'
+const BASE_URL = 'https://www.aiforesights.com'
+const LOGO_URL = 'https://www.aiforesights.com/logo-white.png'
 
 function buildConfirmationEmail(confirmUrl: string): string {
   return `<!DOCTYPE html>
@@ -61,8 +61,8 @@ function buildConfirmationEmail(confirmUrl: string): string {
         <!-- HEADER -->
         <tr>
           <td align="center" style="background-color:#0F172A;padding:28px 40px;">
-            <img src="${LOGO_URL}" alt="AI Foresights" width="200" height="auto"
-                 style="display:block;max-width:200px;height:auto;" />
+            <img src="${LOGO_URL}" alt="AI Foresights" width="160" height="auto"
+                 style="display:block;max-width:160px;height:auto;" />
             <p style="margin:10px 0 0 0;font-size:11px;color:#64748b;letter-spacing:2px;text-transform:uppercase;font-family:Arial,sans-serif;">A New Dawn Is Here</p>
           </td>
         </tr>

@@ -5,7 +5,7 @@ import { addContact } from '@/lib/brevo'
 
 export async function GET(req: NextRequest) {
   const token = req.nextUrl.searchParams.get('token')
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.aiforesights.com'
+  const siteUrl = 'https://www.aiforesights.com'
 
   if (!token) {
     return NextResponse.redirect(`${siteUrl}/confirm?status=invalid`)
