@@ -51,10 +51,30 @@ async function notifyViaBrevo(name: string, email: string, type: string, message
   }
 }
 
+// Entropy check — detects random-looking strings bots generate
+// Real names like "Jane Smith" score low; "GyutOzLXssjyERweXjIVyU" scores high
+function isHighEntropy(str: string): boolean {
+  const cleaned = str.replace(/\s+/g, '')
+  if (cleaned.length < 8) return false
+  const unique = new Set(cleaned.toLowerCase()).size
+  const ratio = unique / cleaned.length
+  return ratio > 0.65 && cleaned.length > 10
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { name, email, type, message } = body
+    const { name, email, type, message, website, formLoadedAt } = body
+
+    // Honeypot — real browsers leave this blank, bots fill it in
+    if (website && website.trim() !== '') {
+      return NextResponse.json({ success: true }) // silent drop
+    }
+
+    // Timing check — bots submit in under 2 seconds
+    if (formLoadedAt && (Date.now() - Number(formLoadedAt)) < 2000) {
+      return NextResponse.json({ success: true }) // silent drop
+    }
 
     if (!name || !email || !message) {
       return NextResponse.json({ success: false, error: 'Name, email, and message are required.' }, { status: 400 })
@@ -62,6 +82,11 @@ export async function POST(req: NextRequest) {
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json({ success: false, error: 'Please enter a valid email address.' }, { status: 400 })
+    }
+
+    // Entropy check — catches random-string bot submissions
+    if (isHighEntropy(name) || isHighEntropy(message)) {
+      return NextResponse.json({ success: true }) // silent drop
     }
 
     // Rate limiting: max 3 inquiries per email per day

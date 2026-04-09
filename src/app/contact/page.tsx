@@ -38,6 +38,7 @@ function ContactForm() {
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
+  const [formLoadedAt] = useState(() => Date.now())
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -48,7 +49,7 @@ function ContactForm() {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: name.trim(), email: email.trim(), type, message: message.trim() }),
+        body: JSON.stringify({ name: name.trim(), email: email.trim(), type, message: message.trim(), website: '', formLoadedAt }),
       })
       const data = await res.json()
       if (data.success) {
@@ -79,6 +80,8 @@ function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit} className="border border-brand-border bg-white rounded-2xl p-6 sm:p-8 space-y-4">
+      {/* Honeypot — hidden from real users, bots fill it in */}
+      <input type="text" name="website" defaultValue="" autoComplete="off" style={{ display: 'none' }} tabIndex={-1} aria-hidden="true" />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-semibold text-brand-navy mb-1.5">Your name *</label>
