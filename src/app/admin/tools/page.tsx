@@ -27,6 +27,18 @@ interface Tool {
   status: string
   is_featured: boolean
   affiliate_url: string | null
+  // Validation tracking
+  validation_status: string
+  last_validated_at: string | null
+  validation_message: string | null
+  // Affiliate tracking
+  affiliate_status: string
+  affiliate_network: string | null
+  commission_rate: string | null
+  commission_type: string | null
+  // Discovery tracking
+  product_hunt_id: string | null
+  discovery_source: string
   created_at: string
   updated_at: string | null
 }
@@ -44,6 +56,12 @@ const emptyTool = (): Partial<Tool> => ({
   status: 'published',
   is_featured: false,
   affiliate_url: '',
+  validation_status: 'unknown',
+  affiliate_status: 'none',
+  affiliate_network: '',
+  commission_rate: '',
+  commission_type: '',
+  discovery_source: 'manual',
 })
 
 function ToolsContent() {

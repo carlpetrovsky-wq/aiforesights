@@ -95,6 +95,18 @@ create table if not exists tools (
   status varchar(32) default 'published',
   is_featured boolean default false,
   affiliate_url varchar(1024),
+  -- Validation tracking
+  validation_status varchar(32) default 'unknown',
+  last_validated_at timestamptz,
+  validation_message text,
+  -- Affiliate tracking
+  affiliate_status varchar(32) default 'none',
+  affiliate_network varchar(64),
+  commission_rate varchar(128),
+  commission_type varchar(32),
+  -- Discovery tracking
+  product_hunt_id varchar(64),
+  discovery_source varchar(32) default 'manual',
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );
@@ -103,6 +115,10 @@ create index if not exists tools_slug_idx on tools(slug);
 create index if not exists tools_pricing_idx on tools(pricing);
 create index if not exists tools_featured_idx on tools(is_featured);
 create index if not exists tools_saves_idx on tools(save_count desc);
+create index if not exists tools_validation_status_idx on tools(validation_status);
+create index if not exists tools_affiliate_status_idx on tools(affiliate_status);
+create index if not exists tools_discovery_source_idx on tools(discovery_source);
+create index if not exists tools_product_hunt_id_idx on tools(product_hunt_id);
 
 -- ============================================================
 -- SUBSCRIBERS (newsletter)
