@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Plus, Search, Star, Pencil, ExternalLink, Wrench } from 'lucide-react'
+import { Plus, Search, Star, Pencil, ExternalLink, Wrench, RefreshCw, AlertTriangle, CheckCircle, ArrowRight, Link2Off, DollarSign } from 'lucide-react'
 import {
   PageHeader, AdminModal, Field, Input, Textarea, Select,
   StatusBadge, Toggle, SaveButton, DeleteButton, EmptyState,
@@ -69,10 +69,13 @@ function ToolsContent() {
   const [tools, setTools] = useState<Tool[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [validationFilter, setValidationFilter] = useState<string>('all')
+  const [affiliateFilter, setAffiliateFilter] = useState<string>('all')
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Partial<Tool>>(emptyTool())
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [validating, setValidating] = useState(false)
   const { sorted: sortedTools, sortKey, sortDir, handleSort } = useSortedData(tools)
   const [tagsInput, setTagsInput] = useState('')
 
@@ -141,28 +144,108 @@ function ToolsContent() {
     enterprise: 'text-violet-400 bg-violet-500/10 border-violet-500/20',
   }
 
+  const validationColor: Record<string, string> = {
+    valid: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+    broken: 'text-red-400 bg-red-500/10 border-red-500/20',
+    redirected: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
+    timeout: 'text-orange-400 bg-orange-500/10 border-orange-500/20',
+    unknown: 'text-slate-400 bg-slate-500/10 border-slate-500/20',
+  }
+
+  const affiliateColor: Record<string, string> = {
+    none: 'text-slate-400 bg-slate-500/10 border-slate-500/20',
+    pending: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
+    approved: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+    rejected: 'text-red-400 bg-red-500/10 border-red-500/20',
+  }
+
+  // Filter tools based on dropdown selections
+  const filteredTools = sortedTools.filter(t => {
+    if (validationFilter !== 'all' && t.validation_status !== validationFilter) return false
+    if (affiliateFilter !== 'all' && t.affiliate_status !== affiliateFilter) return false
+    return true
+  })
+
+  // Counts for filter labels
+  const validationCounts = {
+    valid: tools.filter(t => t.validation_status === 'valid').length,
+    broken: tools.filter(t => t.validation_status === 'broken').length,
+    redirected: tools.filter(t => t.validation_status === 'redirected').length,
+    unknown: tools.filter(t => t.validation_status === 'unknown' || !t.validation_status).length,
+  }
+
+  async function runValidation() {
+    if (!confirm('Run URL validation on all tools? This may take a minute.')) return
+    setValidating(true)
+    try {
+      const res = await fetch('/api/cron/validate-tools', {
+        headers: { 'Authorization': 'Bearer aiforesights-cron-2026' }
+      })
+      const data = await res.json()
+      if (data.success) {
+        alert(`Validation complete!\n\nValid: ${data.summary.valid}\nBroken: ${data.summary.broken}\nRedirected: ${data.summary.redirected}`)
+        load()
+      }
+    } catch { alert('Validation failed') }
+    setValidating(false)
+  }
+
   return (
     <div>
       <PageHeader
         title="Tools"
         subtitle={`${tools.length} tools`}
         action={
-          <button onClick={openNew} className="inline-flex items-center gap-2 px-4 py-2 bg-brand-sky hover:bg-brand-skyDark text-white text-sm font-medium rounded-lg transition">
-            <Plus className="w-4 h-4" /> Add Tool
-          </button>
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={runValidation} 
+              disabled={validating}
+              className="inline-flex items-center gap-2 px-3 py-2 bg-white/[0.06] hover:bg-white/[0.1] text-slate-300 text-sm font-medium rounded-lg transition disabled:opacity-50"
+            >
+              <RefreshCw className={`w-4 h-4 ${validating ? 'animate-spin' : ''}`} />
+              {validating ? 'Validating…' : 'Validate URLs'}
+            </button>
+            <button onClick={openNew} className="inline-flex items-center gap-2 px-4 py-2 bg-brand-sky hover:bg-brand-skyDark text-white text-sm font-medium rounded-lg transition">
+              <Plus className="w-4 h-4" /> Add Tool
+            </button>
+          </div>
         }
       />
 
-      {/* Search */}
-      <div className="relative mb-5">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-        <input
-          type="text"
-          placeholder="Search tools…"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="w-full pl-9 pr-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-sky/30 transition"
-        />
+      {/* Search and Filters */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-5">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+          <input
+            type="text"
+            placeholder="Search tools…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full pl-9 pr-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-brand-sky/30 transition"
+          />
+        </div>
+        <select
+          value={validationFilter}
+          onChange={e => setValidationFilter(e.target.value)}
+          className="px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-sky/30"
+        >
+          <option value="all">All URLs ({tools.length})</option>
+          <option value="valid">✓ Valid ({validationCounts.valid})</option>
+          <option value="broken">✗ Broken ({validationCounts.broken})</option>
+          <option value="redirected">→ Redirected ({validationCounts.redirected})</option>
+          <option value="unknown">? Unknown ({validationCounts.unknown})</option>
+        </select>
+        <select
+          value={affiliateFilter}
+          onChange={e => setAffiliateFilter(e.target.value)}
+          className="px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-sky/30"
+        >
+          <option value="all">All Affiliates</option>
+          <option value="none">No Affiliate</option>
+          <option value="pending">Pending</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+        </select>
       </div>
 
       {/* Table */}
@@ -172,60 +255,77 @@ function ToolsContent() {
         ) : tools.length === 0 ? (
           <EmptyState message="No tools found" icon={Wrench} />
         ) : (
-          <table className="w-full">
-            <thead className="bg-white/[0.03] border-b border-white/[0.06]">
-              <tr>
-                <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Tool</th>
-                <SortableHeader label="Pricing"    sortKey="pricing"      activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} className="hidden sm:table-cell" />
-                <SortableHeader label="Category"   sortKey="category"     activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} className="hidden md:table-cell" />
-                <SortableHeader label="Level"      sortKey="experience_level" activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} className="hidden lg:table-cell" />
-                <SortableHeader label="Added"      sortKey="created_at"   activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} className="hidden lg:table-cell" />
-                <SortableHeader label="Status"     sortKey="status"       activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} />
-                <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/[0.04]">
-              {sortedTools.map(t => (
-                <tr key={t.id} className="hover:bg-white/[0.02] transition">
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center flex-shrink-0">
-                        <span className="text-xs font-bold text-slate-400">{t.name.charAt(0)}</span>
-                      </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-sm font-medium text-slate-200 truncate">{t.name}</span>
-                          {t.is_featured && <Star className="w-3 h-3 text-amber-400 flex-shrink-0" />}
-                        </div>
-                        <p className="text-xs text-slate-500 truncate max-w-[200px]">{t.description}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 hidden sm:table-cell">
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-md border ${pricingColor[t.pricing] || pricingColor.free}`}>
-                      {t.pricing}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-xs text-slate-500 hidden md:table-cell">{t.category || '—'}</td>
-                  <td className="px-4 py-3 text-xs text-slate-500 hidden lg:table-cell capitalize">{t.experience_level}</td>
-                  <td className="px-4 py-3 text-xs text-slate-500 hidden lg:table-cell">
-                    {t.created_at ? new Date(t.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
-                  </td>
-                  <td className="px-4 py-3"><StatusBadge status={t.status} /></td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center gap-1 justify-end">
-                      <button onClick={() => openEdit(t)} className="p-1.5 text-slate-500 hover:text-white hover:bg-white/[0.06] rounded-md transition">
-                        <Pencil className="w-3.5 h-3.5" />
-                      </button>
-                      <a href={t.website_url} target="_blank" rel="noopener" className="p-1.5 text-slate-500 hover:text-white hover:bg-white/[0.06] rounded-md transition">
-                        <ExternalLink className="w-3.5 h-3.5" />
-                      </a>
-                    </div>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-white/[0.03] border-b border-white/[0.06]">
+                <tr>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Tool</th>
+                  <SortableHeader label="URL" sortKey="validation_status" activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} className="hidden sm:table-cell" />
+                  <SortableHeader label="Affiliate" sortKey="affiliate_status" activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} className="hidden md:table-cell" />
+                  <SortableHeader label="Pricing" sortKey="pricing" activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} className="hidden lg:table-cell" />
+                  <SortableHeader label="Category" sortKey="category" activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} className="hidden xl:table-cell" />
+                  <SortableHeader label="Status" sortKey="status" activeSortKey={sortKey ?? ''} sortDir={sortDir} onSort={handleSort} />
+                  <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-white/[0.04]">
+                {filteredTools.map(t => (
+                  <tr key={t.id} className="hover:bg-white/[0.02] transition">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-white/[0.06] border border-white/[0.08] flex items-center justify-center flex-shrink-0">
+                          <span className="text-xs font-bold text-slate-400">{t.name.charAt(0)}</span>
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-sm font-medium text-slate-200 truncate">{t.name}</span>
+                            {t.is_featured && <Star className="w-3 h-3 text-amber-400 flex-shrink-0" />}
+                          </div>
+                          <p className="text-xs text-slate-500 truncate max-w-[200px]">{t.description}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 hidden sm:table-cell">
+                      <span 
+                        className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md border ${validationColor[t.validation_status] || validationColor.unknown}`}
+                        title={t.validation_message || undefined}
+                      >
+                        {t.validation_status === 'valid' && <CheckCircle className="w-3 h-3" />}
+                        {t.validation_status === 'broken' && <Link2Off className="w-3 h-3" />}
+                        {t.validation_status === 'redirected' && <ArrowRight className="w-3 h-3" />}
+                        {t.validation_status === 'unknown' && <AlertTriangle className="w-3 h-3" />}
+                        {!t.validation_status && <AlertTriangle className="w-3 h-3" />}
+                        {t.validation_status || 'unknown'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 hidden md:table-cell">
+                      <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-md border ${affiliateColor[t.affiliate_status] || affiliateColor.none}`}>
+                        {t.affiliate_status === 'approved' && <DollarSign className="w-3 h-3" />}
+                        {t.affiliate_status || 'none'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 hidden lg:table-cell">
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-md border ${pricingColor[t.pricing] || pricingColor.free}`}>
+                        {t.pricing}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-slate-500 hidden xl:table-cell">{t.category || '—'}</td>
+                    <td className="px-4 py-3"><StatusBadge status={t.status} /></td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex items-center gap-1 justify-end">
+                        <button onClick={() => openEdit(t)} className="p-1.5 text-slate-500 hover:text-white hover:bg-white/[0.06] rounded-md transition">
+                          <Pencil className="w-3.5 h-3.5" />
+                        </button>
+                        <a href={t.website_url} target="_blank" rel="noopener" className="p-1.5 text-slate-500 hover:text-white hover:bg-white/[0.06] rounded-md transition">
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
@@ -281,6 +381,47 @@ function ToolsContent() {
               <Input value={editing.category ?? ''} onChange={e => up('category', e.target.value)} placeholder="AI Assistant" />
             </Field>
           </div>
+
+          {/* Affiliate Section */}
+          <div className="pt-4 border-t border-white/[0.06]">
+            <h4 className="text-sm font-medium text-slate-300 mb-3">Affiliate Program</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label="Affiliate Status">
+                <Select value={editing.affiliate_status ?? 'none'} onChange={e => up('affiliate_status', e.target.value)}>
+                  <option value="none">No Affiliate</option>
+                  <option value="pending">Pending</option>
+                  <option value="approved">Approved</option>
+                  <option value="rejected">Rejected</option>
+                </Select>
+              </Field>
+              <Field label="Network">
+                <Select value={editing.affiliate_network ?? ''} onChange={e => up('affiliate_network', e.target.value)}>
+                  <option value="">Select network…</option>
+                  <option value="Impact">Impact</option>
+                  <option value="PartnerStack">PartnerStack</option>
+                  <option value="ShareASale">ShareASale</option>
+                  <option value="CJ">CJ Affiliate</option>
+                  <option value="Awin">Awin</option>
+                  <option value="Amazon">Amazon Associates</option>
+                  <option value="Direct">Direct</option>
+                </Select>
+              </Field>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+              <Field label="Commission Rate" hint="e.g. 30% recurring, Up to $200/sale">
+                <Input value={editing.commission_rate ?? ''} onChange={e => up('commission_rate', e.target.value)} placeholder="30% recurring" />
+              </Field>
+              <Field label="Commission Type">
+                <Select value={editing.commission_type ?? ''} onChange={e => up('commission_type', e.target.value)}>
+                  <option value="">Select type…</option>
+                  <option value="one-time">One-time</option>
+                  <option value="recurring">Recurring</option>
+                  <option value="per-signup">Per Signup</option>
+                </Select>
+              </Field>
+            </div>
+          </div>
+
           <Toggle checked={editing.is_featured ?? false} onChange={v => up('is_featured', v)} label="Featured tool" />
 
           <div className="flex items-center justify-between pt-4 border-t border-white/[0.06]">
