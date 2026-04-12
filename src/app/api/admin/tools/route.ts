@@ -9,8 +9,7 @@ export async function GET(req: NextRequest) {
   let query = supabaseAdmin
     .from('tools')
     .select('*')
-    .order('save_count', { ascending: false })
-    .limit(100)
+    .order('name', { ascending: true })
 
   if (search) query = query.ilike('name', `%${search}%`)
 

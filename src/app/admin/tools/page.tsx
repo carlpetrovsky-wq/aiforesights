@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Plus, Search, Star, Pencil, ExternalLink, Wrench, RefreshCw, AlertTriangle, CheckCircle, ArrowRight, Link2Off, DollarSign, Shield } from 'lucide-react'
+import { Plus, Search, Star, Pencil, ExternalLink, Wrench, RefreshCw, AlertTriangle, CheckCircle, ArrowRight, Link2Off, DollarSign, Shield, Sparkles } from 'lucide-react'
 import {
   PageHeader, AdminModal, Field, Input, Textarea, Select,
   StatusBadge, Toggle, SaveButton, DeleteButton, EmptyState,
@@ -69,6 +69,7 @@ function ToolsContent() {
   const [tools, setTools] = useState<Tool[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState<string>('all')
   const [validationFilter, setValidationFilter] = useState<string>('all')
   const [affiliateFilter, setAffiliateFilter] = useState<string>('all')
   const [modalOpen, setModalOpen] = useState(false)
@@ -76,6 +77,7 @@ function ToolsContent() {
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [validating, setValidating] = useState(false)
+  const [discovering, setDiscovering] = useState(false)
   const { sorted: sortedTools, sortKey, sortDir, handleSort } = useSortedData(tools)
   const [tagsInput, setTagsInput] = useState('')
 
@@ -162,12 +164,19 @@ function ToolsContent() {
 
   // Filter tools based on dropdown selections
   const filteredTools = sortedTools.filter(t => {
+    if (statusFilter !== 'all' && t.status !== statusFilter) return false
     if (validationFilter !== 'all' && t.validation_status !== validationFilter) return false
     if (affiliateFilter !== 'all' && t.affiliate_status !== affiliateFilter) return false
     return true
   })
 
   // Counts for filter labels
+  const statusCounts = {
+    published: tools.filter(t => t.status === 'published').length,
+    draft: tools.filter(t => t.status === 'draft').length,
+    archived: tools.filter(t => t.status === 'archived').length,
+  }
+
   const validationCounts = {
     valid: tools.filter(t => t.validation_status === 'valid').length,
     protected: tools.filter(t => t.validation_status === 'protected').length,
@@ -185,11 +194,29 @@ function ToolsContent() {
       })
       const data = await res.json()
       if (data.success) {
-        alert(`Validation complete!\n\nValid: ${data.summary.valid}\nBroken: ${data.summary.broken}\nRedirected: ${data.summary.redirected}`)
+        alert(`Validation complete!\n\nValid: ${data.summary.valid}\nProtected: ${data.summary.protected}\nBroken: ${data.summary.broken}\nRedirected: ${data.summary.redirected}`)
         load()
       }
     } catch { alert('Validation failed') }
     setValidating(false)
+  }
+
+  async function discoverTools() {
+    if (!confirm('Search Product Hunt for new AI tools? New tools will be added as drafts for review.')) return
+    setDiscovering(true)
+    try {
+      const res = await fetch('/api/admin/discover-tools', {
+        headers: { 'Authorization': 'Bearer aiforesights-cron-2026' }
+      })
+      const data = await res.json()
+      if (data.success) {
+        alert(`Discovery complete!\n\nFetched: ${data.summary.total_fetched}\nAdded as drafts: ${data.summary.added}\nDuplicates skipped: ${data.summary.duplicates}\nNot relevant: ${data.summary.skipped}`)
+        load()
+      } else {
+        alert(data.error || 'Discovery failed')
+      }
+    } catch { alert('Discovery failed') }
+    setDiscovering(false)
   }
 
   return (
@@ -200,12 +227,20 @@ function ToolsContent() {
         action={
           <div className="flex items-center gap-2">
             <button 
+              onClick={discoverTools} 
+              disabled={discovering}
+              className="inline-flex items-center gap-2 px-3 py-2 bg-white/[0.06] hover:bg-white/[0.1] text-slate-300 text-sm font-medium rounded-lg transition disabled:opacity-50"
+            >
+              <Sparkles className={`w-4 h-4 ${discovering ? 'animate-pulse' : ''}`} />
+              {discovering ? 'Discovering…' : 'Discover'}
+            </button>
+            <button 
               onClick={runValidation} 
               disabled={validating}
               className="inline-flex items-center gap-2 px-3 py-2 bg-white/[0.06] hover:bg-white/[0.1] text-slate-300 text-sm font-medium rounded-lg transition disabled:opacity-50"
             >
               <RefreshCw className={`w-4 h-4 ${validating ? 'animate-spin' : ''}`} />
-              {validating ? 'Validating…' : 'Validate URLs'}
+              {validating ? 'Validating…' : 'Validate'}
             </button>
             <button onClick={openNew} className="inline-flex items-center gap-2 px-4 py-2 bg-brand-sky hover:bg-brand-skyDark text-white text-sm font-medium rounded-lg transition">
               <Plus className="w-4 h-4" /> Add Tool
@@ -227,11 +262,21 @@ function ToolsContent() {
           />
         </div>
         <select
+          value={statusFilter}
+          onChange={e => setStatusFilter(e.target.value)}
+          className="px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-sky/30"
+        >
+          <option value="all">All Status ({tools.length})</option>
+          <option value="published">Published ({statusCounts.published})</option>
+          <option value="draft">📝 Drafts ({statusCounts.draft})</option>
+          <option value="archived">Archived ({statusCounts.archived})</option>
+        </select>
+        <select
           value={validationFilter}
           onChange={e => setValidationFilter(e.target.value)}
           className="px-3 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-sky/30"
         >
-          <option value="all">All URLs ({tools.length})</option>
+          <option value="all">All URLs</option>
           <option value="valid">✓ Valid ({validationCounts.valid})</option>
           <option value="protected">🛡 Protected ({validationCounts.protected})</option>
           <option value="broken">✗ Broken ({validationCounts.broken})</option>
