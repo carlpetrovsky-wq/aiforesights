@@ -87,14 +87,13 @@ async function fetchAIProducts(token: string, daysBack = 30): Promise<PHProduct[
   sinceDate.setDate(sinceDate.getDate() - daysBack)
   const postedAfter = sinceDate.toISOString()
 
-  // GraphQL query for AI-related products
+  // GraphQL query for AI-related products - using simpler query structure
   const query = `
-    query {
+    query GetPosts {
       posts(
         first: 50
         order: VOTES
         postedAfter: "${postedAfter}"
-        topic: "artificial-intelligence"
       ) {
         edges {
           node {
@@ -132,12 +131,36 @@ async function fetchAIProducts(token: string, daysBack = 30): Promise<PHProduct[
     body: JSON.stringify({ query }),
   })
 
+  const responseText = await res.text()
+  
   if (!res.ok) {
-    throw new Error(`Product Hunt API error: ${res.status}`)
+    throw new Error(`Product Hunt API error: ${res.status} - ${responseText}`)
   }
 
-  const data = await res.json()
-  return data.data?.posts?.edges?.map((e: { node: PHProduct }) => e.node) || []
+  let data
+  try {
+    data = JSON.parse(responseText)
+  } catch {
+    throw new Error(`Invalid JSON response: ${responseText.substring(0, 200)}`)
+  }
+
+  if (data.errors) {
+    throw new Error(`GraphQL errors: ${JSON.stringify(data.errors)}`)
+  }
+
+  const posts = data.data?.posts?.edges?.map((e: { node: PHProduct }) => e.node) || []
+  
+  // Filter for AI-related products client-side
+  return posts.filter((p: PHProduct) => {
+    const topics = p.topics?.edges?.map(e => e.node.slug) || []
+    const combined = `${p.name} ${p.tagline} ${p.description || ''}`.toLowerCase()
+    
+    const aiKeywords = ['ai', 'artificial intelligence', 'machine learning', 'gpt', 'llm', 'chatbot', 'copilot', 'automation', 'generator']
+    const hasAITopic = topics.some(t => AI_TOPICS.includes(t))
+    const hasAIKeyword = aiKeywords.some(kw => combined.includes(kw))
+    
+    return hasAITopic || hasAIKeyword
+  })
 }
 
 function extractDomain(url: string): string {
@@ -219,8 +242,15 @@ export async function GET(req: NextRequest) {
   // Get Product Hunt token
   const token = await getProductHuntToken()
   if (!token) {
+    const hasClientId = !!process.env.PRODUCT_HUNT_CLIENT_ID
+    const hasClientSecret = !!process.env.PRODUCT_HUNT_CLIENT_SECRET
     return NextResponse.json({ 
-      error: 'Product Hunt credentials not configured',
+      error: 'Product Hunt credentials not configured or invalid',
+      debug: {
+        hasClientId,
+        hasClientSecret,
+        clientIdPrefix: process.env.PRODUCT_HUNT_CLIENT_ID?.substring(0, 8) || 'missing'
+      },
       setup: 'Add PRODUCT_HUNT_CLIENT_ID and PRODUCT_HUNT_CLIENT_SECRET to Vercel env vars'
     }, { status: 400 })
   }
