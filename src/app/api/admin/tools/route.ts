@@ -61,6 +61,7 @@ export async function PUT(req: NextRequest) {
       .from('tools')
       .update({
         name: body.name,
+        slug: body.slug,
         description: body.description,
         long_description: body.long_description,
         website_url: body.website_url,
@@ -73,6 +74,10 @@ export async function PUT(req: NextRequest) {
         status: body.status,
         is_featured: body.is_featured,
         affiliate_url: body.affiliate_url,
+        affiliate_status: body.affiliate_status,
+        affiliate_network: body.affiliate_network,
+        commission_rate: body.commission_rate,
+        commission_type: body.commission_type,
         updated_at: new Date().toISOString(),
       })
       .eq('id', body.id)

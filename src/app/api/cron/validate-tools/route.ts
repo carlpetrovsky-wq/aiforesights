@@ -8,13 +8,13 @@ interface ValidationResult {
   id: string
   name: string
   url: string
-  status: 'valid' | 'broken' | 'redirected' | 'timeout'
+  status: 'valid' | 'protected' | 'broken' | 'redirected' | 'timeout'
   message: string | null
   statusCode: number | null
 }
 
 async function validateUrl(url: string, timeout = 10000): Promise<{
-  status: 'valid' | 'broken' | 'redirected' | 'timeout'
+  status: 'valid' | 'protected' | 'broken' | 'redirected' | 'timeout'
   message: string | null
   statusCode: number | null
 }> {
@@ -71,7 +71,16 @@ async function validateUrl(url: string, timeout = 10000): Promise<{
       }
     }
 
-    // 4xx/5xx = broken
+    // 403 = likely bot protection (Cloudflare, etc.) — site works in browser
+    if (statusCode === 403) {
+      return { 
+        status: 'protected', 
+        message: 'Bot protection (works in browser)',
+        statusCode 
+      }
+    }
+
+    // Other 4xx/5xx = broken
     return { 
       status: 'broken', 
       message: `HTTP ${statusCode}`,
@@ -144,13 +153,14 @@ export async function GET(req: NextRequest) {
   const summary = {
     total: results.length,
     valid: results.filter(r => r.status === 'valid').length,
+    protected: results.filter(r => r.status === 'protected').length,
     broken: results.filter(r => r.status === 'broken').length,
     redirected: results.filter(r => r.status === 'redirected').length,
     timeout: results.filter(r => r.status === 'timeout').length,
   }
 
-  // Only include problem tools in response for brevity
-  const problems = results.filter(r => r.status !== 'valid')
+  // Only include problem tools in response (exclude valid and protected)
+  const problems = results.filter(r => r.status !== 'valid' && r.status !== 'protected')
 
   return NextResponse.json({
     success: true,

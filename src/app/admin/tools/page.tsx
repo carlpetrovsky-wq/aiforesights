@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Plus, Search, Star, Pencil, ExternalLink, Wrench, RefreshCw, AlertTriangle, CheckCircle, ArrowRight, Link2Off, DollarSign } from 'lucide-react'
+import { Plus, Search, Star, Pencil, ExternalLink, Wrench, RefreshCw, AlertTriangle, CheckCircle, ArrowRight, Link2Off, DollarSign, Shield } from 'lucide-react'
 import {
   PageHeader, AdminModal, Field, Input, Textarea, Select,
   StatusBadge, Toggle, SaveButton, DeleteButton, EmptyState,
@@ -146,6 +146,7 @@ function ToolsContent() {
 
   const validationColor: Record<string, string> = {
     valid: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+    protected: 'text-sky-400 bg-sky-500/10 border-sky-500/20',
     broken: 'text-red-400 bg-red-500/10 border-red-500/20',
     redirected: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
     timeout: 'text-orange-400 bg-orange-500/10 border-orange-500/20',
@@ -169,6 +170,7 @@ function ToolsContent() {
   // Counts for filter labels
   const validationCounts = {
     valid: tools.filter(t => t.validation_status === 'valid').length,
+    protected: tools.filter(t => t.validation_status === 'protected').length,
     broken: tools.filter(t => t.validation_status === 'broken').length,
     redirected: tools.filter(t => t.validation_status === 'redirected').length,
     unknown: tools.filter(t => t.validation_status === 'unknown' || !t.validation_status).length,
@@ -231,6 +233,7 @@ function ToolsContent() {
         >
           <option value="all">All URLs ({tools.length})</option>
           <option value="valid">✓ Valid ({validationCounts.valid})</option>
+          <option value="protected">🛡 Protected ({validationCounts.protected})</option>
           <option value="broken">✗ Broken ({validationCounts.broken})</option>
           <option value="redirected">→ Redirected ({validationCounts.redirected})</option>
           <option value="unknown">? Unknown ({validationCounts.unknown})</option>
@@ -291,10 +294,10 @@ function ToolsContent() {
                         title={t.validation_message || undefined}
                       >
                         {t.validation_status === 'valid' && <CheckCircle className="w-3 h-3" />}
+                        {t.validation_status === 'protected' && <Shield className="w-3 h-3" />}
                         {t.validation_status === 'broken' && <Link2Off className="w-3 h-3" />}
                         {t.validation_status === 'redirected' && <ArrowRight className="w-3 h-3" />}
-                        {t.validation_status === 'unknown' && <AlertTriangle className="w-3 h-3" />}
-                        {!t.validation_status && <AlertTriangle className="w-3 h-3" />}
+                        {(t.validation_status === 'unknown' || !t.validation_status) && <AlertTriangle className="w-3 h-3" />}
                         {t.validation_status || 'unknown'}
                       </span>
                     </td>
