@@ -51,17 +51,23 @@ async function validateUrl(url: string, timeout = 10000): Promise<{
       return { status: 'valid', message: null, statusCode }
     }
 
-    // 3xx = redirect — follow it once to see if final destination works
+    // 3xx = redirect — check if it's a minor redirect (same domain, just trailing slash, www, or protocol)
     if (statusCode >= 300 && statusCode < 400) {
       const location = res.headers.get('location')
-      // Most redirects are fine (http→https, www→non-www) — mark as valid if it's same domain
       if (location) {
         try {
-          const originalHost = new URL(url).hostname.replace('www.', '')
-          const redirectHost = new URL(location, url).hostname.replace('www.', '')
+          const originalUrl = new URL(url)
+          const redirectUrl = new URL(location, url)
+          const originalHost = originalUrl.hostname.replace(/^www\./, '')
+          const redirectHost = redirectUrl.hostname.replace(/^www\./, '')
+          
+          // Same domain = valid (handles www, trailing slash, http→https)
           if (originalHost === redirectHost) {
-            return { status: 'valid', message: `Redirects to: ${location}`, statusCode }
+            return { status: 'valid', message: null, statusCode }
           }
+          
+          // Different domain but common rebrands (e.g., chat.openai.com → chatgpt.com)
+          // Still mark as redirected so admin can update the URL
         } catch { /* ignore URL parse errors */ }
       }
       return { 
