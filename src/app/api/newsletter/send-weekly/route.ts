@@ -39,7 +39,8 @@ export async function POST(req: NextRequest) {
 
     const podcast: PodcastSnap | null = podcastRow ?? null
 
-    // ── 3. Fetch top stories ──────────────────────────────────
+    // ── 3. Fetch top stories — exclude previously sent ────────
+    // Priority: featured + not yet sent → featured (even if sent) → most recent not sent
     let { data: articleRows } = await supabaseAdmin
       .from('articles')
       .select('title, slug, excerpt, thumbnail_url, category_slug, source_name')
@@ -47,13 +48,32 @@ export async function POST(req: NextRequest) {
       .eq('source_name', 'AI Foresights')
       .eq('is_featured', true)
       .neq('category_slug', 'make-money')
+      .or('newsletter_included.is.null,newsletter_included.eq.false')
       .order('published_at', { ascending: false })
       .limit(3)
 
+    // If fewer than 3 fresh featured, top up with most recent unsent
     if (!articleRows || articleRows.length < 3) {
       const existingSlugs = (articleRows ?? []).map(a => a.slug)
       const needed = 3 - (articleRows?.length ?? 0)
-      let query = supabaseAdmin
+      const { data: extras } = await supabaseAdmin
+        .from('articles')
+        .select('title, slug, excerpt, thumbnail_url, category_slug, source_name')
+        .eq('status', 'published')
+        .eq('source_name', 'AI Foresights')
+        .neq('category_slug', 'make-money')
+        .or('newsletter_included.is.null,newsletter_included.eq.false')
+        .order('published_at', { ascending: false })
+        .limit(needed + existingSlugs.length)
+      const filtered = (extras ?? []).filter(a => !existingSlugs.includes(a.slug)).slice(0, needed)
+      articleRows = [...(articleRows ?? []), ...filtered]
+    }
+
+    // If still fewer than 3 (all articles already sent), allow repeats from most recent
+    if (!articleRows || articleRows.length < 3) {
+      const existingSlugs = (articleRows ?? []).map(a => a.slug)
+      const needed = 3 - (articleRows?.length ?? 0)
+      const { data: repeats } = await supabaseAdmin
         .from('articles')
         .select('title, slug, excerpt, thumbnail_url, category_slug, source_name')
         .eq('status', 'published')
@@ -61,14 +81,13 @@ export async function POST(req: NextRequest) {
         .neq('category_slug', 'make-money')
         .order('published_at', { ascending: false })
         .limit(needed + existingSlugs.length)
-      const { data: extras } = await query
-      const filtered = (extras ?? []).filter(a => !existingSlugs.includes(a.slug)).slice(0, needed)
+      const filtered = (repeats ?? []).filter(a => !existingSlugs.includes(a.slug)).slice(0, needed)
       articleRows = [...(articleRows ?? []), ...filtered]
     }
 
     const articles: ArticleSnap[] = articleRows ?? []
 
-    // ── 4. Fetch featured Make Money article ──────────────────
+    // ── 4. Fetch featured Make Money article — prefer unsent ──
     let { data: mmRow } = await supabaseAdmin
       .from('articles')
       .select('title, slug, excerpt, thumbnail_url, category_slug')
@@ -76,12 +95,29 @@ export async function POST(req: NextRequest) {
       .eq('category_slug', 'make-money')
       .eq('source_name', 'AI Foresights')
       .eq('is_featured', true)
+      .or('newsletter_included.is.null,newsletter_included.eq.false')
       .order('published_at', { ascending: false })
       .limit(1)
       .single()
 
     if (!mmRow) {
-      const { data: fallback } = await supabaseAdmin
+      // Try unsent non-featured
+      const { data: fallback1 } = await supabaseAdmin
+        .from('articles')
+        .select('title, slug, excerpt, thumbnail_url, category_slug')
+        .eq('status', 'published')
+        .eq('category_slug', 'make-money')
+        .eq('source_name', 'AI Foresights')
+        .or('newsletter_included.is.null,newsletter_included.eq.false')
+        .order('published_at', { ascending: false })
+        .limit(1)
+        .single()
+      mmRow = fallback1
+    }
+
+    if (!mmRow) {
+      // All sent — fall back to most recent (allow repeat)
+      const { data: fallback2 } = await supabaseAdmin
         .from('articles')
         .select('title, slug, excerpt, thumbnail_url, category_slug')
         .eq('status', 'published')
@@ -90,12 +126,12 @@ export async function POST(req: NextRequest) {
         .order('published_at', { ascending: false })
         .limit(1)
         .single()
-      mmRow = fallback
+      mmRow = fallback2
     }
 
     const makeMoneyArticle: ArticleSnap | null = mmRow ?? null
 
-    // ── 5. Fetch featured tools ───────────────────────────────
+    // ── 5. Fetch featured tools — prefer unsent ───────────────
     let { data: toolRows } = await supabaseAdmin
       .from('tools')
       .select('name, slug, description, website_url, affiliate_url, pricing, category, logo_url')
@@ -104,13 +140,26 @@ export async function POST(req: NextRequest) {
       .limit(3)
 
     if (!toolRows || toolRows.length === 0) {
-      const { data: fallbackTools } = await supabaseAdmin
+      // Auto-select: most recent unsent tools
+      const { data: autoTools } = await supabaseAdmin
         .from('tools')
         .select('name, slug, description, website_url, affiliate_url, pricing, category, logo_url')
         .eq('status', 'published')
+        .or('newsletter_included.is.null,newsletter_included.eq.false')
         .order('created_at', { ascending: false })
         .limit(3)
-      toolRows = fallbackTools
+      toolRows = autoTools
+
+      // If all tools already sent, allow repeats
+      if (!toolRows || toolRows.length === 0) {
+        const { data: fallbackTools } = await supabaseAdmin
+          .from('tools')
+          .select('name, slug, description, website_url, affiliate_url, pricing, category, logo_url')
+          .eq('status', 'published')
+          .order('created_at', { ascending: false })
+          .limit(3)
+        toolRows = fallbackTools
+      }
     }
 
     const tools: ToolSnap[] = toolRows ?? []
@@ -131,7 +180,7 @@ export async function POST(req: NextRequest) {
 
     await sendCampaignNow(campaignId)
 
-    // ── 8. Mark video + podcast as newsletter_included ────────
+    // ── 8. Mark all included content as newsletter_included ───
     if (video) {
       await supabaseAdmin.from('videos').update({ newsletter_included: true }).eq('is_active', true)
     }
@@ -139,7 +188,39 @@ export async function POST(req: NextRequest) {
       await supabaseAdmin.from('podcast_roundups').update({ newsletter_included: true }).eq('is_active', true)
     }
 
-    console.log(`[send-weekly] Brevo campaign ${campaignId} sent for ${weekLabel}`)
+    // Mark articles as sent
+    const articleSlugs = articles.map(a => a.slug)
+    if (articleSlugs.length > 0) {
+      await supabaseAdmin
+        .from('articles')
+        .update({ newsletter_included: true })
+        .in('slug', articleSlugs)
+    }
+
+    // Mark Make Money article as sent
+    if (makeMoneyArticle) {
+      await supabaseAdmin
+        .from('articles')
+        .update({ newsletter_included: true })
+        .eq('slug', makeMoneyArticle.slug)
+    }
+
+    // Mark tools as sent (only auto-selected ones, not manually featured)
+    const toolSlugs = tools.map(t => t.slug)
+    if (toolSlugs.length > 0) {
+      await supabaseAdmin
+        .from('tools')
+        .update({ newsletter_included: true })
+        .in('slug', toolSlugs)
+    }
+
+    // Clear newsletter_featured on tools so they don't auto-repeat next week
+    await supabaseAdmin
+      .from('tools')
+      .update({ newsletter_featured: false })
+      .eq('newsletter_featured', true)
+
+    console.log(`[send-weekly] Brevo campaign ${campaignId} sent for ${weekLabel} — ${articleSlugs.length} articles, ${toolSlugs.length} tools marked as sent`)
 
     return NextResponse.json({
       success: true,
