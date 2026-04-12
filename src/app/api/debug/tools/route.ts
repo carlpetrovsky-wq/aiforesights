@@ -9,11 +9,13 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // Same exact query as the cron
+  // Force a fresh connection by doing a settings read first
+  await supabaseAdmin.from('settings').select('key').limit(1)
+
+  // Query WITHOUT the status filter to test if that's the cache key
   const { data: tools, error } = await supabaseAdmin
     .from('tools')
-    .select('id, name, website_url')
-    .eq('status', 'published')
+    .select('id, name, website_url, status')
     .order('name')
 
   if (error) {
@@ -23,8 +25,15 @@ export async function GET(req: NextRequest) {
   // Find ChatGPT specifically
   const chatgpt = tools?.find(t => t.name === 'ChatGPT')
   
+  // Count by status
+  const statuses: Record<string, number> = {}
+  tools?.forEach(t => {
+    statuses[t.status] = (statuses[t.status] || 0) + 1
+  })
+  
   return NextResponse.json({
     total: tools?.length,
+    statuses,
     chatgpt,
     sample: tools?.slice(0, 5)
   })
