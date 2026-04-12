@@ -3,8 +3,6 @@ import { DM_Sans, DM_Mono } from 'next/font/google'
 import { createClient } from '@supabase/supabase-js'
 import '../styles/globals.css'
 
-export const dynamic = 'force-dynamic'
-
 const dmSans = DM_Sans({
   variable: '--font-geist-sans',
   subsets: ['latin'],
@@ -93,6 +91,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </>
         )}
 
+        {/* RSS autodiscovery — browsers and crawlers auto-detect the feed */}
+        <link rel="alternate" type="application/rss+xml" title="AI Foresights RSS Feed" href="https://www.aiforesights.com/feed.xml" />
+
         {/* Google AdSense - plain script tag required, Next.js Script component adds data-nscript which breaks AdSense crawler */}
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}
         <script
@@ -102,6 +103,35 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         />
       </head>
       <body className="min-h-screen bg-brand-bg">
+        {/* Organization + WebSite schema — sitewide, helps Google Knowledge Panel and AI crawlers */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify([
+            {
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'AI Foresights',
+              url: 'https://www.aiforesights.com',
+              logo: 'https://www.aiforesights.com/logo.svg',
+              sameAs: ['https://x.com/AIForesights'],
+              description: 'AI news, tools, and guides explained in plain English for everyday professionals.',
+              foundingDate: '2025',
+              knowsAbout: ['Artificial Intelligence', 'AI Tools', 'Machine Learning', 'AI News'],
+            },
+            {
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: 'AI Foresights',
+              url: 'https://www.aiforesights.com',
+              description: 'The world of AI explained in plain English.',
+              potentialAction: {
+                '@type': 'SearchAction',
+                target: { '@type': 'EntryPoint', urlTemplate: 'https://www.aiforesights.com/best-ai-tools?q={search_term_string}' },
+                'query-input': 'required name=search_term_string',
+              },
+            },
+          ])}}
+        />
         {children}
         {/* Awin Publisher Master Tag — required for affiliate tracking */}
         {/* eslint-disable-next-line @next/next/no-sync-scripts */}

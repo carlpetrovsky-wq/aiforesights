@@ -42,11 +42,20 @@ export default async function ArticlePage({ params }: { params: { slug: string }
     : null
   const categoryLabel = (article.category_slug || 'latest-news').replace(/-/g, ' ')
 
+  const rawSummary = article.summary || article.excerpt || ''
+  const cleanSummary = rawSummary
+    .replace(/^#+\s+/gm, '')
+    .replace(/\*\*([^*]+)\*\*/g, '$1')
+    .replace(/\*([^*]+)\*/g, '$1')
+    .replace(/^[-*]\s+/gm, '')
+    .replace(/\n+/g, ' ')
+    .trim()
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': isOwnContent ? 'Article' : 'NewsArticle',
     headline: article.title,
-    description: article.summary || article.excerpt || '',
+    description: cleanSummary,
     image: image,
     datePublished: article.published_at || new Date().toISOString(),
     dateModified: article.updated_at || article.published_at || new Date().toISOString(),
@@ -282,7 +291,16 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   const article = await getArticle(params.slug)
   if (!article) return {}
 
-  const description = article.summary || article.excerpt || 'AI news explained in plain English.'
+  // Strip markdown syntax (headings, bold, bullets) so meta description is clean plain text
+  const rawDesc = article.summary || article.excerpt || 'AI news explained in plain English.'
+  const description = rawDesc
+    .replace(/^#+\s+/gm, '')      // ## headings
+    .replace(/\*\*([^*]+)\*\*/g, '$1') // **bold**
+    .replace(/\*([^*]+)\*/g, '$1')     // *italic*
+    .replace(/^[-*]\s+/gm, '')    // bullet points
+    .replace(/\n+/g, ' ')         // newlines → spaces
+    .trim()
+    .slice(0, 300)                 // Google shows ~155 chars; 300 gives room for og:description
   // Use the article's thumbnail_url for OG image — same field RSS articles use.
   // For AI Foresights originals, the X post generator sets this to a Vercel Blob URL.
   const ogImageUrl = article.thumbnail_url || 'https://www.aiforesights.com/og-default.png'

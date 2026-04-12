@@ -8,6 +8,7 @@ export default function robots(): MetadataRoute.Robots {
         allow: [
           '/',
           '/api/og-image/',   // OG images must be fetchable by social crawlers (Twitterbot, etc.)
+          '/feed.xml',        // Public RSS feed
         ],
         disallow: [
           '/admin/',
