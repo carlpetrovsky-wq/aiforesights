@@ -173,10 +173,6 @@ async function fetchAIProducts(token: string, daysBack = 30): Promise<PHProduct[
 function extractDomain(url: string): string {
   try {
     const hostname = new URL(url).hostname.replace('www.', '').toLowerCase()
-    // Ignore Product Hunt tracking URLs
-    if (hostname === 'producthunt.com' || hostname.includes('producthunt.com')) {
-      return ''
-    }
     return hostname
   } catch {
     return url.toLowerCase()
@@ -184,19 +180,21 @@ function extractDomain(url: string): string {
 }
 
 function getActualWebsite(product: PHProduct): string {
-  // Product Hunt sometimes returns tracking URLs instead of actual website
-  // The 'website' field can be a PH tracking link, so check both
-  const website = product.website || ''
-  const url = product.url || ''
-  
-  // If website is a PH tracking URL, try to use the product URL instead
-  // The product URL is like https://www.producthunt.com/posts/toolname
-  if (website.includes('producthunt.com/r/')) {
-    // Can't get actual website from tracking URL, use PH product page
-    return url
+  // Product Hunt API returns tracking URLs in 'website' field
+  // and PH product page URLs in 'url' field
+  // We'll use the product page URL - user can update to real URL during review
+  return product.url || product.website || ''
+}
+
+function extractProductSlugFromPHUrl(url: string): string | null {
+  // Extract product slug from PH URL for deduplication
+  // e.g., https://www.producthunt.com/products/brila-2 -> brila-2
+  try {
+    const match = url.match(/producthunt\.com\/products\/([^/?]+)/)
+    return match ? match[1] : null
+  } catch {
+    return null
   }
-  
-  return website || url
 }
 
 function generateSlug(name: string): string {
@@ -318,15 +316,9 @@ export async function GET(req: NextRequest) {
 
   for (const product of products) {
     const actualWebsite = getActualWebsite(product)
-    const domain = extractDomain(actualWebsite)
+    const phSlug = extractProductSlugFromPHUrl(actualWebsite)
     const nameLower = product.name.toLowerCase()
     let slug = generateSlug(product.name)
-
-    // Skip if we can't determine the actual website (only have PH tracking URL)
-    if (!domain) {
-      results.push({ name: product.name, website: actualWebsite, status: 'skipped', reason: 'No actual website URL available' })
-      continue
-    }
 
     // Check for duplicates
     if (existingPHIds.has(product.id)) {
@@ -334,13 +326,14 @@ export async function GET(req: NextRequest) {
       continue
     }
 
-    if (existingDomains.has(domain)) {
-      results.push({ name: product.name, website: actualWebsite, status: 'duplicate', reason: `Domain ${domain} already exists` })
+    if (existingNames.has(nameLower)) {
+      results.push({ name: product.name, website: actualWebsite, status: 'duplicate', reason: 'Name already exists' })
       continue
     }
 
-    if (existingNames.has(nameLower)) {
-      results.push({ name: product.name, website: actualWebsite, status: 'duplicate', reason: 'Name already exists' })
+    // Check if we already have this PH product by slug pattern
+    if (phSlug && existingSlugs.has(phSlug)) {
+      results.push({ name: product.name, website: actualWebsite, status: 'duplicate', reason: `Slug ${phSlug} already exists` })
       continue
     }
 
@@ -389,8 +382,8 @@ export async function GET(req: NextRequest) {
     } else {
       results.push({ name: product.name, website: actualWebsite, status: 'added' })
       existingSlugs.add(slug)
-      existingDomains.add(domain)
       existingNames.add(nameLower)
+      if (phSlug) existingSlugs.add(phSlug)
     }
   }
 
