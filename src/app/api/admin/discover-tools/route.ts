@@ -172,10 +172,31 @@ async function fetchAIProducts(token: string, daysBack = 30): Promise<PHProduct[
 
 function extractDomain(url: string): string {
   try {
-    return new URL(url).hostname.replace('www.', '').toLowerCase()
+    const hostname = new URL(url).hostname.replace('www.', '').toLowerCase()
+    // Ignore Product Hunt tracking URLs
+    if (hostname === 'producthunt.com' || hostname.includes('producthunt.com')) {
+      return ''
+    }
+    return hostname
   } catch {
     return url.toLowerCase()
   }
+}
+
+function getActualWebsite(product: PHProduct): string {
+  // Product Hunt sometimes returns tracking URLs instead of actual website
+  // The 'website' field can be a PH tracking link, so check both
+  const website = product.website || ''
+  const url = product.url || ''
+  
+  // If website is a PH tracking URL, try to use the product URL instead
+  // The product URL is like https://www.producthunt.com/posts/toolname
+  if (website.includes('producthunt.com/r/')) {
+    // Can't get actual website from tracking URL, use PH product page
+    return url
+  }
+  
+  return website || url
 }
 
 function generateSlug(name: string): string {
@@ -296,35 +317,42 @@ export async function GET(req: NextRequest) {
   const now = new Date().toISOString()
 
   for (const product of products) {
-    const domain = extractDomain(product.website || product.url)
+    const actualWebsite = getActualWebsite(product)
+    const domain = extractDomain(actualWebsite)
     const nameLower = product.name.toLowerCase()
     let slug = generateSlug(product.name)
 
+    // Skip if we can't determine the actual website (only have PH tracking URL)
+    if (!domain) {
+      results.push({ name: product.name, website: actualWebsite, status: 'skipped', reason: 'No actual website URL available' })
+      continue
+    }
+
     // Check for duplicates
     if (existingPHIds.has(product.id)) {
-      results.push({ name: product.name, website: product.website, status: 'duplicate', reason: 'Already imported from Product Hunt' })
+      results.push({ name: product.name, website: actualWebsite, status: 'duplicate', reason: 'Already imported from Product Hunt' })
       continue
     }
 
     if (existingDomains.has(domain)) {
-      results.push({ name: product.name, website: product.website, status: 'duplicate', reason: `Domain ${domain} already exists` })
+      results.push({ name: product.name, website: actualWebsite, status: 'duplicate', reason: `Domain ${domain} already exists` })
       continue
     }
 
     if (existingNames.has(nameLower)) {
-      results.push({ name: product.name, website: product.website, status: 'duplicate', reason: 'Name already exists' })
+      results.push({ name: product.name, website: actualWebsite, status: 'duplicate', reason: 'Name already exists' })
       continue
     }
 
     // Check if relevant for our audience
     if (!isRelevantForAudience(product)) {
-      results.push({ name: product.name, website: product.website, status: 'skipped', reason: 'Not relevant for non-technical audience' })
+      results.push({ name: product.name, website: actualWebsite, status: 'skipped', reason: 'Not relevant for non-technical audience' })
       continue
     }
 
     // Skip low-vote products (likely not established)
     if (product.votesCount < 50) {
-      results.push({ name: product.name, website: product.website, status: 'skipped', reason: `Low votes (${product.votesCount})` })
+      results.push({ name: product.name, website: actualWebsite, status: 'skipped', reason: `Low votes (${product.votesCount})` })
       continue
     }
 
@@ -341,7 +369,7 @@ export async function GET(req: NextRequest) {
       slug,
       description: product.tagline,
       long_description: product.description || null,
-      website_url: product.website || product.url,
+      website_url: actualWebsite,
       logo_url: product.thumbnail?.url || null,
       category: inferCategory(product),
       pricing: inferPricing(product),
@@ -357,9 +385,9 @@ export async function GET(req: NextRequest) {
     })
 
     if (error) {
-      results.push({ name: product.name, website: product.website, status: 'skipped', reason: `DB error: ${error.message}` })
+      results.push({ name: product.name, website: actualWebsite, status: 'skipped', reason: `DB error: ${error.message}` })
     } else {
-      results.push({ name: product.name, website: product.website, status: 'added' })
+      results.push({ name: product.name, website: actualWebsite, status: 'added' })
       existingSlugs.add(slug)
       existingDomains.add(domain)
       existingNames.add(nameLower)
