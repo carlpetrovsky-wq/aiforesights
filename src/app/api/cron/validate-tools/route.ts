@@ -112,19 +112,22 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // Get all published tools
-  const { data: tools, error: fetchError } = await supabaseAdmin
+  // Get all tools and filter client-side to avoid Supabase query cache issue
+  // (The .eq('status', 'published') query was returning stale cached results)
+  const { data: allTools, error: fetchError } = await supabaseAdmin
     .from('tools')
-    .select('id, name, website_url')
-    .eq('status', 'published')
+    .select('id, name, website_url, status')
     .order('name')
 
-  if (fetchError || !tools) {
+  if (fetchError || !allTools) {
     return NextResponse.json({ 
       error: 'Failed to fetch tools', 
       details: fetchError?.message 
     }, { status: 500 })
   }
+
+  // Filter to published tools client-side
+  const tools = allTools.filter(t => t.status === 'published')
 
   const results: ValidationResult[] = []
   const now = new Date().toISOString()
