@@ -313,5 +313,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       description,
       images: [ogImageUrl],
     },
+    alternates: {
+      canonical: `https://www.aiforesights.com/article/${params.slug}`,
+    },
   }
 }

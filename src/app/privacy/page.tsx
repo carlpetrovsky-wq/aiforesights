@@ -4,6 +4,9 @@ import Footer from '@/components/layout/Footer'
 export const metadata = {
   title: 'Privacy Policy — AI Foresights',
   description: 'Privacy Policy for AI Foresights. Learn how we collect, use, and protect your personal information.',
+  alternates: {
+    canonical: "https://www.aiforesights.com/privacy",
+  },
 }
 
 export default function PrivacyPage() {

@@ -6,6 +6,9 @@ import { Newspaper, Wrench, DollarSign, GraduationCap, Heart, Check } from 'luci
 export const metadata = {
   title: 'About Us — AI Foresights',
   description: 'AI Foresights helps everyday people understand AI, discover useful tools, and find new ways to earn money — all in plain language.',
+  alternates: {
+    canonical: 'https://www.aiforesights.com/about',
+  },
 }
 
 export default function AboutPage() {

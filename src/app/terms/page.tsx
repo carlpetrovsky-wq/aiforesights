@@ -4,6 +4,9 @@ import Footer from '@/components/layout/Footer'
 export const metadata = {
   title: 'Terms of Use — AI Foresights',
   description: 'Terms of Use for AI Foresights. Please read these terms before using our website.',
+  alternates: {
+    canonical: "https://www.aiforesights.com/terms",
+  },
 }
 
 export default function TermsPage() {

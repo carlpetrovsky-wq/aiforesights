@@ -5,6 +5,9 @@ import Link from 'next/link'
 export const metadata = {
   title: 'Cookie Settings — AI Foresights',
   description: 'Learn about the cookies used on AI Foresights and how to manage your preferences.',
+  alternates: {
+    canonical: "https://www.aiforesights.com/cookies",
+  },
 }
 
 export default function CookiesPage() {

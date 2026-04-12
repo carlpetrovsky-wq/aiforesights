@@ -6,6 +6,9 @@ import { Check } from 'lucide-react'
 export const metadata = {
   title: 'Newsletter — AI Foresights',
   description: 'Subscribe to the AI Foresights weekly newsletter. Top AI stories and best new tools in plain English. Free forever.',
+  alternates: {
+    canonical: "https://www.aiforesights.com/newsletter",
+  },
 }
 
 export default function NewsletterPage() {

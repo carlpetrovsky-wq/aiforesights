@@ -6,6 +6,9 @@ import { Users, TrendingUp, Target, Mail } from 'lucide-react'
 export const metadata = {
   title: 'Advertise — AI Foresights',
   description: 'Reach thousands of professionals navigating the AI revolution. Advertising opportunities on AI Foresights.',
+  alternates: {
+    canonical: "https://www.aiforesights.com/advertise",
+  },
 }
 
 export default function AdvertisePage() {
