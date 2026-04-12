@@ -6,7 +6,7 @@
     },
     {
       "path": "/api/cron/validate-tools",
-      "schedule": "0 6 1-7 * 0"
+      "schedule": "0 6 * * 0"
     }
   ]
 }
