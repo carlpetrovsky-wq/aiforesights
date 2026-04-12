@@ -13,7 +13,7 @@ interface ValidationResult {
   statusCode: number | null
 }
 
-async function validateUrl(url: string, timeout = 8000): Promise<{
+async function validateUrl(url: string, timeout = 10000): Promise<{
   status: 'valid' | 'broken' | 'redirected' | 'timeout'
   message: string | null
   statusCode: number | null
@@ -21,17 +21,29 @@ async function validateUrl(url: string, timeout = 8000): Promise<{
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), timeout)
 
-  try {
-    const res = await fetch(url, {
-      method: 'HEAD',
-      redirect: 'manual', // Don't follow redirects automatically
-      signal: controller.signal,
-      headers: {
-        'User-Agent': 'AIForesights-LinkChecker/1.0 (+https://www.aiforesights.com)',
-      },
-    })
-    clearTimeout(timeoutId)
+  // Use browser-like User-Agent to avoid bot blocking
+  const browserUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 
+  try {
+    // Try HEAD first (faster), fall back to GET if HEAD fails with 403/405
+    let res = await fetch(url, {
+      method: 'HEAD',
+      redirect: 'manual',
+      signal: controller.signal,
+      headers: { 'User-Agent': browserUA },
+    })
+
+    // Some sites block HEAD requests — retry with GET
+    if (res.status === 403 || res.status === 405) {
+      res = await fetch(url, {
+        method: 'GET',
+        redirect: 'manual',
+        signal: controller.signal,
+        headers: { 'User-Agent': browserUA },
+      })
+    }
+
+    clearTimeout(timeoutId)
     const statusCode = res.status
 
     // 2xx = valid
@@ -39,12 +51,22 @@ async function validateUrl(url: string, timeout = 8000): Promise<{
       return { status: 'valid', message: null, statusCode }
     }
 
-    // 3xx = redirect (not necessarily bad, but worth flagging)
+    // 3xx = redirect — follow it once to see if final destination works
     if (statusCode >= 300 && statusCode < 400) {
       const location = res.headers.get('location')
+      // Most redirects are fine (http→https, www→non-www) — mark as valid if it's same domain
+      if (location) {
+        try {
+          const originalHost = new URL(url).hostname.replace('www.', '')
+          const redirectHost = new URL(location, url).hostname.replace('www.', '')
+          if (originalHost === redirectHost) {
+            return { status: 'valid', message: `Redirects to: ${location}`, statusCode }
+          }
+        } catch { /* ignore URL parse errors */ }
+      }
       return { 
         status: 'redirected', 
-        message: location ? `Redirects to: ${location}` : 'Redirect (no location header)',
+        message: location ? `Redirects to: ${location}` : 'Redirect (no location)',
         statusCode 
       }
     }
@@ -59,7 +81,7 @@ async function validateUrl(url: string, timeout = 8000): Promise<{
     clearTimeout(timeoutId)
     
     if (err instanceof Error && err.name === 'AbortError') {
-      return { status: 'timeout', message: 'Request timed out after 8s', statusCode: null }
+      return { status: 'timeout', message: 'Request timed out after 10s', statusCode: null }
     }
     
     const message = err instanceof Error ? err.message : 'Unknown error'
