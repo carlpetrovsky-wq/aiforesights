@@ -94,11 +94,12 @@ async function fetchAIProducts(token: string, daysBack = 30): Promise<PHProduct[
   sinceDate.setDate(sinceDate.getDate() - daysBack)
   const postedAfter = sinceDate.toISOString()
 
-  // GraphQL query for AI-related products - using simpler query structure
+  // GraphQL query - reduced to 20 posts to stay under complexity limit
+  // Product Hunt has a 500k complexity limit
   const query = `
     query GetPosts {
       posts(
-        first: 50
+        first: 20
         order: VOTES
         postedAfter: "${postedAfter}"
       ) {
@@ -111,11 +112,10 @@ async function fetchAIProducts(token: string, daysBack = 30): Promise<PHProduct[
             url
             website
             votesCount
-            createdAt
             thumbnail {
               url
             }
-            topics {
+            topics(first: 5) {
               edges {
                 node {
                   name
