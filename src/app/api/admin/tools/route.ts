@@ -10,6 +10,7 @@ export async function GET(req: NextRequest) {
     .from('tools')
     .select('*')
     .order('name', { ascending: true })
+    .limit(1000) // Supabase default is 1000, but explicit to be safe
 
   if (search) query = query.ilike('name', `%${search}%`)
 
