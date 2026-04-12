@@ -56,6 +56,13 @@ interface DiscoveryResult {
 }
 
 async function getProductHuntToken(): Promise<string | null> {
+  // First check for developer token (preferred - never expires)
+  const devToken = process.env.PRODUCT_HUNT_TOKEN
+  if (devToken) {
+    return devToken
+  }
+
+  // Fall back to OAuth client credentials flow
   const clientId = process.env.PRODUCT_HUNT_CLIENT_ID
   const clientSecret = process.env.PRODUCT_HUNT_CLIENT_SECRET
 
@@ -242,16 +249,17 @@ export async function GET(req: NextRequest) {
   // Get Product Hunt token
   const token = await getProductHuntToken()
   if (!token) {
+    const hasDevToken = !!process.env.PRODUCT_HUNT_TOKEN
     const hasClientId = !!process.env.PRODUCT_HUNT_CLIENT_ID
     const hasClientSecret = !!process.env.PRODUCT_HUNT_CLIENT_SECRET
     return NextResponse.json({ 
       error: 'Product Hunt credentials not configured or invalid',
       debug: {
+        hasDevToken,
         hasClientId,
         hasClientSecret,
-        clientIdPrefix: process.env.PRODUCT_HUNT_CLIENT_ID?.substring(0, 8) || 'missing'
       },
-      setup: 'Add PRODUCT_HUNT_CLIENT_ID and PRODUCT_HUNT_CLIENT_SECRET to Vercel env vars'
+      setup: 'Add PRODUCT_HUNT_TOKEN (developer token) to Vercel env vars'
     }, { status: 400 })
   }
 
